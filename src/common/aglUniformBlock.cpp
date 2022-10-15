@@ -1,8 +1,14 @@
 #include <common/aglUniformBlock.h>
 
+#include <misc/rio_MemUtil.h>
+
 // TODO: Move to the proper headers
-#define SEAD_MACRO_UTIL_ROUNDUP(x, y) ((x) + ((y) - 1) & ~((y) - 1))
-#define SEAD_MACRO_UTIL_ROUNDDOWN(x, y) ((x) & ~((y) - 1))
+#define ROUNDUP(x, y) (((x) + ((y) - 1)) & ~((y) - 1))
+#define ROUNDDOWN(x, y) ((x) & ~((y) - 1))
+
+#if RIO_IS_CAFE
+#include <cafe.h>
+#endif // RIO_IS_CAFE
 
 namespace {
 
@@ -32,6 +38,9 @@ namespace agl {
 UniformBlock::UniformBlock()
     : mpHeader(NULL)
     , mCurrentBuffer(NULL)
+#if RIO_IS_WIN
+    , mpUBO(nullptr)
+#endif // RIO_IS_WIN
     , mBlockSize(0)
     , mFlag(0)
 {
@@ -42,13 +51,13 @@ UniformBlock::~UniformBlock()
     destroy();
 }
 
-void UniformBlock::startDeclare(s32 num, sead::Heap* heap)
+void UniformBlock::startDeclare(s32 num)
 {
-    // SEAD_ASSERT(0 < num);
-    // SEAD_ASSERT(mpHeader == nullptr);
+    RIO_ASSERT(0 < num);
+    RIO_ASSERT(mpHeader == nullptr);
 
-    mpHeader = new (heap) Header;
-    mpHeader->mpMember = new (heap) Member[num];
+    mpHeader = new Header;
+    mpHeader->mpMember = new Member[num];
     mpHeader->mMemberNum = num;
     mpHeader->mMemberCount = 0;
 
@@ -59,7 +68,7 @@ void UniformBlock::startDeclare(s32 num, sead::Heap* heap)
 
 void UniformBlock::declare(Type type, s32 num)
 {
-    // SEAD_ASSERT(0 < num);
+    RIO_ASSERT(0 < num);
 
     Member& member = mpHeader->mpMember[mpHeader->mMemberCount];
     member.mType = type;
@@ -70,12 +79,12 @@ void UniformBlock::declare(Type type, s32 num)
     if (member.mNum == 1)
     {
         stride = sTypeInfo[member.mType][0];
-        mBlockSize = SEAD_MACRO_UTIL_ROUNDUP(mBlockSize, sTypeInfo[member.mType][1] * sizeof(u32));
+        mBlockSize = ROUNDUP(mBlockSize, sTypeInfo[member.mType][1] * sizeof(u32));
     }
     else
     {
         stride = sTypeInfo[member.mType][2];
-        mBlockSize = SEAD_MACRO_UTIL_ROUNDUP(mBlockSize, sTypeInfo[member.mType][2] * sizeof(u32));
+        mBlockSize = ROUNDUP(mBlockSize, sTypeInfo[member.mType][2] * sizeof(u32));
     }
 
     member.mOffset = mBlockSize;
@@ -86,9 +95,9 @@ void UniformBlock::declare(Type type, s32 num)
 
 void UniformBlock::declare(const UniformBlock& block)
 {
-    // SEAD_ASSERT(block.mpHeader != nullptr);
-    // SEAD_ASSERT(mpHeader == nullptr);
-    // SEAD_ASSERT(mBlockSize == 0);
+    RIO_ASSERT(block.mpHeader != nullptr);
+    RIO_ASSERT(mpHeader == nullptr);
+    RIO_ASSERT(mBlockSize == 0);
 
     mpHeader = block.mpHeader;
     mBlockSize = block.mBlockSize;
@@ -96,13 +105,24 @@ void UniformBlock::declare(const UniformBlock& block)
     mFlag.reset(cFlag_OwnHeader);
 }
 
-void UniformBlock::create(sead::Heap* heap)
+void UniformBlock::create()
 {
-    // SEAD_ASSERT(mCurrentBuffer == nullptr);
-    // SEAD_ASSERT(mFlag.isOff(cFlag_OwnBuffer), "This buffer has original buffer.");
+    RIO_ASSERT(mCurrentBuffer == nullptr);
+#if RIO_IS_WIN
+    RIO_ASSERT(mpUBO == nullptr);
+#endif // RIO_IS_WIN
 
-    mBlockSize = SEAD_MACRO_UTIL_ROUNDUP(mBlockSize, cCPUCacheLineSize);
-    mCurrentBuffer = new (heap, cUniformBlockAlignment) u8[mBlockSize];
+    if (mFlag.isOn(cFlag_OwnBuffer))
+    {
+        RIO_LOG("This buffer has original buffer.\n");
+        RIO_ASSERT(false);
+    }
+
+    mBlockSize = ROUNDUP(mBlockSize, cCPUCacheLineSize);
+    mCurrentBuffer = static_cast<u8*>(rio::MemUtil::alloc(mBlockSize, cUniformBlockAlignment));
+#if RIO_IS_WIN
+    mpUBO = new rio::UniformBlock(mCurrentBuffer, mBlockSize);
+#endif // RIO_IS_WIN
 
     mFlag.set(cFlag_OwnBuffer);
 }
@@ -113,13 +133,23 @@ void UniformBlock::destroy()
     {
         if (mCurrentBuffer)
         {
-            delete[] mCurrentBuffer;
+            rio::MemUtil::free(mCurrentBuffer);
             mCurrentBuffer = NULL;
         }
+#if RIO_IS_WIN
+        if (mpUBO)
+        {
+            delete mpUBO;
+            mpUBO = nullptr;
+        }
+#endif // RIO_IS_WIN
         mFlag.reset(cFlag_OwnBuffer);
     }
 
     mCurrentBuffer = NULL;
+#if RIO_IS_WIN
+    mpUBO = nullptr;
+#endif // RIO_IS_WIN
     mBlockSize = 0;
 
     if (mFlag.isOn(cFlag_OwnHeader))
@@ -133,27 +163,33 @@ void UniformBlock::destroy()
 
 void UniformBlock::dcbz() const
 {
-#ifdef cafe
+#if RIO_IS_CAFE
     u8* begin_ptr = mCurrentBuffer;
-    u8* end_ptr = mCurrentBuffer + SEAD_MACRO_UTIL_ROUNDDOWN(mBlockSize, cCPUCacheLineSize);
+    u8* end_ptr = mCurrentBuffer + ROUNDDOWN(mBlockSize, cCPUCacheLineSize);
 
     while (begin_ptr < end_ptr)
     {
-        __dcbz(begin_ptr, 0);
+        asm("dcbz %0, 0" : "+g"(begin_ptr));
         begin_ptr += cCPUCacheLineSize;
     }
 #else
-    sead::MemUtil::fillZero(mCurrentBuffer, mBlockSize);
+    rio::MemUtil::set(mCurrentBuffer, 0, mBlockSize);
+#if RIO_IS_WIN
+    mpUBO->setData(mCurrentBuffer, mBlockSize);
+#endif // RIO_IS_WIN
 #endif
 }
 
 void UniformBlock::flush(void* p_memory, bool invalidate_gpu) const
 {
-#ifdef cafe
+#if RIO_IS_CAFE
     DCFlushRange(p_memory, mBlockSize);
     if (invalidate_gpu)
         GX2Invalidate(GX2_INVALIDATE_UNIFORM_BLOCK, p_memory, mBlockSize);
-#endif // cafe
+#elif RIO_IS_WIN
+    RIO_ASSERT(p_memory == mCurrentBuffer);
+    mpUBO->setData(mCurrentBuffer, mBlockSize);
+#endif
 }
 
 bool UniformBlock::setUniform(const void* p_data, const UniformBlockLocation& location, u32 offset, size_t size) const
@@ -161,9 +197,9 @@ bool UniformBlock::setUniform(const void* p_data, const UniformBlockLocation& lo
     if (!location.isValid())
         return false;
 
+#if RIO_IS_CAFE
     const u8* ptr = (const u8*)p_data + offset;
 
-#ifdef cafe
     if (location.getVertexLocation() != -1)
         GX2SetVertexUniformBlock(location.getVertexLocation(), size, ptr);
 
@@ -174,6 +210,22 @@ bool UniformBlock::setUniform(const void* p_data, const UniformBlockLocation& lo
         GX2SetGeometryUniformBlock(location.getGeometryLocation(), size, ptr);
 
     return true;
+#elif RIO_IS_WIN
+    RIO_ASSERT(p_data == mCurrentBuffer && offset == 0);
+    RIO_ASSERT(location.getGeometryLocation() == -1);
+
+    u32 index = location.getVertexLocation();
+    if (index == u32(-1))
+        index = location.getFragmentLocation();
+
+    if (index == u32(-1))
+        return false;
+
+    RIO_ASSERT(s32(index) == location.getFragmentLocation());
+    mpUBO->setIndex(index);
+    mpUBO->bind();
+
+    return true;
 #else
     return false;
 #endif
@@ -181,41 +233,44 @@ bool UniformBlock::setUniform(const void* p_data, const UniformBlockLocation& lo
 
 void UniformBlock::setData_(void* p_memory, s32 index, const void* p_data, s32 array_index, s32 array_num) const
 {
-    // SEAD_ASSERT(mpHeader != nullptr && mpHeader->mpMember != nullptr);
-    // SEAD_ASSERT(0 <= index && index < mpHeader->mMemberNum);
-    // SEAD_ASSERT(p_memory != nullptr);
-    // SEAD_ASSERT(p_data != nullptr);
+    RIO_ASSERT(mpHeader != nullptr && mpHeader->mpMember != nullptr);
+    RIO_ASSERT(0 <= index && index < mpHeader->mMemberNum);
+    RIO_ASSERT(p_memory != nullptr);
+    RIO_ASSERT(p_data != nullptr);
 
     Member& member = mpHeader->mpMember[index];
 
-    // SEAD_ASSERT_MSG(member.mType <  6 ||
-    //                 member.mType > 11, "not implemented yet.");
+    if (member.mType >= 6 && member.mType <= 11)
+    {
+        RIO_LOG("not implemented yet.\n");
+        RIO_ASSERT(false);
+    }
 
     u8 stride_array = sTypeInfo[member.mType][2];
     u8* ptr = (u8*)p_memory + stride_array * array_index * sizeof(u32) + member.mOffset;
     u8 stride = sTypeInfo[member.mType][0];
 
-#ifdef cafe
+#if RIO_IS_CAFE
     if ((uintptr_t)ptr % cCPUCacheLineSize == 0)
     {
-        u32 aligned_size = SEAD_MACRO_UTIL_ROUNDDOWN(array_num * stride_array * sizeof(u32), cCPUCacheLineSize);
+        u32 aligned_size = ROUNDDOWN(array_num * stride_array * sizeof(u32), cCPUCacheLineSize);
         for (u32 i = 0; i < aligned_size; i += cCPUCacheLineSize)
-            __dcbz(ptr, i);
+            asm("dcbz %0, %1" : "+g"(ptr), "+g"(i));
     }
-#endif // cafe
+#endif // RIO_IS_CAFE
 
     const u32* src = (const u32*)p_data;
 
     for (s32 i = 0; i < array_num; i++)
     {
-#ifdef cafe
-        __bytereversed u32* const dst = (__bytereversed u32*)ptr;
-#else
         u32* const dst = (u32*)ptr;
-#endif
 
         for (s32 j = 0; j < stride; j++)
+#if RIO_IS_CAFE
+            dst[j] = __builtin_bswap32(*src++);
+#else
             dst[j] = *src++;
+#endif // RIO_IS_CAFE
 
         ptr += stride_array * sizeof(u32);
     }

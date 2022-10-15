@@ -71,62 +71,62 @@ inline void UniformBlock::setFloat(s32 index, const f32* p_data, s32 array_num, 
     setData_(mCurrentBuffer, index, p_data, array_index, array_num);
 }
 
-inline void UniformBlock::setVector2f(void* p_memory, s32 index, const sead::Vector2f& data, s32 array_index) const
+inline void UniformBlock::setVector2f(void* p_memory, s32 index, const rio::Vector2f& data, s32 array_index) const
 {
     setData_(p_memory, index, &data, array_index, 1);
 }
 
-inline void UniformBlock::setVector2f(s32 index, const sead::Vector2f& data, s32 array_index) const
+inline void UniformBlock::setVector2f(s32 index, const rio::Vector2f& data, s32 array_index) const
 {
     setData_(mCurrentBuffer, index, &data, array_index, 1);
 }
 
-inline void UniformBlock::setVector2f(void* p_memory, s32 index, const sead::Vector2f* p_data, s32 array_num, s32 array_index) const
+inline void UniformBlock::setVector2f(void* p_memory, s32 index, const rio::Vector2f* p_data, s32 array_num, s32 array_index) const
 {
     setData_(p_memory, index, p_data, array_index, array_num);
 }
 
-inline void UniformBlock::setVector2f(s32 index, const sead::Vector2f* p_data, s32 array_num, s32 array_index) const
+inline void UniformBlock::setVector2f(s32 index, const rio::Vector2f* p_data, s32 array_num, s32 array_index) const
 {
     setData_(mCurrentBuffer, index, p_data, array_index, array_num);
 }
 
-inline void UniformBlock::setVector3f(void* p_memory, s32 index, const sead::Vector3f& data, s32 array_index) const
+inline void UniformBlock::setVector3f(void* p_memory, s32 index, const rio::Vector3f& data, s32 array_index) const
 {
     setData_(p_memory, index, &data, array_index, 1);
 }
 
-inline void UniformBlock::setVector3f(s32 index, const sead::Vector3f& data, s32 array_index) const
+inline void UniformBlock::setVector3f(s32 index, const rio::Vector3f& data, s32 array_index) const
 {
     setData_(mCurrentBuffer, index, &data, array_index, 1);
 }
 
-inline void UniformBlock::setVector3f(void* p_memory, s32 index, const sead::Vector3f* p_data, s32 array_num, s32 array_index) const
+inline void UniformBlock::setVector3f(void* p_memory, s32 index, const rio::Vector3f* p_data, s32 array_num, s32 array_index) const
 {
     setData_(p_memory, index, p_data, array_index, array_num);
 }
 
-inline void UniformBlock::setVector3f(s32 index, const sead::Vector3f* p_data, s32 array_num, s32 array_index) const
+inline void UniformBlock::setVector3f(s32 index, const rio::Vector3f* p_data, s32 array_num, s32 array_index) const
 {
     setData_(mCurrentBuffer, index, p_data, array_index, array_num);
 }
 
-inline void UniformBlock::setVector4f(void* p_memory, s32 index, const sead::Vector4f& data, s32 array_index) const
+inline void UniformBlock::setVector4f(void* p_memory, s32 index, const rio::Vector4f& data, s32 array_index) const
 {
     setData_(p_memory, index, &data, array_index, 1);
 }
 
-inline void UniformBlock::setVector4f(s32 index, const sead::Vector4f& data, s32 array_index) const
+inline void UniformBlock::setVector4f(s32 index, const rio::Vector4f& data, s32 array_index) const
 {
     setData_(mCurrentBuffer, index, &data, array_index, 1);
 }
 
-inline void UniformBlock::setVector4f(void* p_memory, s32 index, const sead::Vector4f* p_data, s32 array_num, s32 array_index) const
+inline void UniformBlock::setVector4f(void* p_memory, s32 index, const rio::Vector4f* p_data, s32 array_num, s32 array_index) const
 {
     setData_(p_memory, index, p_data, array_index, array_num);
 }
 
-inline void UniformBlock::setVector4f(s32 index, const sead::Vector4f* p_data, s32 array_num, s32 array_index) const
+inline void UniformBlock::setVector4f(s32 index, const rio::Vector4f* p_data, s32 array_num, s32 array_index) const
 {
     setData_(mCurrentBuffer, index, p_data, array_index, array_num);
 }

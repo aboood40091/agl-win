@@ -2,9 +2,9 @@
 
 #include <common/aglShaderEnum.h>
 
-#ifdef cafe
+#if RIO_IS_CAFE
 #include <cafe/gx2.h>
-#endif // cafe
+#endif // RIO_IS_CAFE
 
 namespace agl {
 
@@ -53,7 +53,7 @@ public:
         return cShaderType_Vertex;
     }
 
-#ifdef cafe
+#if RIO_IS_CAFE
     GX2VertexShader* getBinary()
     {
         return static_cast<GX2VertexShader*>(Shader::getBinary());
@@ -66,9 +66,9 @@ public:
 
     ShaderMode getShaderMode() const
     {
-        return ShaderMode(getBinary()->shaderMode);
+        return ShaderMode(getBinary()->mode);
     }
-#endif // cafe
+#endif // RIO_IS_CAFE
 };
 
 class FragmentShader : public Shader
@@ -84,7 +84,7 @@ public:
         return cShaderType_Fragment;
     }
 
-#ifdef cafe
+#if RIO_IS_CAFE
     GX2PixelShader* getBinary()
     {
         return static_cast<GX2PixelShader*>(Shader::getBinary());
@@ -97,9 +97,9 @@ public:
 
     ShaderMode getShaderMode() const
     {
-        return ShaderMode(getBinary()->shaderMode);
+        return ShaderMode(getBinary()->mode);
     }
-#endif // cafe
+#endif // RIO_IS_CAFE
 };
 
 class GeometryShader : public Shader
@@ -115,7 +115,7 @@ public:
         return cShaderType_Geometry;
     }
 
-#ifdef cafe
+#if RIO_IS_CAFE
     GX2GeometryShader* getBinary()
     {
         return static_cast<GX2GeometryShader*>(Shader::getBinary());
@@ -128,9 +128,9 @@ public:
 
     ShaderMode getShaderMode() const
     {
-        return ShaderMode(getBinary()->shaderMode);
+        return ShaderMode(getBinary()->mode);
     }
-#endif // cafe
+#endif // RIO_IS_CAFE
 };
 
 }

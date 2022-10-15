@@ -3,10 +3,12 @@
 #include <detail/aglPrivateResource.h>
 #include <util/common/aglShaderCompileInfo.h>
 
+#include <cstring>
+
 namespace agl {
 
 ShaderCompileInfo::ShaderCompileInfo()
-    : sead::INamable("unititled")
+    : INamable("unititled")
     , mSourceText(NULL)
     , mRawText(NULL)
     , mMacroName()
@@ -23,18 +25,18 @@ ShaderCompileInfo::~ShaderCompileInfo()
     destroy();
 }
 
-void ShaderCompileInfo::create(s32 num_macro, s32 num_variation, sead::Heap* heap)
+void ShaderCompileInfo::create(s32 num_macro, s32 num_variation)
 {
     if (num_macro > 0)
     {
-        mMacroName.allocBuffer(num_macro, heap);
-        mMacroValue.allocBuffer(num_macro, heap);
+        mMacroName.allocBuffer(num_macro);
+        mMacroValue.allocBuffer(num_macro);
     }
 
     if (num_variation > 0)
     {
-        mVariationName.allocBuffer(num_variation, heap);
-        mVariationValue.allocBuffer(num_variation, heap);
+        mVariationName.allocBuffer(num_variation);
+        mVariationValue.allocBuffer(num_variation);
     }
 }
 
@@ -50,27 +52,27 @@ void ShaderCompileInfo::pushBackVariation(const char* name, const char* value)
     mVariationValue.pushBack(value);
 }
 
-void ShaderCompileInfo::calcCompileSource(ShaderType type, sead::BufferedSafeString* p_buffer, Target target, bool) const
+void ShaderCompileInfo::calcCompileSource(ShaderType type, std::string* p_buffer, Target target, bool) const
 {
-    // SEAD_ASSERT(p_buffer != nullptr);
+    RIO_ASSERT(p_buffer != nullptr);
 
-    p_buffer->copy("");
+    p_buffer->operator=("");
 
     if (!mSourceText)
         return;
 
-    sead::SafeString text = *mSourceText;
+    const char* text = mSourceText->c_str();
 
     bool is_gl = target == cTarget_GL;
 
-    s32 version_pos = text.findIndex("#version");
-    if (version_pos != -1)
+    const char* version_pos = std::strstr(text, "#version");
+    if (version_pos)
     {
         s32 line_feed_pos, line_feed_len;
 
-        line_feed_pos = detail::ShaderTextUtil::findLineFeedCode(text.cstr() + version_pos, &line_feed_len);
+        line_feed_pos = detail::ShaderTextUtil::findLineFeedCode(version_pos, &line_feed_len);
         if (line_feed_pos != -1)
-            text = sead::SafeString(text.cstr() + version_pos + line_feed_pos + line_feed_len);
+            text = version_pos + line_feed_pos + line_feed_len;
     }
 
     static const char* sMacroDefine[] = {
@@ -95,12 +97,12 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, sead::BufferedSafeStr
         "#define AGL_GEOMETRY_SHADER \n"
     };
 
-    p_buffer->append(sMacroDefine[is_gl ? 0 : 1]);
-    p_buffer->append("// ----- These macros are auto defined by AGL.-----\n");
-    p_buffer->append(sTypeDefine[type]);
-    p_buffer->append(sTargetDefine[is_gl ? 0 : 1]);
-    p_buffer->append("// ------------------------------------------------\n");
-    p_buffer->append(text);
+    p_buffer->operator+=(sMacroDefine[is_gl ? 0 : 1]);
+    p_buffer->operator+=("// ----- These macros are auto defined by AGL.-----\n");
+    p_buffer->operator+=(sTypeDefine[type]);
+    p_buffer->operator+=(sTargetDefine[is_gl ? 0 : 1]);
+    p_buffer->operator+=("// ------------------------------------------------\n");
+    p_buffer->operator+=(text);
 
     if (mMacroName.size() > 0)
     {
@@ -109,8 +111,8 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, sead::BufferedSafeStr
             static_cast<const char**>(mMacroName.getWork()),
             static_cast<const char**>(mMacroValue.getWork()),
             mMacroName.size(),
-            detail::PrivateResource::instance()->getShaderWorkBuffer().getBufferPtr(),
-            detail::PrivateResource::instance()->getShaderWorkBuffer().size()
+            detail::PrivateResource::sShaderWorkBuffer.getBufferPtr(),
+            detail::PrivateResource::sShaderWorkBuffer.size()
         );
     }
 
@@ -121,13 +123,13 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, sead::BufferedSafeStr
             static_cast<const char**>(mVariationName.getWork()),
             static_cast<const char**>(mVariationValue.getWork()),
             mVariationName.size(),
-            detail::PrivateResource::instance()->getShaderWorkBuffer().getBufferPtr(),
-            detail::PrivateResource::instance()->getShaderWorkBuffer().size()
+            detail::PrivateResource::sShaderWorkBuffer.getBufferPtr(),
+            detail::PrivateResource::sShaderWorkBuffer.size()
         );
     }
 
     if (mRawText)
-        mRawText->copy(*p_buffer);
+        mRawText->operator=(*p_buffer);
 }
 
 void ShaderCompileInfo::destroy()
@@ -136,7 +138,7 @@ void ShaderCompileInfo::destroy()
     {
         mMacroName.freeBuffer();
 
-        // SEAD_ASSERT(mMacroValue.isBufferReady());
+        RIO_ASSERT(mMacroValue.isBufferReady());
         mMacroValue.freeBuffer();
     }
 
@@ -144,7 +146,7 @@ void ShaderCompileInfo::destroy()
     {
         mVariationName.freeBuffer();
 
-        // SEAD_ASSERT(mVariationValue.isBufferReady());
+        RIO_ASSERT(mVariationValue.isBufferReady());
         mVariationValue.freeBuffer();
     }
 }

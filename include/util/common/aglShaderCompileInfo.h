@@ -1,15 +1,14 @@
 #pragma once
 
-#include <container/seadBuffer.h>
-#include <container/seadPtrArray.h>
-#include <heap/seadHeap.h>
-#include <prim/seadNamable.h>
+#include <container/Buffer.h>
+#include <container/PtrArray.h>
+#include <misc/Namable.h>
 
 namespace agl {
 
 enum ShaderType;
 
-class ShaderCompileInfo : public sead::INamable
+class ShaderCompileInfo : public INamable
 {
 public:
     enum Target
@@ -23,7 +22,7 @@ public:
     ShaderCompileInfo();
     virtual ~ShaderCompileInfo();
 
-    void create(s32 num_macro, s32 num_variation, sead::Heap* heap);
+    void create(s32 num_macro, s32 num_variation);
 
     void clearMacro()
     {
@@ -40,39 +39,39 @@ public:
     void clearVariation();
     void pushBackVariation(const char* name, const char* value);
 
-    void setSourceText(const sead::SafeString* text)
+    void setSourceText(const std::string* text)
     {
         mSourceText = text;
     }
 
-    const sead::SafeString* getSourceText() const
+    const std::string* getSourceText() const
     {
         return mSourceText;
     }
 
-    void setRawText(sead::BufferedSafeString* text)
+    void setRawText(std::string* text)
     {
         mRawText = text;
     }
 
-    sead::BufferedSafeString* getRawText() const
+    std::string* getRawText() const
     {
         return mRawText;
     }
 
-    void calcCompileSource(ShaderType type, sead::BufferedSafeString* p_buffer, Target target, bool) const;
+    void calcCompileSource(ShaderType type, std::string* p_buffer, Target target, bool) const;
 
     void destroy();
 
 private:
-    const sead::SafeString* mSourceText;
-    sead::BufferedSafeString* mRawText;
-    sead::PtrArray<const char> mMacroName;
-    sead::PtrArray<const char> mMacroValue;
-    sead::PtrArray<const char> mVariationName;
-    sead::PtrArray<const char> mVariationValue;
-    sead::Buffer<u8> _40; // No idea buffer of what
-    sead::Buffer<u8> _48; // ^^
+    const std::string* mSourceText;
+    std::string* mRawText;
+    PtrArray<const char> mMacroName;
+    PtrArray<const char> mMacroValue;
+    PtrArray<const char> mVariationName;
+    PtrArray<const char> mVariationValue;
+    Buffer<u8> _40; // No idea buffer of what
+    Buffer<u8> _48; // ^^
 };
 static_assert(sizeof(ShaderCompileInfo) == 0x54, "agl::ShaderCompileInfo size mismatch");
 

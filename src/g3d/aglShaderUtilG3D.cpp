@@ -6,13 +6,13 @@
 
 namespace agl { namespace g3d {
 
-void ShaderUtilG3D::setMatBlockAndShaderParamOffs(nw::g3d::res::ResFile* p_res_file, const ShaderProgramArchive* shader_archive, const sead::SafeString& mat_block_name)
+void ShaderUtilG3D::setMatBlockAndShaderParamOffs(nw::g3d::res::ResFile* p_res_file, const ShaderProgramArchive* shader_archive, const char* mat_block_name)
 {
     for (s32 idx_model = 0, num_model = p_res_file->GetModelCount(); idx_model < num_model; idx_model++)
         setMatBlockAndShaderParamOffs_(p_res_file->GetModel(idx_model), shader_archive, mat_block_name);
 }
 
-void ShaderUtilG3D::setMatBlockAndShaderParamOffs_(nw::g3d::res::ResModel* p_res_mdl, const ShaderProgramArchive* shader_archive, const sead::SafeString& mat_block_name)
+void ShaderUtilG3D::setMatBlockAndShaderParamOffs_(nw::g3d::res::ResModel* p_res_mdl, const ShaderProgramArchive* shader_archive, const char* mat_block_name)
 {
     for (s32 idx_material = 0, num_material = p_res_mdl->GetMaterialCount(); idx_material < num_material; idx_material++)
     {
@@ -21,14 +21,14 @@ void ShaderUtilG3D::setMatBlockAndShaderParamOffs_(nw::g3d::res::ResModel* p_res
         if (!p_res_mat->GetShaderAssign() ||
             !p_res_mat->GetShaderAssign()->GetShaderArchiveName() ||
             !p_res_mat->GetShaderAssign()->GetShadingModelName() ||
-            !shader_archive->getName().isEqual(p_res_mat->GetShaderAssign()->GetShaderArchiveName()))
+            std::strcmp(shader_archive->getName(), p_res_mat->GetShaderAssign()->GetShaderArchiveName()) != 0)
         {
             continue;
         }
 
         for (s32 idx_program = 0, num_program = shader_archive->getShaderProgramNum(); idx_program < num_program; idx_program++)
         {
-            if (!shader_archive->getShaderProgram(idx_program).getName().isEqual(p_res_mat->GetShaderAssign()->GetShadingModelName()))
+            if (std::strcmp(shader_archive->getShaderProgram(idx_program).getName(), p_res_mat->GetShaderAssign()->GetShadingModelName()) != 0)
                 continue;
 
             const ShaderProgram& shader_program = shader_archive->getShaderProgram(idx_program);

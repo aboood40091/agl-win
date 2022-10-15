@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/aglShaderLocation.h>
-#include <heap/seadHeap.h>
 
 #include <nw/g3d/fnd/g3d_GfxObject.h>
 #include <nw/g3d/res/g3d_ResMaterial.h>
@@ -28,18 +27,18 @@ class ModelShaderAttribute
         }
 
         s32 mIndex;
-        sead::SafeString mName;
+        const char* mName;
         s16 mLocation;
 
         friend class ModelShaderAttribute;
     };
-    static_assert(sizeof(Attribute) == 0x10, "agl::g3d::ModelShaderAttribute::Attribute size mismatch");
+  //static_assert(sizeof(Attribute) == 0x10, "agl::g3d::ModelShaderAttribute::Attribute size mismatch");
 
 public:
     ModelShaderAttribute();
     ~ModelShaderAttribute();
 
-    void create(sead::Heap* heap);
+    void create();
     void clear();
 
     void bind(const nw::g3d::res::ResMaterial* p_res_mat, const nw::g3d::res::ResShape* p_res_shp, const ShaderProgram* p_program, bool use_res_assign, bool use_shader_symbol_id);
@@ -54,7 +53,7 @@ public:
 private:
     u8 _0;
     u8 mVertexBufferNum;
-    const nw::g3d::fnd::GfxBuffer* mpVertexBuffer[16]; // sead::UnsafeArray
+    const nw::g3d::fnd::GfxBuffer* mpVertexBuffer[16]; // UnsafeArray
     nw::g3d::fnd::GfxFetchShader mFetchShader;
 };
 static_assert(sizeof(ModelShaderAttribute) == 0x6C, "agl::g3d::ModelShaderAttribute size mismatch");
@@ -76,7 +75,7 @@ public:
     ModelShaderAttribute& getAttribute() { return mAttribute; }
     const ModelShaderAttribute& getAttribute() const { return mAttribute; }
 
-    void create(sead::Heap* heap);
+    void create();
 
     void bind(const nw::g3d::res::ResMaterial* p_res_mat, const ShaderProgram* p_program, bool use_res_assign, bool use_shader_symbol_id);
     void bindShaderResAssign(const nw::g3d::res::ResMaterial* p_res_mat, const nw::g3d::res::ResShape* p_res_shp, const ShaderProgram* p_program, const char* = "Mat");
@@ -94,8 +93,8 @@ private:
 private:
     const ShaderProgram* mpProgram;
     UniformBlockLocation mUniformBlockLocation;
-    SamplerLocation mSamplerLocation[16];       // sead::UnsafeArray
-    const nw::g3d::res::ResSampler* mpResSampler[16]; // sead::UnsafeArray
+    SamplerLocation mSamplerLocation[16];       // UnsafeArray
+    const nw::g3d::res::ResSampler* mpResSampler[16]; // UnsafeArray
     u8 mSamplerNum;
     ModelShaderAttribute mAttribute;
 };

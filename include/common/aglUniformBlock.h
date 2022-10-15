@@ -1,8 +1,12 @@
 #pragma once
 
 #include <common/aglShaderLocation.h>
-#include <heap/seadHeap.h>
-#include <math/seadVector.h>
+#include <math/rio_Vector.h>
+#include <misc/rio_BitFlag.h>
+
+#if RIO_IS_WIN
+#include <gpu/rio_UniformBlock.h>
+#endif // RIO_IS_WIN
 
 namespace agl {
 
@@ -57,10 +61,10 @@ public:
     UniformBlock();
     virtual ~UniformBlock();
 
-    void startDeclare(s32 num, sead::Heap* heap);
+    void startDeclare(s32 num);
     void declare(Type type, s32 num);
     void declare(const UniformBlock& block);
-    void create(sead::Heap* heap);
+    void create();
     void destroy();
     void dcbz() const;
     void flush(void* p_memory, bool invalidate_gpu) const;
@@ -86,20 +90,20 @@ public:
     void setFloat(void* p_memory, s32 index, const f32* p_data, s32 array_num, s32 array_index = 0) const;
     void setFloat(s32 index, const f32* p_data, s32 array_num, s32 array_index = 0) const;
 
-    void setVector2f(void* p_memory, s32 index, const sead::Vector2f& data, s32 array_index = 0) const;
-    void setVector2f(s32 index, const sead::Vector2f& data, s32 array_index = 0) const;
-    void setVector2f(void* p_memory, s32 index, const sead::Vector2f* p_data, s32 array_num, s32 array_index = 0) const;
-    void setVector2f(s32 index, const sead::Vector2f* p_data, s32 array_num, s32 array_index = 0) const;
+    void setVector2f(void* p_memory, s32 index, const rio::Vector2f& data, s32 array_index = 0) const;
+    void setVector2f(s32 index, const rio::Vector2f& data, s32 array_index = 0) const;
+    void setVector2f(void* p_memory, s32 index, const rio::Vector2f* p_data, s32 array_num, s32 array_index = 0) const;
+    void setVector2f(s32 index, const rio::Vector2f* p_data, s32 array_num, s32 array_index = 0) const;
 
-    void setVector3f(void* p_memory, s32 index, const sead::Vector3f& data, s32 array_index = 0) const;
-    void setVector3f(s32 index, const sead::Vector3f& data, s32 array_index = 0) const;
-    void setVector3f(void* p_memory, s32 index, const sead::Vector3f* p_data, s32 array_num, s32 array_index = 0) const;
-    void setVector3f(s32 index, const sead::Vector3f* p_data, s32 array_num, s32 array_index = 0) const;
+    void setVector3f(void* p_memory, s32 index, const rio::Vector3f& data, s32 array_index = 0) const;
+    void setVector3f(s32 index, const rio::Vector3f& data, s32 array_index = 0) const;
+    void setVector3f(void* p_memory, s32 index, const rio::Vector3f* p_data, s32 array_num, s32 array_index = 0) const;
+    void setVector3f(s32 index, const rio::Vector3f* p_data, s32 array_num, s32 array_index = 0) const;
 
-    void setVector4f(void* p_memory, s32 index, const sead::Vector4f& data, s32 array_index = 0) const;
-    void setVector4f(s32 index, const sead::Vector4f& data, s32 array_index = 0) const;
-    void setVector4f(void* p_memory, s32 index, const sead::Vector4f* p_data, s32 array_num, s32 array_index = 0) const;
-    void setVector4f(s32 index, const sead::Vector4f* p_data, s32 array_num, s32 array_index = 0) const;
+    void setVector4f(void* p_memory, s32 index, const rio::Vector4f& data, s32 array_index = 0) const;
+    void setVector4f(s32 index, const rio::Vector4f& data, s32 array_index = 0) const;
+    void setVector4f(void* p_memory, s32 index, const rio::Vector4f* p_data, s32 array_num, s32 array_index = 0) const;
+    void setVector4f(s32 index, const rio::Vector4f* p_data, s32 array_num, s32 array_index = 0) const;
 
 private:
     void setData_(void* p_memory, s32 index, const void* p_data, s32 array_index, s32 array_num) const;
@@ -113,10 +117,14 @@ private:
 
     Header* mpHeader;
     u8* mCurrentBuffer;
+#if RIO_IS_WIN
+    // Custom
+    rio::UniformBlock* mpUBO;
+#endif // RIO_IS_WIN
     u32 mBlockSize;
-    sead::BitFlag8 mFlag;
+    rio::BitFlag8 mFlag;
 };
-static_assert(sizeof(UniformBlock) == 0x14, "agl::UniformBlock size mismatch");
+//static_assert(sizeof(UniformBlock) == 0x14, "agl::UniformBlock size mismatch");
 
 }
 

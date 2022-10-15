@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/aglShaderEnum.h>
-#include <prim/seadSafeString.h>
 #include <util/common/aglResCommon.h>
 
 namespace agl {
@@ -58,7 +57,7 @@ class ResShaderSymbolArray : public ResArray<ResShaderSymbol>
     AGL_RES_ARRAY(ResShaderSymbolArray)
 
 public:
-    ResShaderSymbol searchResShaderSymbolByID(const sead::SafeString& id) const;
+    ResShaderSymbol searchResShaderSymbolByID(const char* id) const;
 };
 
 typedef ResShaderSymbolArray::DataType ResShaderSymbolArrayData;

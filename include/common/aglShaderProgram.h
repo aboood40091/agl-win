@@ -2,12 +2,17 @@
 
 #include <common/aglDisplayList.h>
 #include <common/aglShaderLocation.h>
-#include <container/seadBuffer.h>
-#include <prim/seadBitFlag.h>
-#include <prim/seadNamable.h>
+#include <container/Buffer.h>
+#include <misc/rio_BitFlag.h>
+#include <misc/Namable.h>
 #include <util/common/aglResShaderSymbol.h>
 #include <util/common/aglResShaderVariation.h>
 #include <util/common/aglShader.h>
+
+#if RIO_IS_WIN
+#include <gpu/rio_Shader.h>
+#include <cafe/gfd.h>
+#endif // RIO_IS_WIN
 
 namespace agl {
 
@@ -38,7 +43,7 @@ public:
         return mDisplayList;
     }
 
-    const sead::SafeString& getName() const
+    const char* getName() const
     {
         return mpSharedData->getName();
     }
@@ -58,21 +63,21 @@ public:
         mpSharedData->mResShaderVariationDefaultArray = array;
     }
 
-    void initialize(const sead::SafeString& name, sead::Heap* heap);
+    void initialize(const char* name);
 
-    void createVariationBuffer(s32 num_variation, sead::Heap* heap);
+    void createVariationBuffer(s32 num_variation);
 
-    void createVariationMacro(s32 index, const sead::SafeString& name, const sead::SafeString& id, s32 num_value, sead::Heap* heap);
-    void setVariationMacroValue(s32 macro_index, s32 value_index, const sead::SafeString& value);
+    void createVariationMacro(s32 index, const char* name, const char* id, s32 num_value);
+    void setVariationMacroValue(s32 macro_index, s32 value_index, const char* value);
 
-    void createVariation(sead::Heap* heap);
+    void createVariation();
 
     ShaderMode activate(ShaderMode current_mode = cShaderMode_Invalid, bool use_dl = true) const;
 
     Shader* getShader(ShaderType type);
     const Shader* getShader(ShaderType type) const;
 
-#ifdef cafe
+#if RIO_IS_CAFE
     GX2VertexShader* getVertexShaderBinary()
     {
         validate_();
@@ -108,7 +113,43 @@ public:
         validate_();
         return mGeometryShader.getBinary();
     }
-#endif // cafe
+#elif RIO_IS_WIN
+    rio::Shader& getShaderRIO()
+    {
+        validate_();
+        return mShader;
+    }
+
+    const rio::Shader& getShaderRIO() const
+    {
+        validate_();
+        return mShader;
+    }
+
+    GX2VertexShader* getVertexShaderBinary()
+    {
+        validate_();
+        return &mGFDFile.mVertexShaders[0];
+    }
+
+    const GX2VertexShader* getVertexShaderBinary() const
+    {
+        validate_();
+        return &mGFDFile.mVertexShaders[0];
+    }
+
+    GX2PixelShader* getFragmentShaderBinary()
+    {
+        validate_();
+        return &mGFDFile.mPixelShaders[0];
+    }
+
+    const GX2PixelShader* getFragmentShaderBinary() const
+    {
+        validate_();
+        return &mGFDFile.mPixelShaders[0];
+    }
+#endif
 
     u32 setUpAllVariation(); // I don't know the actual return type
     void reserveSetUpAllVariation();
@@ -127,7 +168,7 @@ public:
         return getVariation(index);
     }
 
-    const sead::SafeString& searchVariationMacroName(const sead::SafeString& id) const;
+    const char* searchVariationMacroName(const char* id) const;
 
     bool getCompileEnable() const
     {
@@ -177,16 +218,16 @@ private:
         VariationBuffer();
         virtual ~VariationBuffer();
 
-        void initialize(ShaderProgram* program, s32 num_variation, sead::Heap* heap);
+        void initialize(ShaderProgram* program, s32 num_variation);
 
-        void createMacro(s32 index, const sead::SafeString& name, const sead::SafeString& id, s32 num_value, sead::Heap* heap);
-        void setMacroValue(s32 macro_index, s32 value_index, const sead::SafeString& value);
+        void createMacro(s32 index, const char* name, const char* id, s32 num_value);
+        void setMacroValue(s32 macro_index, s32 value_index, const char* value);
 
         s32 searchShaderProgramIndex(s32 macro_num, const char* const* macro_array, const char* const* value_array, s32 index) const;
 
-        const sead::SafeString& searchMacroName(const sead::SafeString& id) const;
+        const char* searchMacroName(const char* id) const;
 
-        void create(sead::Heap* heap);
+        void create();
 
         s32 getMacroAndValueArray(s32 index, const char** macro_array, const char** value_array) const;
         s32 getMacroValueIndexArray(s32 index, s32* value_index_array) const;
@@ -194,31 +235,31 @@ private:
 
         class Macro
         {
-            sead::SafeString mName;
-            sead::SafeString mID;
-            sead::Buffer<sead::SafeString> mValue;
+            const char* mName;
+            const char* mID;
+            Buffer<const char*> mValue;
             u16 _18;
 
             friend class VariationBuffer;
         };
-        static_assert(sizeof(Macro) == 0x1C, "agl::ShaderProgram::VariationBuffer::Macro size mismatch");
+      //static_assert(sizeof(Macro) == 0x1C, "agl::ShaderProgram::VariationBuffer::Macro size mismatch");
 
         ShaderProgram* mpOriginal;
-        sead::Buffer<ShaderProgram> mProgram;
-        sead::Buffer<Macro> mMacro;
+        Buffer<ShaderProgram> mProgram;
+        Buffer<Macro> mMacro;
 
         friend class ShaderProgram;
         friend class SharedData;
     };
     static_assert(sizeof(VariationBuffer) == 0x18, "agl::ShaderProgram::VariationBuffer size mismatch");
 
-    class SharedData : public sead::INamable
+    class SharedData : public INamable
     {
         ShaderProgram* mpOriginal;
         VariationBuffer* mpVariationBuffer;
         u32 _10;
         ResShaderVariationArray mResShaderVariationDefaultArray; // Variation macro defaults
-        ResShaderSymbolArray mResShaderSymbolArray[cShaderSymbolType_Num]; // sead::SafeArray<ResShaderSymbolArray, cShaderSymbolType_Num>
+        ResShaderSymbolArray mResShaderSymbolArray[cShaderSymbolType_Num]; // SafeArray<ResShaderSymbolArray, cShaderSymbolType_Num>
         u32 _28;
 
         friend class ShaderProgram;
@@ -229,18 +270,24 @@ private:
     const VariationBuffer* getVariation_() const { return mpSharedData->mpVariationBuffer; }
 
 private:
-    mutable sead::BitFlag8 mFlag;
+    mutable rio::BitFlag8 mFlag;
     u16 mVariationID;
     mutable DisplayList mDisplayList;
-    mutable sead::Buffer<AttributeLocation> mAttributeLocation;
-    mutable sead::Buffer<UniformLocation> mUniformLocation;
-    mutable sead::Buffer<UniformBlockLocation> mUniformBlockLocation;
-    mutable sead::Buffer<SamplerLocation> mSamplerLocation;
+    mutable Buffer<AttributeLocation> mAttributeLocation;
+    mutable Buffer<UniformLocation> mUniformLocation;
+    mutable Buffer<UniformBlockLocation> mUniformBlockLocation;
+    mutable Buffer<SamplerLocation> mSamplerLocation;
     VertexShader mVertexShader;
     FragmentShader mFragmentShader;
     GeometryShader mGeometryShader;
     SharedData* mpSharedData;
+
+#if RIO_IS_WIN
+    // Custom
+    mutable rio::Shader mShader;
+    mutable GFDFile mGFDFile;
+#endif // RIO_IS_WIN
 };
-static_assert(sizeof(ShaderProgram) == 0x60, "agl::ShaderProgram size mismatch");
+//static_assert(sizeof(ShaderProgram) == 0x60, "agl::ShaderProgram size mismatch");
 
 }

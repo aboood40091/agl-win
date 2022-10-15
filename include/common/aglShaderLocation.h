@@ -1,6 +1,6 @@
 #pragma once
 
-#include <prim/seadNamable.h>
+#include <misc/Namable.h>
 
 namespace agl {
 
@@ -34,21 +34,21 @@ static_assert(sizeof(ShaderLocation) == 6, "agl::ShaderLocation size mismatch");
 
 class ShaderProgram;
 
-class UniformLocation : public sead::INamable, public ShaderLocation
+class UniformLocation : public INamable, public ShaderLocation
 {
 public:
     UniformLocation()
-        : sead::INamable("Undefined")
+        : INamable("Undefined")
     {
     }
 
-    explicit UniformLocation(const sead::SafeString& name)
-        : sead::INamable(name)
+    explicit UniformLocation(const char* name)
+        : INamable(name)
     {
     }
 
-    UniformLocation(const sead::SafeString& name, const ShaderProgram& program)
-        : sead::INamable(name)
+    UniformLocation(const char* name, const ShaderProgram& program)
+        : INamable(name)
     {
         search(program);
     }
@@ -64,21 +64,21 @@ public:
 };
 static_assert(sizeof(UniformLocation) == 0x10, "agl::UniformLocation size mismatch");
 
-class UniformBlockLocation : public sead::INamable, public ShaderLocation
+class UniformBlockLocation : public INamable, public ShaderLocation
 {
 public:
     UniformBlockLocation()
-        : sead::INamable("Undefined")
+        : INamable("Undefined")
     {
     }
 
-    explicit UniformBlockLocation(const sead::SafeString& name)
-        : sead::INamable(name)
+    explicit UniformBlockLocation(const char* name)
+        : INamable(name)
     {
     }
 
-    UniformBlockLocation(const sead::SafeString& name, const ShaderProgram& program)
-        : sead::INamable(name)
+    UniformBlockLocation(const char* name, const ShaderProgram& program)
+        : INamable(name)
     {
         search(program);
     }
@@ -94,21 +94,21 @@ public:
 };
 static_assert(sizeof(UniformBlockLocation) == 0x10, "agl::UniformBlockLocation size mismatch");
 
-class SamplerLocation : public sead::INamable, public ShaderLocation
+class SamplerLocation : public INamable, public ShaderLocation
 {
 public:
     SamplerLocation()
-        : sead::INamable("Undefined")
+        : INamable("Undefined")
     {
     }
 
-    explicit SamplerLocation(const sead::SafeString& name)
-        : sead::INamable(name)
+    explicit SamplerLocation(const char* name)
+        : INamable(name)
     {
     }
 
-    SamplerLocation(const sead::SafeString& name, const ShaderProgram& program)
-        : sead::INamable(name)
+    SamplerLocation(const char* name, const ShaderProgram& program)
+        : INamable(name)
     {
         search(program);
     }
@@ -124,21 +124,21 @@ public:
 };
 static_assert(sizeof(SamplerLocation) == 0x10, "agl::SamplerLocation size mismatch");
 
-class AttributeLocation : public sead::INamable
+class AttributeLocation : public INamable
 {
 public:
     AttributeLocation()
-        : sead::INamable("Undefined")
+        : INamable("Undefined")
     {
     }
 
-    explicit AttributeLocation(const sead::SafeString& name)
-        : sead::INamable(name)
+    explicit AttributeLocation(const char* name)
+        : INamable(name)
     {
     }
 
-    AttributeLocation(const sead::SafeString& name, const ShaderProgram& program)
-        : sead::INamable(name)
+    AttributeLocation(const char* name, const ShaderProgram& program)
+        : INamable(name)
     {
         search(program);
     }

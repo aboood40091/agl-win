@@ -1,5 +1,5 @@
 #include <common/aglShaderProgram.h>
-#include <container/seadBuffer.h>
+#include <container/Buffer.h>
 #include <g3d/aglModelShaderAssign.h>
 #include <util/common/aglResShaderSymbol.h>
 
@@ -15,26 +15,26 @@ ModelShaderAttribute::ModelShaderAttribute()
 ModelShaderAttribute::~ModelShaderAttribute()
 {
     if (mFetchShader.GetShaderPtr())
-        delete mFetchShader.GetShaderPtr(); // Nintendo forgot to do delete[] again
+        rio::MemUtil::free(mFetchShader.GetShaderPtr());
 }
 
-void ModelShaderAttribute::create(sead::Heap* heap)
+void ModelShaderAttribute::create()
 {
     if (mFetchShader.GetShaderPtr())
-        delete[] mFetchShader.GetShaderPtr();
+        rio::MemUtil::free(mFetchShader.GetShaderPtr());
 
     mFetchShader.SetAttribCount(16);
     mFetchShader.CalcSize();
-    mFetchShader.SetShaderPtr(new (heap, nw::g3d::fnd::GfxFetchShader::SHADER_ALIGNMENT) u8[mFetchShader.GetShaderSize()]);
+    mFetchShader.SetShaderPtr(rio::MemUtil::alloc(mFetchShader.GetShaderSize(), nw::g3d::fnd::GfxFetchShader::SHADER_ALIGNMENT));
 }
 
 void ModelShaderAttribute::clear()
 {
     mVertexBufferNum = 0;
 
-    // TODO: sead::SafeArray
+    // TODO: SafeArray
     {
-        typedef sead::Buffer<const nw::g3d::fnd::GfxBuffer*>::iterator _Iterator;
+        typedef Buffer<const nw::g3d::fnd::GfxBuffer*>::iterator _Iterator;
         for (_Iterator it = _Iterator(mpVertexBuffer), it_end = _Iterator(mpVertexBuffer, 16); it != it_end; ++it)
             *it = NULL;
     }
@@ -42,8 +42,8 @@ void ModelShaderAttribute::clear()
 
 void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, const nw::g3d::res::ResShape* p_res_shp, const ShaderProgram* p_program, bool use_res_assign, bool use_shader_symbol_id)
 {
-    // SEAD_ASSERT(p_res_mat != nullptr);
-    // SEAD_ASSERT(p_res_shp != nullptr);
+    RIO_ASSERT(p_res_mat != nullptr);
+    RIO_ASSERT(p_res_shp != nullptr);
 
     const nw::g3d::res::ResShaderAssign* p_res_shader_assign;
     if (use_res_assign)
@@ -52,7 +52,7 @@ void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, cons
         p_res_shader_assign = NULL;
 
     const ResShaderSymbolArray& symbol_array = p_program->getResShaderSymbolArray(cShaderSymbolType_Attribute);
-    Attribute attribute[16]; // sead::UnsafeArray<Attribute, 16>
+    Attribute attribute[16]; // UnsafeArray<Attribute, 16>
     s32 attribute_num = 0;
     for (ResShaderSymbolArray::constIterator it = symbol_array.begin(), it_end = symbol_array.end(); it != it_end; ++it)
     {
@@ -92,9 +92,9 @@ void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, cons
 
     const nw::g3d::res::ResVertex* p_res_vtx = p_res_shp->GetVertex();
 
-// void ModelShaderAttribute::bind_(const nw::g3d::res::ResVertex* p_res_vtx, const sead::UnsafeArray<Attribute, 16>& attribute, s32 attribute_num)
+// void ModelShaderAttribute::bind_(const nw::g3d::res::ResVertex* p_res_vtx, const UnsafeArray<Attribute, 16>& attribute, s32 attribute_num)
 {
-    // SEAD_ASSERT(p_res_vtx != nullptr);
+    RIO_ASSERT(p_res_vtx != nullptr);
 
     mVertexBufferNum = 0;
 
@@ -163,9 +163,9 @@ ModelShaderAssign::~ModelShaderAssign()
 {
 }
 
-void ModelShaderAssign::create(sead::Heap* heap)
+void ModelShaderAssign::create()
 {
-    mAttribute.create(heap);
+    mAttribute.create();
 }
 
 void ModelShaderAssign::clear_()
@@ -173,9 +173,9 @@ void ModelShaderAssign::clear_()
     mAttribute.clear();
     mSamplerNum = 0;
 
-    // TODO: sead::SafeArray
+    // TODO: SafeArray
     {
-        typedef sead::Buffer<const nw::g3d::res::ResSampler*>::iterator _Iterator;
+        typedef Buffer<const nw::g3d::res::ResSampler*>::iterator _Iterator;
         for (_Iterator it = _Iterator(mpResSampler), it_end = _Iterator(mpResSampler, 16); it != it_end; ++it)
             *it = NULL;
     }

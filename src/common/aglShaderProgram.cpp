@@ -3,8 +3,14 @@
 #include <detail/aglFileIOMgr.h>
 #include <detail/aglGX2.h>
 #include <detail/aglPrivateResource.h>
-#include <gfx/seadGraphics.h>
+//#include <gfx/seadGraphics.h>
 #include <util/common/aglShaderCompileInfo.h>
+
+#include <cstring>
+
+#if RIO_IS_WIN
+#include <graphics/win/ShaderUtil.h>
+#endif // RIO_IS_WIN
 
 namespace agl {
 
@@ -44,44 +50,44 @@ ShaderProgram::~ShaderProgram()
     }
 }
 
-void ShaderProgram::initialize(const sead::SafeString& name, sead::Heap* heap)
+void ShaderProgram::initialize(const char* name)
 {
-    mpSharedData = new (heap) SharedData();
+    mpSharedData = new SharedData();
     mpSharedData->mpOriginal = this;
     mpSharedData->mpVariationBuffer = NULL;
     mpSharedData->_10 = 0;
     mpSharedData->setName(name);
     mpSharedData->_28 = 0;
 
-    // TODO: sead::SafeArray
+    // TODO: SafeArray
     {
-        typedef sead::Buffer<ResShaderSymbolArray>::iterator _Iterator;
+        typedef Buffer<ResShaderSymbolArray>::iterator _Iterator;
         for (_Iterator it = _Iterator(mpSharedData->mResShaderSymbolArray), it_end = _Iterator(mpSharedData->mResShaderSymbolArray, cShaderSymbolType_Num); it != it_end; ++it)
             *it = NULL;
     }
 }
 
-void ShaderProgram::createVariationBuffer(s32 num_variation, sead::Heap* heap)
+void ShaderProgram::createVariationBuffer(s32 num_variation)
 {
-    mpSharedData->mpVariationBuffer = new (heap) VariationBuffer();
-    mpSharedData->mpVariationBuffer->initialize(this, num_variation, heap);
+    mpSharedData->mpVariationBuffer = new VariationBuffer();
+    mpSharedData->mpVariationBuffer->initialize(this, num_variation);
 }
 
-void ShaderProgram::createVariationMacro(s32 index, const sead::SafeString& name, const sead::SafeString& id, s32 num_value, sead::Heap* heap)
+void ShaderProgram::createVariationMacro(s32 index, const char* name, const char* id, s32 num_value)
 {
-    mpSharedData->mpVariationBuffer->createMacro(index, name, id, num_value, heap);
+    mpSharedData->mpVariationBuffer->createMacro(index, name, id, num_value);
 }
 
-void ShaderProgram::setVariationMacroValue(s32 macro_index, s32 value_index, const sead::SafeString& value)
+void ShaderProgram::setVariationMacroValue(s32 macro_index, s32 value_index, const char* value)
 {
     mpSharedData->mpVariationBuffer->setMacroValue(macro_index, value_index, value);
 }
 
-void ShaderProgram::createVariation(sead::Heap* heap)
+void ShaderProgram::createVariation()
 {
-    mpSharedData->mpVariationBuffer->create(heap);
+    mpSharedData->mpVariationBuffer->create();
 
-    for (sead::Buffer<ShaderProgram>::iterator it = mpSharedData->mpVariationBuffer->mProgram.begin(), it_end = mpSharedData->mpVariationBuffer->mProgram.end(); it != it_end; ++it)
+    for (Buffer<ShaderProgram>::iterator it = mpSharedData->mpVariationBuffer->mProgram.begin(), it_end = mpSharedData->mpVariationBuffer->mProgram.end(); it != it_end; ++it)
     {
         it->mpSharedData = mpSharedData;
         it->mVariationID = it.getIndex() + 1;
@@ -90,6 +96,7 @@ void ShaderProgram::createVariation(sead::Heap* heap)
 
 ShaderMode ShaderProgram::activate(ShaderMode current_mode, bool use_dl) const
 {
+#if RIO_IS_CAFE
     ShaderMode mode = getGeometryShaderBinary()
         ? cShaderMode_GeometryShader
         : mVertexShader.getShaderMode();
@@ -101,6 +108,7 @@ ShaderMode ShaderProgram::activate(ShaderMode current_mode, bool use_dl) const
 
     if (current_mode == cShaderMode_GeometryShader)
         driver::GX2Resource::instance()->setGeometryShaderRingBuffer();
+#endif // RIO_IS_CAFE
 
     if (use_dl && !mDisplayList.isEmpty())
         mDisplayList.call();
@@ -149,7 +157,7 @@ u32 ShaderProgram::setUpAllVariation()
         ret = mpSharedData->mpVariationBuffer->mpOriginal->validate_();
         if (ret == 0)
         {
-            for (sead::Buffer<ShaderProgram>::iterator it = mpSharedData->mpVariationBuffer->mProgram.begin(), it_end = mpSharedData->mpVariationBuffer->mProgram.end(); it != it_end; ++it)
+            for (Buffer<ShaderProgram>::iterator it = mpSharedData->mpVariationBuffer->mProgram.begin(), it_end = mpSharedData->mpVariationBuffer->mProgram.end(); it != it_end; ++it)
             {
                 ret = it->validate_();
                 if (ret != 0)
@@ -170,7 +178,7 @@ void ShaderProgram::reserveSetUpAllVariation()
     if (mpSharedData->mpVariationBuffer)
     {
         mpSharedData->mpVariationBuffer->mpOriginal->mFlag.set(2);
-        for (sead::Buffer<ShaderProgram>::iterator it = mpSharedData->mpVariationBuffer->mProgram.begin(), it_end = mpSharedData->mpVariationBuffer->mProgram.end(); it != it_end; ++it)
+        for (Buffer<ShaderProgram>::iterator it = mpSharedData->mpVariationBuffer->mProgram.begin(), it_end = mpSharedData->mpVariationBuffer->mProgram.end(); it != it_end; ++it)
             it->mFlag.set(2);
     }
     else
@@ -230,42 +238,43 @@ const ShaderProgram* ShaderProgram::getVariation(s32 index) const
     return &variation_buffer->mProgram[index - 1];
 }
 
-const sead::SafeString& ShaderProgram::searchVariationMacroName(const sead::SafeString& id) const
+const char* ShaderProgram::searchVariationMacroName(const char* id) const
 {
     VariationBuffer* variation_buffer = mpSharedData->mpVariationBuffer;
     if (!variation_buffer)
-        return sead::SafeString::cEmptyString;
+        return "";
 
     return variation_buffer->searchMacroName(id);
 }
 
 void ShaderProgram::updateAttributeLocation() const
 {
-    for (sead::Buffer<AttributeLocation>::iterator it = mAttributeLocation.begin(), it_end = mAttributeLocation.end(); it != it_end; ++it)
+    for (Buffer<AttributeLocation>::iterator it = mAttributeLocation.begin(), it_end = mAttributeLocation.end(); it != it_end; ++it)
         it->search(*this);
 }
 
 void ShaderProgram::updateUniformLocation() const
 {
-    for (sead::Buffer<UniformLocation>::iterator it = mUniformLocation.begin(), it_end = mUniformLocation.end(); it != it_end; ++it)
+    for (Buffer<UniformLocation>::iterator it = mUniformLocation.begin(), it_end = mUniformLocation.end(); it != it_end; ++it)
         it->search(*this);
 }
 
 void ShaderProgram::updateUniformBlockLocation() const
 {
-    for (sead::Buffer<UniformBlockLocation>::iterator it = mUniformBlockLocation.begin(), it_end = mUniformBlockLocation.end(); it != it_end; ++it)
+    for (Buffer<UniformBlockLocation>::iterator it = mUniformBlockLocation.begin(), it_end = mUniformBlockLocation.end(); it != it_end; ++it)
         it->search(*this);
 }
 
 void ShaderProgram::updateSamplerLocation() const
 {
-    for (sead::Buffer<SamplerLocation>::iterator it = mSamplerLocation.begin(), it_end = mSamplerLocation.end(); it != it_end; ++it)
+    for (Buffer<SamplerLocation>::iterator it = mSamplerLocation.begin(), it_end = mSamplerLocation.end(); it != it_end; ++it)
         it->search(*this);
 }
 
 void ShaderProgram::dump() const
 {
-#ifdef cafe
+/*
+#if RIO_IS_CAFE
     sead::FormatFixedSafeString<1024> cmd_arg(
         "File = %s, WaitEnd = True, WindowStyle = Hidden",
         "%AGL_ROOT%/tools/bin/Win32/gshCompile_tmp.bat"
@@ -325,7 +334,8 @@ void ShaderProgram::dump() const
 
         delete analyze_str;
     }
-#endif // cafe
+#endif // RIO_IS_CAFE
+*/
 }
 
 u32 ShaderProgram::validate_() const
@@ -362,8 +372,45 @@ u32 ShaderProgram::forceValidate_() const
     {
         if (mFlag.isOn(1))
         {
-            // compileGX2_(); <--- No idea why this is no longer here
-            //                     Compiles and loads sharcfb from host pc
+#if RIO_IS_WIN
+          //RIO_LOG("Load shader start\n");
+
+            mShader.unload();
+
+            static const std::string sSavePath[cShaderType_Num + 1] = {
+                "shaders/agl_shader_temp.vert",
+                "shaders/agl_shader_temp.frag",
+                "shaders/agl_shader_temp.geom",
+                "shaders/agl_shader_temp.gsh"
+            };
+
+            [[maybe_unused]] bool compile_ret = ShaderUtil::compileSource(
+                sSavePath[cShaderType_Num],
+                sSavePath[cShaderType_Vertex],
+                sSavePath[cShaderType_Fragment],
+                sSavePath[cShaderType_Geometry]
+            );
+
+            RIO_ASSERT(compile_ret);
+
+            static const std::string sDecompPath[cShaderType_Num - 1] = {
+                "shaders/agl_shader_temp_out.vert",
+                "shaders/agl_shader_temp_out.frag"
+            };
+
+            [[maybe_unused]] bool decompile_ret = ShaderUtil::decompileGsh(
+                sSavePath[cShaderType_Num],
+                sDecompPath[cShaderType_Vertex],
+                sDecompPath[cShaderType_Fragment],
+                &mGFDFile
+            );
+
+            RIO_ASSERT(decompile_ret);
+
+            mShader.load("agl_shader_temp_out");
+
+          //RIO_LOG("    Load shader end\n");
+#endif // RIO_IS_WIN
             dump();
 
             if (mDisplayList.getBuffer() != NULL)
@@ -384,7 +431,7 @@ u32 ShaderProgram::forceValidate_() const
         {
             if (mDisplayList.getBuffer() != NULL)
             {
-                sead::Graphics::instance()->lockDrawContext();
+              //sead::Graphics::instance()->lockDrawContext();
                 {
                     mDisplayList.beginDisplayList();
                     {
@@ -392,7 +439,7 @@ u32 ShaderProgram::forceValidate_() const
                     }
                     mDisplayList.endDisplayList();
                 }
-                sead::Graphics::instance()->unlockDrawContext();
+              //sead::Graphics::instance()->unlockDrawContext();
             }
         }
 
@@ -435,8 +482,8 @@ void ShaderProgram::setUpForVariation_() const
 
         for (s32 i_variation_type = 0; i_variation_type < num_macro_value; i_variation_type++)
         {
-            // SEAD_ASSERT(i_variation_type < cVariationMacroMax);
-            // SEAD_ASSERT(i_variation_type < cVariationValueMax);
+            RIO_ASSERT(i_variation_type < cVariationMacroMax);
+            RIO_ASSERT(i_variation_type < cVariationValueMax);
             compile_info->pushBackVariation(macro_array[i_variation_type], value_array[i_variation_type]);
         }
 
@@ -446,7 +493,7 @@ void ShaderProgram::setUpForVariation_() const
 
 void ShaderProgram::setShaderGX2_() const
 {
-#ifdef cafe
+#if RIO_IS_CAFE
     if (mVertexShader.getBinary())
         GX2SetVertexShader(mVertexShader.getBinary());
 
@@ -455,7 +502,15 @@ void ShaderProgram::setShaderGX2_() const
 
     if (mGeometryShader.getBinary())
         GX2SetGeometryShader(mGeometryShader.getBinary());
-#endif // cafe
+#elif RIO_IS_WIN
+    mShader.bind();
+
+    mShader.setUniform(rio::BaseVec4f{ 1.0f, -1.0f, 0.0f, 0.0f }, mShader.getVertexUniformLocation("VS_PUSH.posMulAdd"), u32(-1));
+    mShader.setUniform(rio::BaseVec4f{ 0.0f,  1.0f, 1.0f, 1.0f }, mShader.getVertexUniformLocation("VS_PUSH.zSpaceMul"), u32(-1));
+    mShader.setUniform(1.0f,                                      mShader.getVertexUniformLocation("VS_PUSH.pointSize"), u32(-1));
+
+    mShader.setUniform(0u, u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.needsPremultiply"));
+#endif
 }
 
 void ShaderProgram::cleanUp()
@@ -471,7 +526,7 @@ void ShaderProgram::destroyAttribute()
     VariationBuffer* variation_buffer = mpSharedData->mpVariationBuffer;
     if (variation_buffer)
     {
-        for (sead::Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
+        for (Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
             it->mAttributeLocation.freeBuffer();
     }
 }
@@ -483,7 +538,7 @@ void ShaderProgram::destroyUniform()
     VariationBuffer* variation_buffer = mpSharedData->mpVariationBuffer;
     if (variation_buffer)
     {
-        for (sead::Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
+        for (Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
             it->mUniformLocation.freeBuffer();
     }
 }
@@ -495,7 +550,7 @@ void ShaderProgram::destroyUniformBlock()
     VariationBuffer* variation_buffer = mpSharedData->mpVariationBuffer;
     if (variation_buffer)
     {
-        for (sead::Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
+        for (Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
             it->mUniformBlockLocation.freeBuffer();
     }
 }
@@ -507,7 +562,7 @@ void ShaderProgram::destroySamplerLocation()
     VariationBuffer* variation_buffer = mpSharedData->mpVariationBuffer;
     if (variation_buffer)
     {
-        for (sead::Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
+        for (Buffer<ShaderProgram>::iterator it = variation_buffer->mProgram.begin(), it_end = variation_buffer->mProgram.end(); it != it_end; ++it)
             it->mSamplerLocation.freeBuffer();
     }
 }
@@ -522,28 +577,28 @@ ShaderProgram::VariationBuffer::~VariationBuffer()
 {
     mProgram.freeBuffer();
 
-    for (sead::Buffer<Macro>::iterator it = mMacro.begin(), it_end = mMacro.end(); it != it_end; ++it)
+    for (Buffer<Macro>::iterator it = mMacro.begin(), it_end = mMacro.end(); it != it_end; ++it)
         it->mValue.freeBuffer();
 
     mMacro.freeBuffer();
 }
 
-void ShaderProgram::VariationBuffer::initialize(ShaderProgram* program, s32 num_variation, sead::Heap* heap)
+void ShaderProgram::VariationBuffer::initialize(ShaderProgram* program, s32 num_variation)
 {
     mpOriginal = program;
-    mMacro.allocBuffer(num_variation, heap);
+    mMacro.allocBuffer(num_variation);
 }
 
-void ShaderProgram::VariationBuffer::createMacro(s32 index, const sead::SafeString& name, const sead::SafeString& id, s32 num_value, sead::Heap* heap)
+void ShaderProgram::VariationBuffer::createMacro(s32 index, const char* name, const char* id, s32 num_value)
 {
     Macro& macro = mMacro[index];
     macro.mName = name;
     macro.mID = id;
     macro._18 = 1;
-    macro.mValue.allocBuffer(num_value, heap);
+    macro.mValue.allocBuffer(num_value);
 }
 
-void ShaderProgram::VariationBuffer::setMacroValue(s32 macro_index, s32 value_index, const sead::SafeString& value)
+void ShaderProgram::VariationBuffer::setMacroValue(s32 macro_index, s32 value_index, const char* value)
 {
     mMacro[macro_index].mValue[value_index] = value;
 }
@@ -554,7 +609,7 @@ s32 ShaderProgram::VariationBuffer::searchShaderProgramIndex(s32 macro_num, cons
 
     if (index == -1)
     {
-        for (sead::Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
+        for (Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
             value_index_array[itr_type.getIndex()] = 0;
     }
     else
@@ -562,17 +617,17 @@ s32 ShaderProgram::VariationBuffer::searchShaderProgramIndex(s32 macro_num, cons
         getMacroValueIndexArray(index, value_index_array);
     }
 
-    for (sead::Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
+    for (Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
     {
         for (s32 idx_macro = 0; idx_macro < macro_num; idx_macro++)
         {
             const char* macro_name = macro_array[idx_macro];
-            if (itr_type->mName.isEqual(macro_name))
+            if (std::strcmp(itr_type->mName, macro_name) == 0)
             {
                 const char* macro_value = value_array[idx_macro];
-                for (sead::Buffer<sead::SafeString>::constIterator itr_value = itr_type->mValue.begin(), value_it_end = itr_type->mValue.end(); itr_value != value_it_end; ++itr_value)
+                for (Buffer<const char*>::constIterator itr_value = itr_type->mValue.begin(), value_it_end = itr_type->mValue.end(); itr_value != value_it_end; ++itr_value)
                 {
-                    if (itr_value->isEqual(macro_value))
+                    if (std::strcmp(*itr_value, macro_value) == 0)
                     {
                         value_index_array[itr_type.getIndex()] = itr_value.getIndex();
                         break;
@@ -586,20 +641,20 @@ s32 ShaderProgram::VariationBuffer::searchShaderProgramIndex(s32 macro_num, cons
     return calcVariationIndex(value_index_array);
 }
 
-const sead::SafeString& ShaderProgram::VariationBuffer::searchMacroName(const sead::SafeString& id) const
+const char* ShaderProgram::VariationBuffer::searchMacroName(const char* id) const
 {
-    for (sead::Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
-        if (id.isEqual(itr_type->mID))
+    for (Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
+        if (std::strcmp(id, itr_type->mID) == 0)
             return itr_type->mName;
 
-    return sead::SafeString::cEmptyString;
+    return "";
 }
 
-void ShaderProgram::VariationBuffer::create(sead::Heap* heap)
+void ShaderProgram::VariationBuffer::create()
 {
     s32 num_variation = 1;
 
-    for (sead::Buffer<Macro>::iterator it = mMacro.begin(), it_end = mMacro.end(); it != it_end; ++it)
+    for (Buffer<Macro>::iterator it = mMacro.begin(), it_end = mMacro.end(); it != it_end; ++it)
     {
         for (s32 i = it.getIndex() + 1; i < mMacro.size(); i++)
             it->_18 *= mMacro[i].mValue.size();
@@ -607,23 +662,23 @@ void ShaderProgram::VariationBuffer::create(sead::Heap* heap)
         num_variation *= it->mValue.size();
     }
 
-    mProgram.allocBuffer(num_variation - 1, heap);
+    mProgram.allocBuffer(num_variation - 1);
 }
 
 s32 ShaderProgram::VariationBuffer::getMacroAndValueArray(s32 index, const char** macro_array, const char** value_array) const
 {
-    // SEAD_ASSERT(macro_array != nullptr);
-    // SEAD_ASSERT(value_array != nullptr);
+    RIO_ASSERT(macro_array != nullptr);
+    RIO_ASSERT(value_array != nullptr);
 
-    for (sead::Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
+    for (Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
     {
         s32 value_index; // = 0;
         // if (itr_type->_18 != 0)
             value_index = index / itr_type->_18;
-        // SEAD_ASSERT(itr_type.getIndex() < cVariationMacroMax);
-        // SEAD_ASSERT(itr_type.getIndex() < cVariationValueMax);
-        macro_array[itr_type.getIndex()] = itr_type->mName.cstr();
-        value_array[itr_type.getIndex()] = itr_type->mValue[value_index].cstr();
+        RIO_ASSERT(itr_type.getIndex() < cVariationMacroMax);
+        RIO_ASSERT(itr_type.getIndex() < cVariationValueMax);
+        macro_array[itr_type.getIndex()] = itr_type->mName;
+        value_array[itr_type.getIndex()] = itr_type->mValue[value_index];
 
         index -= value_index * itr_type->_18;
     }
@@ -633,7 +688,7 @@ s32 ShaderProgram::VariationBuffer::getMacroAndValueArray(s32 index, const char*
 
 s32 ShaderProgram::VariationBuffer::getMacroValueIndexArray(s32 index, s32* value_index_array) const
 {
-    for (sead::Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
+    for (Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
     {
         s32 value_index; // = 0;
         // if (itr_type->_18 != 0)
@@ -650,7 +705,7 @@ s32 ShaderProgram::VariationBuffer::getMacroValueIndexArray(s32 index, s32* valu
 s32 ShaderProgram::VariationBuffer::calcVariationIndex(const s32* value_index_array) const
 {
     s32 index = 0;
-    for (sead::Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
+    for (Buffer<Macro>::constIterator itr_type = mMacro.begin(), it_end = mMacro.end(); itr_type != it_end; ++itr_type)
     {
         s32 value_index = value_index_array[itr_type.getIndex()];
         index += value_index * itr_type->_18;

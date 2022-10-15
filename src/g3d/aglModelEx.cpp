@@ -17,7 +17,7 @@ MaterialEx::~MaterialEx()
     fixUpUBO();
 }
 
-void MaterialEx::init(agl::g3d::ModelEx* p_model, u32 index, sead::Heap* heap)
+void MaterialEx::init(agl::g3d::ModelEx* p_model, u32 index)
 {
     mpModelEx = p_model;
     mpMaterialObj = p_model->GetMaterial(index);
@@ -54,10 +54,10 @@ void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const char*
 
     for (s32 idx_macro = 0; idx_macro < macro_num; idx_macro++)
     {
-        sead::SafeString id = p_res_shader_assign->GetShaderOptionName(idx_macro);
+        const char* id = p_res_shader_assign->GetShaderOptionName(idx_macro);
         const char* value = p_res_shader_assign->GetShaderOption(idx_macro);
 
-        macro_array[idx_macro] = p_program->searchVariationMacroName(id).cstr();
+        macro_array[idx_macro] = p_program->searchVariationMacroName(id);
         value_array[idx_macro] = value;
     }
 
@@ -119,20 +119,20 @@ ModelEx::~ModelEx()
     destroyEx();
 }
 
-void ModelEx::createEx(sead::Heap* heap)
+void ModelEx::createEx()
 {
     const nw::g3d::res::ResModel* p_res_mdl = GetResource();
     s32 shape_num = p_res_mdl->GetShapeCount();
     s32 material_num = p_res_mdl->GetMaterialCount();
 
-    mpShaderAssign = new (heap) ModelShaderAssign[shape_num];
-    mpMaterialEx = new (heap) MaterialEx[material_num];
+    mpShaderAssign = new ModelShaderAssign[shape_num];
+    mpMaterialEx = new MaterialEx[material_num];
 
     for (s32 idx_material = 0; idx_material < material_num; idx_material++)
-        mpMaterialEx[idx_material].init(this, idx_material, heap);
+        mpMaterialEx[idx_material].init(this, idx_material);
 
     for (s32 idx_shape = 0; idx_shape < shape_num; idx_shape++)
-        mpShaderAssign[idx_shape].create(heap);
+        mpShaderAssign[idx_shape].create();
 }
 
 void ModelEx::destroyEx()

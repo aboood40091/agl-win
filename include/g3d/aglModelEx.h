@@ -19,7 +19,7 @@ public:
         return mpMaterialObj;
     }
 
-    void init(ModelEx* p_model, u32 index, sead::Heap* heap);
+    void init(ModelEx* p_model, u32 index);
 
     void bindShaderResAssign(const ShaderProgram* p_program, const char* skin_macro, const char** skin_value_array);
     void bindShader(const ShaderProgram* p_program);
@@ -54,7 +54,7 @@ public:
         return mpMaterialEx[index];
     }
 
-    void createEx(sead::Heap* heap);
+    void createEx();
     void destroyEx();
 
 private:

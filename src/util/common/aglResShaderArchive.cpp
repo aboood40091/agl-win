@@ -1,12 +1,13 @@
-#include <prim/seadEndian.h>
 #include <util/common/aglResShaderArchive.h>
 #include <util/common/aglResShaderVariation.h>
 #include <util/common/aglResShaderSymbol.h>
 #include <util/common/aglShader.h>
 
-#ifdef cafe
+#include <cstring>
+
+#if RIO_IS_CAFE
 #include <cafe.h>
-#endif // cafe
+#endif // RIO_IS_CAFE
 
 static inline void swap32(void* ptr, size_t size)
 {
@@ -15,7 +16,7 @@ static inline void swap32(void* ptr, size_t size)
 
     for (u32 i = 0; i < count; i++)
     {
-        *ptr_u32 = sead::Endian::swap(*ptr_u32);
+        *ptr_u32 = __builtin_bswap32(*ptr_u32);
         ptr_u32++;
     }
 }
@@ -31,7 +32,7 @@ void modifyEndianResSymbolArray(bool is_le, agl::ResShaderSymbolArray symbol_arr
             agl::ModifyEndianU32(is_le, agl::ResShaderSymbol(&(*it)).getDefaultValue(), it->mDefaultValueSize);
 }
 
-#ifdef cafe
+#if RIO_IS_CAFE
 
 template <typename T>
 T* modifyBinaryAndNamePtr(void* base_ptr, T* ptr, s32 num)
@@ -52,7 +53,7 @@ void* modifyBinaryPtr(void* base_ptr, void* ptr)
     return (void*)(uintptr_t(base_ptr) + uintptr_t(ptr));
 }
 
-#endif // cafe
+#endif // RIO_IS_CAFE
 
 }
 
@@ -63,7 +64,7 @@ void ResShaderBinary::modifyBinaryEndian()
     size_t size = 0;
     void* data = NULL;
 
-#ifdef cafe
+#if RIO_IS_CAFE
     switch (ref().mShaderType)
     {
     case cShaderType_Vertex:
@@ -71,11 +72,11 @@ void ResShaderBinary::modifyBinaryEndian()
             GX2VertexShader* vertex_shader = static_cast<GX2VertexShader*>(getData());
             swap32(vertex_shader, sizeof(GX2VertexShader));
 
-            size += vertex_shader->numUniformBlocks * sizeof(GX2UniformBlock) +
-                    vertex_shader->numUniforms * sizeof(GX2UniformVar) +
-                    vertex_shader->numInitialValues * sizeof(GX2UniformInitialValue) +
-                    vertex_shader->numSamplers * sizeof(GX2SamplerVar) +
-                    vertex_shader->numAttribs * sizeof(GX2AttribVar);
+            size += vertex_shader->uniformBlockCount * sizeof(GX2UniformBlock) +
+                    vertex_shader->uniformVarCount * sizeof(GX2UniformVar) +
+                    vertex_shader->initialValueCount * sizeof(GX2UniformInitialValue) +
+                    vertex_shader->samplerVarCount * sizeof(GX2SamplerVar) +
+                    vertex_shader->attribVarCount * sizeof(GX2AttribVar);
 
             data = vertex_shader + 1;
         }
@@ -85,10 +86,10 @@ void ResShaderBinary::modifyBinaryEndian()
             GX2PixelShader* pixel_shader = static_cast<GX2PixelShader*>(getData());
             swap32(pixel_shader, sizeof(GX2PixelShader));
 
-            size += pixel_shader->numUniformBlocks * sizeof(GX2UniformBlock) +
-                    pixel_shader->numUniforms * sizeof(GX2UniformVar) +
-                    pixel_shader->numInitialValues * sizeof(GX2UniformInitialValue) +
-                    pixel_shader->numSamplers * sizeof(GX2SamplerVar);
+            size += pixel_shader->uniformBlockCount * sizeof(GX2UniformBlock) +
+                    pixel_shader->uniformVarCount * sizeof(GX2UniformVar) +
+                    pixel_shader->initialValueCount * sizeof(GX2UniformInitialValue) +
+                    pixel_shader->samplerVarCount * sizeof(GX2SamplerVar);
 
             data = pixel_shader + 1;
         }
@@ -98,35 +99,36 @@ void ResShaderBinary::modifyBinaryEndian()
             GX2GeometryShader* geometry_shader = static_cast<GX2GeometryShader*>(getData());
             swap32(geometry_shader, sizeof(GX2GeometryShader));
 
-            size += geometry_shader->numUniformBlocks * sizeof(GX2UniformBlock) +
-                    geometry_shader->numUniforms * sizeof(GX2UniformVar) +
-                    geometry_shader->numInitialValues * sizeof(GX2UniformInitialValue) +
-                    geometry_shader->numSamplers * sizeof(GX2SamplerVar);
+            size += geometry_shader->uniformBlockCount * sizeof(GX2UniformBlock) +
+                    geometry_shader->uniformVarCount * sizeof(GX2UniformVar) +
+                    geometry_shader->initialValueCount * sizeof(GX2UniformInitialValue) +
+                    geometry_shader->samplerVarCount * sizeof(GX2SamplerVar);
 
             data = geometry_shader + 1;
         }
         break;
     }
-#endif // cafe
+#endif // RIO_IS_CAFE
 
     swap32(data, size);
 }
 
 void ResShaderBinary::setUp()
 {
-#ifdef cafe
+#if RIO_IS_CAFE
     switch (ref().mShaderType)
     {
     case cShaderType_Vertex:
         {
             GX2VertexShader* vertex_shader = static_cast<GX2VertexShader*>(getData());
 
-            vertex_shader->uniformBlocks = modifyBinaryAndNamePtr<GX2UniformBlock>(vertex_shader, vertex_shader->uniformBlocks, vertex_shader->numUniformBlocks);
-            vertex_shader->uniformVars   = modifyBinaryAndNamePtr<GX2UniformVar  >(vertex_shader, vertex_shader->uniformVars,   vertex_shader->numUniforms);
-            vertex_shader->samplerVars   = modifyBinaryAndNamePtr<GX2SamplerVar  >(vertex_shader, vertex_shader->samplerVars,   vertex_shader->numSamplers);
-            vertex_shader->attribVars    = modifyBinaryAndNamePtr<GX2AttribVar   >(vertex_shader, vertex_shader->attribVars,    vertex_shader->numAttribs);
+            vertex_shader->uniformBlocks = modifyBinaryAndNamePtr<GX2UniformBlock>(vertex_shader, vertex_shader->uniformBlocks, vertex_shader->uniformBlockCount);
+            vertex_shader->uniformVars   = modifyBinaryAndNamePtr<GX2UniformVar  >(vertex_shader, vertex_shader->uniformVars,   vertex_shader->uniformVarCount);
+            vertex_shader->samplerVars   = modifyBinaryAndNamePtr<GX2SamplerVar  >(vertex_shader, vertex_shader->samplerVars,   vertex_shader->samplerVarCount);
+            vertex_shader->attribVars    = modifyBinaryAndNamePtr<GX2AttribVar   >(vertex_shader, vertex_shader->attribVars,    vertex_shader->attribVarCount);
 
-            vertex_shader->_loopVars = modifyBinaryPtr(vertex_shader, vertex_shader->_loopVars);
+            vertex_shader->loopVars = static_cast<GX2LoopVar*>(modifyBinaryPtr(vertex_shader, vertex_shader->loopVars));
+
             vertex_shader->shaderPtr = modifyBinaryPtr(vertex_shader, vertex_shader->shaderPtr);
         }
         break;
@@ -134,11 +136,12 @@ void ResShaderBinary::setUp()
         {
             GX2PixelShader* pixel_shader = static_cast<GX2PixelShader*>(getData());
 
-            pixel_shader->uniformBlocks = modifyBinaryAndNamePtr<GX2UniformBlock>(pixel_shader, pixel_shader->uniformBlocks, pixel_shader->numUniformBlocks);
-            pixel_shader->uniformVars   = modifyBinaryAndNamePtr<GX2UniformVar  >(pixel_shader, pixel_shader->uniformVars,   pixel_shader->numUniforms);
-            pixel_shader->samplerVars   = modifyBinaryAndNamePtr<GX2SamplerVar  >(pixel_shader, pixel_shader->samplerVars,   pixel_shader->numSamplers);
+            pixel_shader->uniformBlocks = modifyBinaryAndNamePtr<GX2UniformBlock>(pixel_shader, pixel_shader->uniformBlocks, pixel_shader->uniformBlockCount);
+            pixel_shader->uniformVars   = modifyBinaryAndNamePtr<GX2UniformVar  >(pixel_shader, pixel_shader->uniformVars,   pixel_shader->uniformVarCount);
+            pixel_shader->samplerVars   = modifyBinaryAndNamePtr<GX2SamplerVar  >(pixel_shader, pixel_shader->samplerVars,   pixel_shader->samplerVarCount);
 
-            pixel_shader->_loopVars = modifyBinaryPtr(pixel_shader, pixel_shader->_loopVars);
+            pixel_shader->loopVars = static_cast<GX2LoopVar*>(modifyBinaryPtr(pixel_shader, pixel_shader->loopVars));
+
             pixel_shader->shaderPtr = modifyBinaryPtr(pixel_shader, pixel_shader->shaderPtr);
         }
         break;
@@ -146,17 +149,18 @@ void ResShaderBinary::setUp()
         {
             GX2GeometryShader* geometry_shader = static_cast<GX2GeometryShader*>(getData());
 
-            geometry_shader->uniformBlocks = modifyBinaryAndNamePtr<GX2UniformBlock>(geometry_shader, geometry_shader->uniformBlocks, geometry_shader->numUniformBlocks);
-            geometry_shader->uniformVars   = modifyBinaryAndNamePtr<GX2UniformVar  >(geometry_shader, geometry_shader->uniformVars,   geometry_shader->numUniforms);
-            geometry_shader->samplerVars   = modifyBinaryAndNamePtr<GX2SamplerVar  >(geometry_shader, geometry_shader->samplerVars,   geometry_shader->numSamplers);
+            geometry_shader->uniformBlocks = modifyBinaryAndNamePtr<GX2UniformBlock>(geometry_shader, geometry_shader->uniformBlocks, geometry_shader->uniformBlockCount);
+            geometry_shader->uniformVars   = modifyBinaryAndNamePtr<GX2UniformVar  >(geometry_shader, geometry_shader->uniformVars,   geometry_shader->uniformVarCount);
+            geometry_shader->samplerVars   = modifyBinaryAndNamePtr<GX2SamplerVar  >(geometry_shader, geometry_shader->samplerVars,   geometry_shader->samplerVarCount);
 
-            geometry_shader->_loopVars     = modifyBinaryPtr(geometry_shader, geometry_shader->_loopVars);
+            geometry_shader->loopVars = static_cast<GX2LoopVar*>(modifyBinaryPtr(geometry_shader, geometry_shader->loopVars));
+
             geometry_shader->shaderPtr     = modifyBinaryPtr(geometry_shader, geometry_shader->shaderPtr);
             geometry_shader->copyShaderPtr = modifyBinaryPtr(geometry_shader, geometry_shader->copyShaderPtr);
         }
         break;
     }
-#endif // cafe
+#endif // RIO_IS_CAFE
 }
 
 const char* ResShaderVariation::getID() const
@@ -185,7 +189,7 @@ const char* ResShaderVariation::getID() const
 
 const char* ResShaderVariation::getValue(s32 index) const
 {
-    // SEAD_ASSERT(0 <= index && index < static_cast< int >( ref().mValueNum ));
+    RIO_ASSERT(0 <= index && index < static_cast< int >( ref().mValueNum ));
 
     const char* value = getName() + ref().mNameLen;
 
@@ -209,11 +213,11 @@ const char* ResShaderVariation::getValue(s32 index) const
     return value;
 }
 
-ResShaderSymbol ResShaderSymbolArray::searchResShaderSymbolByID(const sead::SafeString& id) const
+ResShaderSymbol ResShaderSymbolArray::searchResShaderSymbolByID(const char* id) const
 {
     for (constIterator it = begin(), it_end = end(); it != it_end; ++it)
     {
-        if (id.isEqual(ResShaderSymbol(&(*it)).getID()))
+        if (std::strcmp(id, ResShaderSymbol(&(*it)).getID()) == 0)
             return &(*it);
     }
 

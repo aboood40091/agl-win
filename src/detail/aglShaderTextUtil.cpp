@@ -1,7 +1,5 @@
-#include <basis/seadNew.h>
 #include <detail/aglShaderTextUtil.h>
-#include <prim/seadMemUtil.h>
-#include <prim/seadSafeString.h>
+#include <misc/rio_MemUtil.h>
 
 // TODO: Custom implementations of std::strchr && std::strspn
 #include <cstring>
@@ -10,7 +8,7 @@ namespace agl { namespace detail {
 
 s32 ShaderTextUtil::findLineFeedCode(const char* p_string, s32* p_length)
 {
-    // SEAD_ASSERT(p_string != nullptr);
+    RIO_ASSERT(p_string != nullptr);
 
     s32 length;
 
@@ -47,19 +45,19 @@ s32 ShaderTextUtil::findLineFeedCode(const char* p_string, s32* p_length)
     return -1;
 }
 
-void ShaderTextUtil::replaceMacro(sead::BufferedSafeString* p_text, const char* const* macro, const char* const* value, s32 macro_num, char* p_work, s32 worksize)
+void ShaderTextUtil::replaceMacro(std::string* p_text, const char* const* macro, const char* const* value, s32 macro_num, char* p_work, s32 worksize)
 {
-    // SEAD_ASSERT(p_text != nullptr);
-    // SEAD_ASSERT(p_work != nullptr);
-    // SEAD_ASSERT(macro != nullptr);
-    // SEAD_ASSERT(value != nullptr);
+    RIO_ASSERT(p_text != nullptr);
+    RIO_ASSERT(p_work != nullptr);
+    RIO_ASSERT(macro != nullptr);
+    RIO_ASSERT(value != nullptr);
 
-    // SEAD_ASSERT(macro_num < 1024);
+    RIO_ASSERT(macro_num < 1024);
     bool macro_replaced[1024];
     for (s32 i_macro = 0; i_macro < macro_num; i_macro++)
         macro_replaced[i_macro] = false;
 
-    const char* p_src = p_text->cstr();
+    const char* p_src = p_text->c_str();
     char* p_dst = p_work;
 
     s32 i_macro = 0;
@@ -136,13 +134,19 @@ void ShaderTextUtil::replaceMacro(sead::BufferedSafeString* p_text, const char* 
                         continue;
                     }
 
-                    p_dst += sead::BufferedSafeString(p_dst, worksize - (s32)(p_dst - p_work))
-                                .format("#define %s %s", match_macro, value[i_match_macro]);
+                    {
+                        const s32 buf_size = worksize - (s32)(p_dst - p_work);
+                        const s32 def_size = std::snprintf(p_dst, buf_size, "#define %s %s", match_macro, value[i_match_macro]);
+                        RIO_ASSERT(def_size >= 0 && def_size < buf_size);
+                        p_dst += def_size;
+                    }
 
                     for (s32 i = 0; i < line_feed_len; i++)
                     {
-                        p_dst += sead::BufferedSafeString(p_dst, worksize - (s32)(p_dst - p_work))
-                                    .append(p_src[line_feed_pos + i]);
+                        const s32 buf_size = worksize - (s32)(p_dst - p_work);
+                        const s32 src_size = std::snprintf(p_dst, buf_size, "%c", p_src[line_feed_pos + i]);
+                        RIO_ASSERT(src_size >= 0 && src_size < buf_size);
+                        p_dst += src_size;
                     }
 
                     macro_replaced[i_match_macro] = true;
@@ -154,7 +158,7 @@ void ShaderTextUtil::replaceMacro(sead::BufferedSafeString* p_text, const char* 
 
         if (!replaced)
         {
-            sead::MemUtil::copy(p_dst, p_src, line_feed_pos + line_feed_len);
+            rio::MemUtil::copy(p_dst, p_src, line_feed_pos + line_feed_len);
             p_dst += line_feed_pos + line_feed_len;
             *p_dst = '\0';
         }
@@ -172,16 +176,16 @@ void ShaderTextUtil::replaceMacro(sead::BufferedSafeString* p_text, const char* 
     while (*p_src != '\0')
         *p_dst++ = *p_src++;
 
-    // SEAD_ASSERT(static_cast<int>(p_dst - p_work) <= worksize);
+    RIO_ASSERT(static_cast<int>(p_dst - p_work) <= worksize);
     *p_dst = '\0';
 
-    p_text->copy(sead::SafeString(p_work));
+    *p_text = p_work;
 }
 
 void ShaderTextUtil::replace(char* pSrc, const char* pValue, s32 begin, s32 end, void* pWork, s32 size)
 {
-    // SEAD_ASSERT(pSrc != nullptr);
-    // SEAD_ASSERT(pWork != nullptr);
+    RIO_ASSERT(pSrc != nullptr);
+    RIO_ASSERT(pWork != nullptr);
     char* const work = (char*)pWork;
 
     s32 i_count = 0;
@@ -190,7 +194,7 @@ void ShaderTextUtil::replace(char* pSrc, const char* pValue, s32 begin, s32 end,
         work[i_count] = pSrc[end + i_count];
         i_count++;
     }
-    // SEAD_ASSERT(i_count < size);
+    RIO_ASSERT(i_count < size);
     work[i_count] = '\0';
 
     s32 i = 0;
@@ -210,16 +214,16 @@ void ShaderTextUtil::replace(char* pSrc, const char* pValue, s32 begin, s32 end,
     pSrc[begin + i + j] = '\0';
 }
 
-sead::HeapSafeString* ShaderTextUtil::createRawText(const sead::SafeString& text, const char* const* source_name, const char* const* source_text, s32 source_num, bool* source_used, sead::Heap* heap)
+std::string* ShaderTextUtil::createRawText(const char* text, const char* const* source_name, const char* const* source_text, s32 source_num, bool* source_used)
 {
     if (source_used != NULL)
         for (s32 i_source = 0; i_source < source_num; i_source++)
             source_used[i_source] = false;
 
-    sead::HeapSafeString* p_text = new (heap) sead::HeapSafeString(heap, text);
-    s32 text_len = p_text->calcLength();
+    std::string* p_text = new std::string(text);
+    s32 text_len = p_text->length();
 
-    const char* p_src = p_text->cstr(); // r22 = p_src, r28 = p_text
+    const char* p_src = p_text->c_str(); // r22 = p_src, r28 = p_text
 
     while (*p_src != '\0')
     {
@@ -245,15 +249,14 @@ sead::HeapSafeString* ShaderTextUtil::createRawText(const sead::SafeString& text
             if (include_directive_end - 1 == NULL)
                 continue;
 
-            sead::FixedSafeString<1024> name;
-            name.copy(include_name_begin, (s32)(include_directive_end - include_name_begin) - 1);
+            std::string name(include_name_begin, (s32)(include_directive_end - include_name_begin) - 1);
 
             s32 i_source = 0;
             {
                 bool found = false;
                 while (i_source < source_num)
                 {
-                    if (name.isEqual(source_name[i_source]))
+                    if (name == source_name[i_source])
                     {
                         found = true;
                         break;
@@ -271,19 +274,20 @@ sead::HeapSafeString* ShaderTextUtil::createRawText(const sead::SafeString& text
             if (!p_source_text)
                 break;
 
-            sead::HeapSafeString* p_new_text = new (heap) sead::HeapSafeString(heap, *p_text, text_len + sead::SafeString(p_source_text).calcLength() + 1);
+            std::string* p_new_text = new std::string(p_text->c_str(), text_len);
+            p_new_text->reserve(text_len + std::strlen(p_source_text) + 1);
 
-            const char* const text_base = p_text->cstr();
-            u8* temp_buf = new (heap) u8[text_len + 1];
-            detail::ShaderTextUtil::replace((char*)p_new_text->cstr(), p_source_text, (s32)(include_directive_begin - text_base) - 1, (s32)(include_directive_end - text_base), temp_buf, text_len + 1);
+            const char* const text_base = p_text->c_str();
+            u8* temp_buf = new u8[text_len + 1];
+            detail::ShaderTextUtil::replace(p_new_text->data(), p_source_text, (s32)(include_directive_begin - text_base) - 1, (s32)(include_directive_end - text_base), temp_buf, text_len + 1);
             delete temp_buf; // Nintendo did not use delete[] (fixed in later versions)
 
             delete p_text;
-            p_text = new (heap) sead::HeapSafeString(heap, *p_new_text);
+            p_text = new std::string(*p_new_text);
             delete p_new_text;
 
-            p_src = p_text->cstr();
-            text_len = p_text->calcLength();
+            p_src = p_text->c_str();
+            text_len = p_text->length();
         }
         else
         {

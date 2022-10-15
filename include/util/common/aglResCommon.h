@@ -1,6 +1,6 @@
 #pragma once
 
-#include <basis/seadTypes.h>
+#include <misc/rio_Types.h>
 
 namespace agl {
 
@@ -33,16 +33,18 @@ public:
         if (ref().mSigWord != DataType::cSignature)
         {
             const char* signature = ptr()->mSignature;
-            // SEAD_ASSERT_MSG(false, "Wrong binary. [%c%c%c%c].",
-            //                        signature[0], signature[1],
-            //                        signature[2], signature[3]);
+            RIO_LOG("Wrong binary. [%c%c%c%c].\n",
+                signature[0], signature[1],
+                signature[2], signature[3]);
+            RIO_ASSERT(false);
         }
 
         if (ref().mVersion != DataType::cVersion)
         {
-            // SEAD_ASSERT_MSG(false, "Version error.current:%d binary:%d",
-            //                        DataType::cVersion,
-            //                        ref().mVersion);
+            RIO_LOG("Version error.current:%d binary:%d\n",
+                DataType::cVersion,
+                ref().mVersion);
+            RIO_ASSERT(false);
         }
     }
 
@@ -58,13 +60,13 @@ public:
 
     DataType& ref()
     {
-        // SEAD_ASSERT(isValid());
+        RIO_ASSERT(isValid());
         return *ptr();
     }
 
     const DataType& ref() const
     {
-        // SEAD_ASSERT(isValid());
+        RIO_ASSERT(isValid());
         return *ptr();
     }
 
@@ -102,7 +104,7 @@ class ResArray : public ResCommon< ResArrayData<typename Type::DataType> >
 public:
     typedef Type ElemType;
     typedef typename Type::DataType ElemDataType;
-    typedef typename ResArray<Type>::DataType DataType;
+    using DataType = typename ResArray<Type>::DataType;
     typedef ResCommon<DataType> Base;
 
 public:
@@ -185,7 +187,7 @@ public:
 
     ElemType get(s32 n) const
     {
-        // SEAD_ASSERT(0 <= n && n <= static_cast< int >( this->getNum() ));
+        RIO_ASSERT(0 <= n && n <= static_cast< int >( this->getNum() ));
 
         constIterator it = begin();
         constIterator it_end = constIterator(n, NULL);

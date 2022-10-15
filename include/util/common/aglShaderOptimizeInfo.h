@@ -1,6 +1,6 @@
 #pragma once
 
-#include <basis/seadTypes.h>
+#include <misc/rio_Types.h>
 
 namespace agl {
 
