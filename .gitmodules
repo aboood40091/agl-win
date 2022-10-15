@@ -1,3 +1,14 @@
 [submodule "lib/rio"]
 	path = lib/rio
 	url = https://github.com/aboood40091/rio
+[submodule "lib/g3d"]
+	path = lib/g3d
+	url = https://github.com/nw4f/G3d
+	branch = nsmbu-win-port
+[submodule "lib/ninTexUtils"]
+	path = lib/ninTexUtils
+	url = https://github.com/aboood40091/ninTexUtils
+	branch = cpp
+[submodule "lib/gsl"]
+	path = lib/gsl
+	url = https://github.com/microsoft/GSL

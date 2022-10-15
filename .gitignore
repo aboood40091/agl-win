@@ -47,3 +47,7 @@
 *.opt
 *.ti
 tgt/*
+
+# Cafe header wrappers
+lib/cafe_win/*
+lib/cafe_wut/*
