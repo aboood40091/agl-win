@@ -90,13 +90,16 @@ void ShaderProgram::createVariation(sead::Heap* heap)
 
 ShaderMode ShaderProgram::activate(ShaderMode current_mode, bool use_dl) const
 {
-    ShaderMode mode = getGeometryShaderBinary() ? cShaderMode_GeometryShader
-                                                : mVertexShader.getShaderMode();
+    ShaderMode mode = getGeometryShaderBinary()
+        ? cShaderMode_GeometryShader
+        : mVertexShader.getShaderMode();
 
     if (current_mode != mode)
         changeShaderMode(mode);
 
-    if (mode == cShaderMode_GeometryShader)
+    current_mode = mode;
+
+    if (current_mode == cShaderMode_GeometryShader)
         driver::GX2Resource::instance()->setGeometryShaderRingBuffer();
 
     if (use_dl && !mDisplayList.isEmpty())
@@ -104,7 +107,7 @@ ShaderMode ShaderProgram::activate(ShaderMode current_mode, bool use_dl) const
     else
         setShaderGX2_();
 
-    return mode;
+    return current_mode;
 }
 
 Shader* ShaderProgram::getShader(ShaderType type)
@@ -393,7 +396,7 @@ u32 ShaderProgram::forceValidate_() const
             }
         }
 
-        mFlag.set(1);
+        mFlag.setDirect(1);
     }
 
     if (mFlag.isOn(1))

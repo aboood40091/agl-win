@@ -14,8 +14,8 @@ namespace agl {
 class ShaderProgram
 {
 public:
-    static const u32 cVariationMacroMax = 1024;
-    static const u32 cVariationValueMax = 1024;
+    static const s32 cVariationMacroMax = 1024;
+    static const s32 cVariationValueMax = 1024;
 
     static void changeShaderMode(ShaderMode mode);
 
@@ -128,6 +128,16 @@ public:
     }
 
     const sead::SafeString& searchVariationMacroName(const sead::SafeString& id) const;
+
+    bool getCompileEnable() const
+    {
+        return mFlag.isOn(1);
+    }
+
+    void setCompileEnable(bool enable)
+    {
+        mFlag.change(1, enable);
+    }
 
     void updateVariation(s32 index) // I don't know the actual name
     {

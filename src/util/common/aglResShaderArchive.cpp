@@ -13,7 +13,7 @@ static inline void swap32(void* ptr, size_t size)
     u32* ptr_u32 = static_cast<u32*>(ptr);
     u32 count = size / sizeof(u32);
 
-    for (s32 i = 0; i < count; i++)
+    for (u32 i = 0; i < count; i++)
     {
         *ptr_u32 = sead::Endian::swap(*ptr_u32);
         ptr_u32++;
@@ -39,10 +39,12 @@ T* modifyBinaryAndNamePtr(void* base_ptr, T* ptr, s32 num)
     if (!ptr)
         return NULL;
 
+    ptr = (T*)(uintptr_t(base_ptr) + uintptr_t(ptr));
+
     for (s32 i = 0; i < num; i++)
         ptr[i].name += uintptr_t(base_ptr);
 
-    return (T*)(uintptr_t(base_ptr) + uintptr_t(ptr));
+    return ptr;
 }
 
 void* modifyBinaryPtr(void* base_ptr, void* ptr)
@@ -81,6 +83,7 @@ void ResShaderBinary::modifyBinaryEndian()
     case cShaderType_Fragment:
         {
             GX2PixelShader* pixel_shader = static_cast<GX2PixelShader*>(getData());
+            swap32(pixel_shader, sizeof(GX2PixelShader));
 
             size += pixel_shader->numUniformBlocks * sizeof(GX2UniformBlock) +
                     pixel_shader->numUniforms * sizeof(GX2UniformVar) +
@@ -93,6 +96,7 @@ void ResShaderBinary::modifyBinaryEndian()
     case cShaderType_Geometry:
         {
             GX2GeometryShader* geometry_shader = static_cast<GX2GeometryShader*>(getData());
+            swap32(geometry_shader, sizeof(GX2GeometryShader));
 
             size += geometry_shader->numUniformBlocks * sizeof(GX2UniformBlock) +
                     geometry_shader->numUniforms * sizeof(GX2UniformVar) +

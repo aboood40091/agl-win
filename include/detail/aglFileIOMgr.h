@@ -62,5 +62,4 @@ private:
 };
 static_assert(sizeof(FileIOMgr) == 0x5C, "agl::detail::FileIOMgr size mismatch");
 
-
 } }

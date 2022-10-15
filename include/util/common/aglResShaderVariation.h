@@ -8,7 +8,7 @@ struct ResShaderVariationData
 {
     u32 mSize;
     u32 mNameLen;
-    u32 mValueNum;
+    s32 mValueNum;
     u32 mIDLen;
     // char name[];
 };

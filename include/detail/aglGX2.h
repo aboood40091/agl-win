@@ -15,10 +15,14 @@ public:
     GX2Resource();
     virtual ~GX2Resource();
 
+    u32 initialize(sead::Heap* heap, void* work_buffer, u32 gs_in_ring_item_size = 0x10, u32 gs_out_ring_item_size = 0x80);
+
     void setShaderMode(ShaderMode mode) const;
     void setShaderMode(ShaderMode mode, const ShaderOptimizeInfo& info) const;
 
     void setGeometryShaderRingBuffer() const;
+
+  //void restoreContextState();
 
 private:
     ShaderOptimizeInfo* mpOptimizeInfo;
@@ -30,10 +34,9 @@ private:
     u8* mGeometryShaderOutputRingBuffer;
     size_t mGeometryShaderOutputRingBufferSize;
     sead::CriticalSection mCriticalSection;
-    u8 _78;
-    u8 _79;
+    bool mStateShadowEnable;
+    bool mUseStateDisplayList;
 };
 static_assert(sizeof(GX2Resource) == 0x80, "agl::driver::GX2Resource size mismatch");
-
 
 } }

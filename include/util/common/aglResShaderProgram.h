@@ -10,7 +10,7 @@ struct ResShaderProgramData
 {
     u32 mSize;
     u32 mNameLen;
-    u32 mSourceIndex[cShaderType_Num];
+    s32 mSourceIndex[cShaderType_Num];
     // char mName[];
 };
 static_assert(sizeof(ResShaderProgramData) == 0x14, "agl::ResShaderProgramData size mismatch");

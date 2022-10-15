@@ -15,9 +15,10 @@ DisplayList::~DisplayList()
 void DisplayList::setBuffer(u8* buffer, size_t size)
 {
     if (buffer)
-       mSize = size;
+        mSize = size;
     else
         mSize = 0;
+
     mpBuffer = buffer;
 }
 

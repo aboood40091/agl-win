@@ -266,9 +266,9 @@ void ShaderProgramArchive::setResShaderArchive_(ResShaderArchive res_archive, se
         const ResShaderSource source(&(*it));
         source_is_used[it.getIndex()] = false;
 
-        for (ResShaderProgramArray::constIterator it = prog_arr.begin(), it_end = prog_arr.end(); it != it_end; ++it)
+        for (ResShaderProgramArray::constIterator it_prog = prog_arr.begin(), it_prog_end = prog_arr.end(); it_prog != it_prog_end; ++it_prog)
         {
-            const ResShaderProgram prog(&(*it));
+            const ResShaderProgram prog(&(*it_prog));
             bool found = false;
 
             for (s32 type = 0; type < cShaderType_Num; type++)
@@ -373,10 +373,10 @@ void ShaderProgramArchive::ShaderProgramEx::initialize(ShaderProgramArchive* arc
         typedef sead::Buffer<ShaderCompileInfoEx>::iterator _Iterator;
         for (_Iterator it = _Iterator(mCompileInfoEx), it_end = _Iterator(mCompileInfoEx, cShaderType_Num); it != it_end; ++it)
         {
-            u32 source_index = res.ref().mSourceIndex[it.getIndex()];
+            s32 source_index = res.ref().mSourceIndex[it.getIndex()];
             ShaderType type = ShaderType(it.getIndex());
 
-            if (source_index != 0xFFFFFFFF)
+            if (source_index != -1)
             {
                 it->mSource = &mpArchive->mSource[source_index];
 
@@ -457,7 +457,7 @@ void ShaderProgramArchive::ShaderSource::initialize(ShaderProgramArchive* archiv
     mRes = res;
     mIndex = index;
 
-    mFlag.change(2, is_used);
+    mFlag.change(1 << 1, is_used);
 
     mText = new sead::HeapSafeString(detail::PrivateResource::instance()->getShaderCompileHeap(), res.getText(), res.ref().mTextLen * 2);
 

@@ -116,6 +116,7 @@ void ShaderTextUtil::replaceMacro(sead::BufferedSafeString* p_text, const char* 
 
                     const char* const match_macro = macro[i_match_macro];
                     bool match = true;
+                    u32 save_macro_pos = macro_pos;
 
                     for (s32 i = 0; match_macro[i] != '\0'; i++)
                     {
@@ -130,7 +131,10 @@ void ShaderTextUtil::replaceMacro(sead::BufferedSafeString* p_text, const char* 
 
                     if (!match || (p_src[macro_pos] != ' ' &&
                                    p_src[macro_pos] != '\t'))
+                    {
+                        macro_pos = save_macro_pos;
                         continue;
+                    }
 
                     p_dst += sead::BufferedSafeString(p_dst, worksize - (s32)(p_dst - p_work))
                                 .format("#define %s %s", match_macro, value[i_match_macro]);

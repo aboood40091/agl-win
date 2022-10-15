@@ -45,6 +45,21 @@ public:
         mSourceText = text;
     }
 
+    const sead::SafeString* getSourceText() const
+    {
+        return mSourceText;
+    }
+
+    void setRawText(sead::BufferedSafeString* text)
+    {
+        mRawText = text;
+    }
+
+    sead::BufferedSafeString* getRawText() const
+    {
+        return mRawText;
+    }
+
     void calcCompileSource(ShaderType type, sead::BufferedSafeString* p_buffer, Target target, bool) const;
 
     void destroy();

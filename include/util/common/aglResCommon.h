@@ -72,16 +72,16 @@ private:
     const DataType* mpData;
 };
 
-#define AGL_RES_COMMON(class_name)                      \
-    public:                                             \
-        class_name()                                    \
-             : ResCommon<class_name::DataType>()        \
-         {                                              \
-         }                                              \
-                                                        \
-         class_name(const void* data)                   \
-             : ResCommon<class_name::DataType>(data)    \
-         {                                              \
+#define AGL_RES_COMMON(class_name)                              \
+    public:                                                     \
+        class_name()                                            \
+             : ResCommon<typename class_name::DataType>()       \
+         {                                                      \
+         }                                                      \
+                                                                \
+         class_name(const void* data)                           \
+             : ResCommon<typename class_name::DataType>(data)   \
+         {                                                      \
          }
 
 template <typename DataType>
@@ -95,13 +95,15 @@ struct ResArrayData
 };
 
 template <typename Type>
-class ResArray : public ResCommon< ResArrayData<Type::DataType> >
+class ResArray : public ResCommon< ResArrayData<typename Type::DataType> >
 {
     AGL_RES_COMMON(ResArray<Type>)
 
 public:
     typedef Type ElemType;
-    typedef Type::DataType ElemDataType;
+    typedef typename Type::DataType ElemDataType;
+    typedef typename ResArray<Type>::DataType DataType;
+    typedef ResCommon<DataType> Base;
 
 public:
     class iterator
@@ -169,8 +171,8 @@ public:
     };
 
 public:
-    iterator begin() { return iterator(0, (ElemDataType*)(ptr() + 1)); }
-    constIterator begin() const { return constIterator(0, (const ElemDataType*)(ptr() + 1)); }
+    iterator begin() { return iterator(0, (ElemDataType*)(Base::ptr() + 1)); }
+    constIterator begin() const { return constIterator(0, (const ElemDataType*)(Base::ptr() + 1)); }
 
     iterator end() { return iterator(getNum(), NULL); }
     constIterator end() const { return constIterator(getNum(), NULL); }
@@ -178,7 +180,7 @@ public:
 public:
     u32 getNum() const
     {
-        return ref().mNum;
+        return Base::ref().mNum;
     }
 
     ElemType get(s32 n) const
@@ -196,7 +198,7 @@ public:
 
     void modifyEndianArray(bool is_le)
     {
-        ModifyEndianU32(is_le, ptr(), sizeof(DataType));
+        ModifyEndianU32(is_le, Base::ptr(), sizeof(DataType));
 
         for (iterator it = begin(), it_end = end(); it != it_end; ++it)
             ModifyEndianU32(is_le, &(*it), sizeof(ElemDataType));
