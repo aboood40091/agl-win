@@ -32,6 +32,11 @@
 *.app
 *.elf
 
+# CodeBlocks Project files
+*.depend
+*.layout
+*.cbp
+
 # GreenHills files
 *.dep
 *.dla

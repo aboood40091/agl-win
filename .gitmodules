@@ -1,6 +1,3 @@
 [submodule "lib/rio"]
 	path = lib/rio
 	url = https://github.com/aboood40091/rio
-[submodule "lib/g3d"]
-	path = lib/g3d
-	url = https://github.com/nw4f/G3d
