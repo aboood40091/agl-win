@@ -31,4 +31,9 @@ enum ShaderMode
     cShaderMode_Invalid
 };
 
+enum
+{
+    cShaderArchiveAlignment = 0x100
+};
+
 }

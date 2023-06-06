@@ -77,14 +77,14 @@ private:
 #define AGL_RES_COMMON(class_name)                              \
     public:                                                     \
         class_name()                                            \
-             : ResCommon<typename class_name::DataType>()       \
-         {                                                      \
-         }                                                      \
+            : ResCommon<typename class_name::DataType>()        \
+        {                                                       \
+        }                                                       \
                                                                 \
-         class_name(const void* data)                           \
-             : ResCommon<typename class_name::DataType>(data)   \
-         {                                                      \
-         }
+        class_name(const void* data)                            \
+            : ResCommon<typename class_name::DataType>(data)    \
+        {                                                       \
+        }
 
 template <typename DataType>
 struct ResArrayData

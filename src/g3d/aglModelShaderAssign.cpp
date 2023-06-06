@@ -6,8 +6,6 @@
 namespace agl { namespace g3d {
 
 ModelShaderAttribute::ModelShaderAttribute()
-    : mpVertexBuffer()
-    , mFetchShader()
 {
     clear();
 }
@@ -32,12 +30,8 @@ void ModelShaderAttribute::clear()
 {
     mVertexBufferNum = 0;
 
-    // TODO: SafeArray
-    {
-        typedef Buffer<const nw::g3d::fnd::GfxBuffer*>::iterator _Iterator;
-        for (_Iterator it = _Iterator(mpVertexBuffer), it_end = _Iterator(mpVertexBuffer, 16); it != it_end; ++it)
-            *it = nullptr;
-    }
+    for (UnsafeArray<const nw::g3d::fnd::GfxBuffer*, 16>::iterator it = mVertexBuffer.begin(), it_end = mVertexBuffer.end(); it != it_end; ++it)
+        *it = nullptr;
 }
 
 void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, const nw::g3d::res::ResShape* p_res_shp, const ShaderProgram* p_program, bool use_res_assign, bool use_shader_symbol_id)
@@ -52,7 +46,7 @@ void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, cons
         p_res_shader_assign = nullptr;
 
     const ResShaderSymbolArray& symbol_array = p_program->getResShaderSymbolArray(cShaderSymbolType_Attribute);
-    Attribute attribute[16]; // UnsafeArray<Attribute, 16>
+    UnsafeArray<Attribute, 16> attribute;
     s32 attribute_num = 0;
     for (ResShaderSymbolArray::constIterator it = symbol_array.begin(), it_end = symbol_array.end(); it != it_end; ++it)
     {
@@ -115,7 +109,7 @@ void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, cons
         if (slot[p_res_vtx_attrib->GetBufferIndex()] == 0xFFFFFFFF)
         {
             slot[p_res_vtx_attrib->GetBufferIndex()] = mVertexBufferNum;
-            mpVertexBuffer[mVertexBufferNum] = p_res_vtx->GetVtxBuffer(p_res_vtx_attrib->GetBufferIndex())->GetGfxBuffer();
+            mVertexBuffer[mVertexBufferNum] = p_res_vtx->GetVtxBuffer(p_res_vtx_attrib->GetBufferIndex())->GetGfxBuffer();
             mVertexBufferNum++;
         }
 
@@ -137,24 +131,20 @@ void ModelShaderAttribute::activateVertexBuffer() const
     mFetchShader.Load();
 
     for (u32 i = 0; i < mVertexBufferNum; i++)
-        mpVertexBuffer[i]->LoadVertices(i);
+        mVertexBuffer[i]->LoadVertices(i);
 }
 
 void ModelShaderAttribute::setVertexBuffer(const nw::g3d::fnd::GfxBuffer* p_buffer, s32 index)
 {
     for (u32 idx_attrib = 0; idx_attrib < mFetchShader.GetAttribCount(); idx_attrib++)
-        if (mFetchShader.GetVertexBuffer(idx_attrib) == mpVertexBuffer[index])
+        if (mFetchShader.GetVertexBuffer(idx_attrib) == mVertexBuffer[index])
             mFetchShader.SetVertexBuffer(idx_attrib, p_buffer);
 
-    mpVertexBuffer[index] = p_buffer;
+    mVertexBuffer[index] = p_buffer;
 }
 
 ModelShaderAssign::ModelShaderAssign()
     : mpProgram(nullptr)
-    , mUniformBlockLocation()
-    , mSamplerLocation()
-    , mpResSampler()
-    , mAttribute()
 {
     clear_();
 }
@@ -173,12 +163,8 @@ void ModelShaderAssign::clear_()
     mAttribute.clear();
     mSamplerNum = 0;
 
-    // TODO: SafeArray
-    {
-        typedef Buffer<const nw::g3d::res::ResSampler*>::iterator _Iterator;
-        for (_Iterator it = _Iterator(mpResSampler), it_end = _Iterator(mpResSampler, 16); it != it_end; ++it)
-            *it = nullptr;
-    }
+    for (UnsafeArray<const nw::g3d::res::ResSampler*, 16>::iterator it = mResSampler.begin(), it_end = mResSampler.end(); it != it_end; ++it)
+        *it = nullptr;
 }
 
 void ModelShaderAssign::bind(const nw::g3d::res::ResMaterial* p_res_mat, const ShaderProgram* p_program, bool use_res_assign, bool use_shader_symbol_id)
@@ -260,7 +246,7 @@ void ModelShaderAssign::pushBackSampler(const nw::g3d::res::ResSampler* p_res_sa
         return;
 
     mSamplerLocation[mSamplerNum] = location;
-    mpResSampler[mSamplerNum] = p_res_sampler;
+    mResSampler[mSamplerNum] = p_res_sampler;
     mSamplerNum++;
 }
 
@@ -283,7 +269,7 @@ void ModelShaderAssign::activateTextureSampler(const nw::g3d::MaterialObj* p_mat
 {
     for (u32 i = 0; i < mSamplerNum; i++)
     {
-        const nw::g3d::res::ResSampler* p_res_sampler = mpResSampler[i];
+        const nw::g3d::res::ResSampler* p_res_sampler = mResSampler[i];
         const nw::g3d::res::ResTexture* p_res_texture = p_material->GetResTexture(p_res_sampler->GetIndex());
 
         if (p_res_texture)

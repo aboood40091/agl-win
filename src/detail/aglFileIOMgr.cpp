@@ -1,6 +1,5 @@
 #include <detail/aglFileIOMgr.h>
 #include <detail/aglPrivateResource.h>
-
 #include <misc/rio_MemUtil.h>
 
 namespace agl { namespace detail {

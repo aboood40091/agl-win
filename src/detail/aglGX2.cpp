@@ -1,8 +1,9 @@
 #include <detail/aglGX2.h>
-
 #include <misc/rio_MemUtil.h>
 
 #if RIO_IS_CAFE
+#include <gfx/rio_Window.h>
+
 #include <cafe.h>
 #endif // RIO_IS_CAFE
 
@@ -138,12 +139,27 @@ void GX2Resource::setGeometryShaderRingBuffer() const
 #endif // RIO_IS_CAFE
 }
 
-/*
+#if RIO_IS_CAFE
+
+namespace {
+
+inline void GetContextStateDisplayList(GX2ContextState* state, void** pp_dl, u32* p_size)
+{
+    // Either this function was inline back in the GX2 headers NSMBU used...
+    // GX2GetContextStateDisplayList(state, pp_dl, p_size);
+
+    // ... Or they did this
+    *pp_dl = &state->data[0x9E00 / sizeof(u32)];
+    *p_size = state->data[0x9804 / sizeof(u32)];
+}
+
+}
+
 void GX2Resource::restoreContextState()
 {
     if (mStateShadowEnable)
     {
-        GX2ContextState* state = sead::GraphicsCafe::instance()->getContextState();
+        GX2ContextState* state = rio::Window::instance()->getNativeWindow().p_context_state;
 
         if (!mUseStateDisplayList)
             GX2SetContextState(state);
@@ -152,8 +168,7 @@ void GX2Resource::restoreContextState()
         {
             void* p_dl;
             u32 size;
-            // Either this function was inline back in the GX2 headers NSMBU used or they had a separate function to do this
-            GX2GetContextStateDisplayList(state, &p_dl, &size);
+            GetContextStateDisplayList(state, &p_dl, &size);
 
             GX2CallDisplayList(p_dl, size);
         }
@@ -163,6 +178,7 @@ void GX2Resource::restoreContextState()
         GX2SetContextState(nullptr);
     }
 }
-*/
+
+#endif // RIO_IS_CAFE
 
 } }

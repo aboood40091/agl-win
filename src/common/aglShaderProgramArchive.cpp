@@ -77,7 +77,7 @@ ShaderProgramArchive::ShaderProgramArchive()
     , mSourceName()
     , mpDLBuf(nullptr)
 {
-    // detail::RootNode::setNodeMeta(this, "Icon = LAYOUT, Security = agl_shader");
+  //detail::RootNode::setNodeMeta(this, "Icon = LAYOUT, Security = agl_shader");
 }
 
 ShaderProgramArchive::~ShaderProgramArchive()
@@ -115,6 +115,12 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
 {
     mResBinary = res_binary_archive;
 
+    if (uintptr_t(mResBinary.ptr()) % cShaderArchiveAlignment != 0)
+    {
+        RIO_LOG("agl::ResBinaryShaderArchive must be aligned agl::cShaderArchiveAlignment byte.\n");
+        RIO_ASSERT(false);
+    }
+
     if (flag & 2)
         mFlag.set(1);
 
@@ -142,6 +148,7 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
         mpDLBuf = dl_buf;
 
         const ResBinaryShaderProgramArray binary_prog_arr = mResBinary.getResBinaryShaderProgramArray();
+        [[maybe_unused]] u32 verify_binary_num = 0;
 
         for (ResBinaryShaderProgramArray::constIterator it = binary_prog_arr.begin(), it_end = binary_prog_arr.end(); it != it_end; ++it)
         {
@@ -173,14 +180,19 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
                         if ((binary_prog.ref().mKind >> cShaderType_Geometry & 1) == 0)
                             num_shader = 2;
 
-                        u32 variation_index = binary_prog.ref().mBaseIndex + type + num_shader * i;
-                        if (variation_index != 0xFFFFFFFF)
+                        u32 index = binary_prog.ref().mBaseIndex + type + num_shader * i;
+                        if (index != 0xFFFFFFFF)
                         {
-                            const ResShaderBinary binary = mResBinary.getResShaderBinaryArray().get(variation_index);
+                            const ResShaderBinary binary = mResBinary.getResShaderBinaryArray().get(index);
+                            RIO_ASSERT(binary.isValid());
+                            RIO_ASSERT(binary.getShaderType() == type);
 #if RIO_IS_CAFE
                             DCFlushRangeNoSync(binary.getData(), binary.ref().mDataSize);
 #endif // RIO_IS_CAFE
                             shader->setBinary(binary.getData());
+
+                            RIO_ASSERT(verify_binary_num == index);
+                            verify_binary_num++;
                         }
                     }
                 }
@@ -192,12 +204,20 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
                 }
             }
         }
+
+        RIO_ASSERT(verify_binary_num == mResBinary.getResShaderBinaryArray().getNum());
     }
 
     setResShaderArchive_(res_archive);
 
     for (Buffer<ShaderProgram>::iterator it = mProgram.begin(), it_end = mProgram.end(); it != it_end; ++it)
         it->reserveSetUpAllVariation();
+
+    if (mProgram.size() > 0)
+        return;
+
+    RIO_LOG("No shader program.\n");
+    RIO_ASSERT(false);
 }
 
 bool ShaderProgramArchive::setUp()
@@ -257,7 +277,7 @@ void ShaderProgramArchive::setResShaderArchive_(ResShaderArchive res_archive)
 
     mProgramEx.allocBuffer(mProgram.size());
 
-    bool source_is_used[1024]; // SafeArray<bool, 1024>
+    UnsafeArray<bool, 1024> source_is_used;
 
     const ResShaderSourceArray source_arr = mResText.getResShaderSourceArray();
     const ResShaderProgramArray prog_arr = mResText.getResShaderProgramArray();
@@ -356,8 +376,6 @@ bool ShaderProgramArchive::setUp_(bool unk)
 ShaderProgramArchive::ShaderProgramEx::ShaderProgramEx()
     : mIndex(0)
     , mpArchive(nullptr)
-    , mCompileInfoEx()
-    , _110()
     , mVariationIndex(0)
     , mFlag(0)
 {
@@ -376,36 +394,32 @@ void ShaderProgramArchive::ShaderProgramEx::initialize(ShaderProgramArchive* arc
 
     ShaderProgram& program = archive->mProgram[index];
 
-    // TODO: SafeArray
+    for (UnsafeArray<ShaderCompileInfoEx, cShaderType_Num>::iterator it = mCompileInfoEx.begin(), it_end = mCompileInfoEx.end(); it != it_end; ++it)
     {
-        typedef Buffer<ShaderCompileInfoEx>::iterator _Iterator;
-        for (_Iterator it = _Iterator(mCompileInfoEx), it_end = _Iterator(mCompileInfoEx, cShaderType_Num); it != it_end; ++it)
+        s32 source_index = res.ref().mSourceIndex[it.getIndex()];
+        ShaderType type = ShaderType(it.getIndex());
+
+        if (source_index != -1)
         {
-            s32 source_index = res.ref().mSourceIndex[it.getIndex()];
-            ShaderType type = ShaderType(it.getIndex());
+            it->mSource = &mpArchive->mSource[source_index];
 
-            if (source_index != -1)
+            const ResShaderMacroArray macro_arr = res.getResShaderMacroArray(type);
+            it->mCompileInfo.create(macro_arr.getNum(), program.getVariationMacroNum());
+
+            it->mCompileInfo.setName(it->mSource->getName());
+            it->mCompileInfo.setRawText(&it->mRawText);
+
+            for (ResShaderMacroArray::constIterator macro_it = macro_arr.begin(), macro_it_end = macro_arr.end(); macro_it != macro_it_end; ++macro_it)
             {
-                it->mSource = &mpArchive->mSource[source_index];
-
-                const ResShaderMacroArray macro_arr = res.getResShaderMacroArray(type);
-                it->mCompileInfo.create(macro_arr.getNum(), program.getVariationMacroNum());
-
-                it->mCompileInfo.setName(it->mSource->getName());
-                it->mCompileInfo.setRawText(&it->mRawText);
-
-                for (ResShaderMacroArray::constIterator macro_it = macro_arr.begin(), macro_it_end = macro_arr.end(); macro_it != macro_it_end; ++macro_it)
-                {
-                    const ResShaderMacro macro(&(*macro_it));
-                    it->mCompileInfo.pushBackMacro(macro.getName(), macro.getValue());
-                }
-
-                program.getShader(type)->setCompileInfo(&it->mCompileInfo);
+                const ResShaderMacro macro(&(*macro_it));
+                it->mCompileInfo.pushBackMacro(macro.getName(), macro.getValue());
             }
-            else
-            {
-                it->mSource = nullptr;
-            }
+
+            program.getShader(type)->setCompileInfo(&it->mCompileInfo);
+        }
+        else
+        {
+            it->mSource = nullptr;
         }
     }
 
@@ -416,22 +430,18 @@ void ShaderProgramArchive::ShaderProgramEx::initialize(ShaderProgramArchive* arc
             *it = 0;
     }
 
-    // detail::RootNode::setNodeMeta(this, "Icon = CIRCLE_ORENGE");
+  //detail::RootNode::setNodeMeta(this, "Icon = CIRCLE_ORENGE");
 }
 
 void ShaderProgramArchive::ShaderProgramEx::updateRawText()
 {
-    // TODO: SafeArray
+    for (UnsafeArray<ShaderCompileInfoEx, cShaderType_Num>::iterator it = mCompileInfoEx.begin(), it_end = mCompileInfoEx.end(); it != it_end; ++it)
     {
-        typedef Buffer<ShaderCompileInfoEx>::iterator _Iterator;
-        for (_Iterator it = _Iterator(mCompileInfoEx), it_end = _Iterator(mCompileInfoEx, cShaderType_Num); it != it_end; ++it)
+        ShaderSource* source = it->mSource;
+        if (source && source->mFlag.isOn(1))
         {
-            ShaderSource* source = it->mSource;
-            if (source && source->mFlag.isOn(1))
-            {
-                it->mCompileInfo.setSourceText(source->mRawText);
-                mpArchive->getShaderProgram(mIndex).reserveSetUpAllVariation();
-            }
+            it->mCompileInfo.setSourceText(source->mRawText);
+            mpArchive->getShaderProgram(mIndex).reserveSetUpAllVariation();
         }
     }
 }
@@ -477,7 +487,7 @@ void ShaderProgramArchive::ShaderSource::initialize(ShaderProgramArchive* archiv
     for (Buffer<bool>::iterator it = mUsedInSource.begin(), it_end = mUsedInSource.end(); it != it_end; ++it)
         *it = false;
 
-    // detail::RootNode::setNodeMeta(this, "Icon = NOTE");
+  //detail::RootNode::setNodeMeta(this, "Icon = NOTE");
 }
 
 void ShaderProgramArchive::ShaderSource::expand()

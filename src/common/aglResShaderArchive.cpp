@@ -6,7 +6,7 @@
 #include <cstring>
 
 #if RIO_IS_CAFE
-#include <cafe.h>
+#include <cafe/gx2.h>
 #endif // RIO_IS_CAFE
 
 static inline void swap32(void* ptr, size_t size)
@@ -65,7 +65,7 @@ void ResShaderBinary::modifyBinaryEndian()
     void* data = nullptr;
 
 #if RIO_IS_CAFE
-    switch (ref().mShaderType)
+    switch (getShaderType())
     {
     case cShaderType_Vertex:
         {
@@ -116,7 +116,7 @@ void ResShaderBinary::modifyBinaryEndian()
 void ResShaderBinary::setUp()
 {
 #if RIO_IS_CAFE
-    switch (ref().mShaderType)
+    switch (getShaderType())
     {
     case cShaderType_Vertex:
         {

@@ -29,7 +29,7 @@ public:
 
     void setGeometryShaderRingBuffer() const;
 
-  //void restoreContextState();
+    void restoreContextState();
 
 private:
     ShaderOptimizeInfo* mpOptimizeInfo;

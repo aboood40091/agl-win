@@ -8,7 +8,7 @@ namespace agl {
 struct ResShaderBinaryData
 {
     u32 mSize;
-    agl::ShaderType mShaderType;
+    u32 mShaderType;
     s32 mDataOffset; // Relative to end of struct
     u32 mDataSize;
 };
@@ -19,6 +19,11 @@ class ResShaderBinary : public ResCommon<ResShaderBinaryData>
     AGL_RES_COMMON(ResShaderBinary)
 
 public:
+    ShaderType getShaderType() const
+    {
+        return ShaderType(ref().mShaderType);
+    }
+
     void* getData() const
     {
         const DataType* const data = ptr();

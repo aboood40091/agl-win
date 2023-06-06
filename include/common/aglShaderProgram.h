@@ -6,6 +6,7 @@
 #include <common/aglShader.h>
 #include <common/aglShaderLocation.h>
 #include <container/Buffer.h>
+#include <container/SafeArray.h>
 #include <misc/rio_BitFlag.h>
 #include <misc/Namable.h>
 
@@ -65,9 +66,9 @@ public:
 
     void initialize(const char* name);
 
-    void createVariationBuffer(s32 num_variation);
+    void createVariationBuffer(s32 macro_num);
 
-    void createVariationMacro(s32 index, const char* name, const char* id, s32 num_value);
+    void createVariationMacro(s32 index, const char* name, const char* id, s32 value_num);
     void setVariationMacroValue(s32 macro_index, s32 value_index, const char* value);
 
     void createVariation();
@@ -170,6 +171,8 @@ public:
 
     const char* searchVariationMacroName(const char* id) const;
 
+    s32 getVariationMacroValueVariationNum(s32 macro_index) const;
+
     bool getCompileEnable() const
     {
         return mFlag.isOn(1);
@@ -180,12 +183,22 @@ public:
         mFlag.change(1, enable);
     }
 
+    void update() const // Shrug
+    {
+        validate_();
+    }
+
     void updateVariation(s32 index) // I don't know the actual name
     {
         ShaderProgram* program = getVariation(index);
         program->mFlag.set(8 | 2);
         program->validate_();
     }
+
+    const AttributeLocation& getAttributeLocation(s32 index) const { return mAttributeLocation[index]; }
+    const UniformLocation& getUniformLocation(s32 index) const { return mUniformLocation[index]; }
+    const UniformBlockLocation& getUniformBlockLocation(s32 index) const { return mUniformBlockLocation[index]; }
+    const SamplerLocation& getSamplerLocation(s32 index) const { return mSamplerLocation[index]; }
 
     void updateAttributeLocation() const;
     void updateUniformLocation() const;
@@ -218,9 +231,9 @@ private:
         VariationBuffer();
         virtual ~VariationBuffer();
 
-        void initialize(ShaderProgram* program, s32 num_variation);
+        void initialize(ShaderProgram* program, s32 macro_num);
 
-        void createMacro(s32 index, const char* name, const char* id, s32 num_value);
+        void createMacro(s32 index, const char* name, const char* id, s32 value_num);
         void setMacroValue(s32 macro_index, s32 value_index, const char* value);
 
         s32 searchShaderProgramIndex(s32 macro_num, const char* const* macro_array, const char* const* value_array, s32 index) const;
@@ -233,20 +246,27 @@ private:
         s32 getMacroValueIndexArray(s32 index, s32* value_index_array) const;
         s32 calcVariationIndex(const s32* value_index_array) const;
 
-        class Macro
+        s32 getMacroValueVariationNum(s32 macro_index) const
+        {
+            return mMacroData[macro_index].mValueVariationNum;
+        }
+
+        class MacroData
         {
             const char* mName;
             const char* mID;
             Buffer<const char*> mValue;
-            u16 _18;
+            u16 mValueVariationNum;                 // Number of variations using *succeeding* macros (i.e., ignoring preceding macros), if value of this macro is fixed.
+                                                    // i.e., In a matrix where variations are the rows, macros are the columns, and a cell would be a macro's value
+                                                    // in a certain variation, this field is the number a macro's value occurs before the next value in the macro's column.
 
             friend class VariationBuffer;
         };
-      //static_assert(sizeof(Macro) == 0x1C, "agl::ShaderProgram::VariationBuffer::Macro size mismatch");
+      //static_assert(sizeof(MacroData) == 0x1C, "agl::ShaderProgram::VariationBuffer::MacroData size mismatch");
 
         ShaderProgram* mpOriginal;
         Buffer<ShaderProgram> mProgram;
-        Buffer<Macro> mMacro;
+        Buffer<MacroData> mMacroData;
 
         friend class ShaderProgram;
         friend class SharedData;
@@ -259,7 +279,7 @@ private:
         VariationBuffer* mpVariationBuffer;
         u32 _10;
         ResShaderVariationArray mResShaderVariationDefaultArray; // Variation macro defaults
-        ResShaderSymbolArray mResShaderSymbolArray[cShaderSymbolType_Num]; // SafeArray<ResShaderSymbolArray, cShaderSymbolType_Num>
+        UnsafeArray<ResShaderSymbolArray, cShaderSymbolType_Num> mResShaderSymbolArray;
         u32 _28;
 
         friend class ShaderProgram;

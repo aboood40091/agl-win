@@ -5,6 +5,7 @@
 #include <common/aglShaderCompileInfo.h>
 #include <common/aglShaderProgram.h>
 #include <container/Buffer.h>
+#include <container/SafeArray.h>
 #include <misc/rio_BitFlag.h>
 
 namespace agl {
@@ -50,7 +51,7 @@ class ShaderProgramArchive
     private:
         s32 mIndex;
         ShaderProgramArchive* mpArchive;
-        ShaderCompileInfoEx mCompileInfoEx[cShaderType_Num];
+        UnsafeArray<ShaderCompileInfoEx, cShaderType_Num> mCompileInfoEx;
         Buffer<u32> _110; // No idea buffer of what
         s32 mVariationIndex;
         rio::BitFlag8 mFlag;

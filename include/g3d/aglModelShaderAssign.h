@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/aglShaderLocation.h>
+#include <container/SafeArray.h>
 
 #include <nw/g3d/fnd/g3d_GfxObject.h>
 #include <nw/g3d/res/g3d_ResMaterial.h>
@@ -17,7 +18,7 @@ namespace agl { namespace g3d {
 
 class ModelShaderAttribute
 {
-    class Attribute
+    struct Attribute
     {
         Attribute()
             : mIndex(0)
@@ -29,8 +30,6 @@ class ModelShaderAttribute
         s32 mIndex;
         const char* mName;
         s16 mLocation;
-
-        friend class ModelShaderAttribute;
     };
   //static_assert(sizeof(Attribute) == 0x10, "agl::g3d::ModelShaderAttribute::Attribute size mismatch");
 
@@ -47,13 +46,13 @@ public:
 
     void activateVertexBuffer() const;
 
-    const nw::g3d::fnd::GfxBuffer* getVertexBuffer(s32 index) const { return mpVertexBuffer[index]; }
+    const nw::g3d::fnd::GfxBuffer* getVertexBuffer(s32 index) const { return mVertexBuffer[index]; }
     void setVertexBuffer(const nw::g3d::fnd::GfxBuffer* p_buffer, s32 index);
 
 private:
     u8 _0;
     u8 mVertexBufferNum;
-    const nw::g3d::fnd::GfxBuffer* mpVertexBuffer[16]; // UnsafeArray
+    UnsafeArray<const nw::g3d::fnd::GfxBuffer*, 16> mVertexBuffer;
     nw::g3d::fnd::GfxFetchShader mFetchShader;
 };
 static_assert(sizeof(ModelShaderAttribute) == 0x6C, "agl::g3d::ModelShaderAttribute size mismatch");
@@ -70,7 +69,7 @@ public:
     const SamplerLocation& getSamplerLocation(s32 index) const { return mSamplerLocation[index]; }
 
     s32 getSamplerNum() const { return mSamplerNum; }
-    const nw::g3d::res::ResSampler* getResSampler(s32 index) const { return mpResSampler[index]; }
+    const nw::g3d::res::ResSampler* getResSampler(s32 index) const { return mResSampler[index]; }
 
     ModelShaderAttribute& getAttribute() { return mAttribute; }
     const ModelShaderAttribute& getAttribute() const { return mAttribute; }
@@ -93,8 +92,8 @@ private:
 private:
     const ShaderProgram* mpProgram;
     UniformBlockLocation mUniformBlockLocation;
-    SamplerLocation mSamplerLocation[16];       // UnsafeArray
-    const nw::g3d::res::ResSampler* mpResSampler[16]; // UnsafeArray
+    UnsafeArray<SamplerLocation, 16> mSamplerLocation;
+    UnsafeArray<const nw::g3d::res::ResSampler*, 16> mResSampler;
     u8 mSamplerNum;
     ModelShaderAttribute mAttribute;
 };
