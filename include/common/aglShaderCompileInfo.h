@@ -1,12 +1,11 @@
 #pragma once
 
+#include <common/aglShaderEnum.h>
 #include <container/Buffer.h>
 #include <container/PtrArray.h>
 #include <misc/Namable.h>
 
 namespace agl {
-
-enum ShaderType : s32;
 
 class ShaderCompileInfo : public INamable
 {
