@@ -5,6 +5,8 @@
 #include <container/PtrArray.h>
 #include <misc/Namable.h>
 
+#include <string>
+
 namespace agl {
 
 class ShaderCompileInfo : public INamable
