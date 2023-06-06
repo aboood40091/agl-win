@@ -1,6 +1,6 @@
+#include <common/aglResShaderSymbol.h>
 #include <common/aglShaderProgramArchive.h>
 #include <g3d/aglShaderUtilG3D.h>
-#include <util/common/aglResShaderSymbol.h>
 
 #include <nw/g3d/res/g3d_ResFile.h>
 

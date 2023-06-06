@@ -1,7 +1,7 @@
-#include <util/common/aglResShaderArchive.h>
-#include <util/common/aglResShaderVariation.h>
-#include <util/common/aglResShaderSymbol.h>
-#include <util/common/aglShader.h>
+#include <common/aglResShaderArchive.h>
+#include <common/aglResShaderVariation.h>
+#include <common/aglResShaderSymbol.h>
+#include <common/aglShader.h>
 
 #include <cstring>
 

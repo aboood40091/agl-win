@@ -1,7 +1,7 @@
 #pragma once
 
 #include <common/aglShaderEnum.h>
-#include <util/common/aglShaderOptimizeInfo.h>
+#include <common/aglShaderOptimizeInfo.h>
 
 namespace agl { namespace driver {
 

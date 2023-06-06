@@ -1,4 +1,4 @@
-#include <util/common/aglShaderOptimizeInfo.h>
+#include <common/aglShaderOptimizeInfo.h>
 
 namespace agl {
 

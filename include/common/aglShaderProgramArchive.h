@@ -1,11 +1,11 @@
 #pragma once
 
+#include <common/aglResShaderArchive.h>
+#include <common/aglResShaderSource.h>
+#include <common/aglShaderCompileInfo.h>
 #include <common/aglShaderProgram.h>
 #include <container/Buffer.h>
 #include <misc/rio_BitFlag.h>
-#include <util/common/aglResShaderArchive.h>
-#include <util/common/aglResShaderSource.h>
-#include <util/common/aglShaderCompileInfo.h>
 
 namespace agl {
 

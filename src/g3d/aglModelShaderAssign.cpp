@@ -1,7 +1,7 @@
+#include <common/aglResShaderSymbol.h>
 #include <common/aglShaderProgram.h>
 #include <container/Buffer.h>
 #include <g3d/aglModelShaderAssign.h>
-#include <util/common/aglResShaderSymbol.h>
 
 namespace agl { namespace g3d {
 

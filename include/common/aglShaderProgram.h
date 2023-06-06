@@ -1,13 +1,13 @@
 #pragma once
 
 #include <common/aglDisplayList.h>
+#include <common/aglResShaderSymbol.h>
+#include <common/aglResShaderVariation.h>
+#include <common/aglShader.h>
 #include <common/aglShaderLocation.h>
 #include <container/Buffer.h>
 #include <misc/rio_BitFlag.h>
 #include <misc/Namable.h>
-#include <util/common/aglResShaderSymbol.h>
-#include <util/common/aglResShaderVariation.h>
-#include <util/common/aglShader.h>
 
 #if RIO_IS_WIN
 #include <gpu/rio_Shader.h>

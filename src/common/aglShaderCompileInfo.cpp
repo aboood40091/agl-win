@@ -1,7 +1,7 @@
+#include <common/aglShaderCompileInfo.h>
 #include <common/aglShaderEnum.h>
 #include <detail/aglShaderTextUtil.h>
 #include <detail/aglPrivateResource.h>
-#include <util/common/aglShaderCompileInfo.h>
 
 #include <cstring>
 

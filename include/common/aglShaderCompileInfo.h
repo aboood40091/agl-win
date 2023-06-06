@@ -6,7 +6,7 @@
 
 namespace agl {
 
-enum ShaderType;
+enum ShaderType : s32;
 
 class ShaderCompileInfo : public INamable
 {

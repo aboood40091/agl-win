@@ -1,7 +1,7 @@
+#include <common/aglShader.h>
+#include <common/aglShaderCompileInfo.h>
 #include <detail/aglFileIOMgr.h>
 #include <detail/aglPrivateResource.h>
-#include <util/common/aglShader.h>
-#include <util/common/aglShaderCompileInfo.h>
 
 #if RIO_IS_WIN
 #include <filedevice/rio_FileDeviceMgr.h>

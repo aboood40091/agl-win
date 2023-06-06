@@ -1,7 +1,7 @@
 #pragma once
 
-#include <util/common/aglResShaderSymbol.h>
-#include <util/common/aglResShaderVariation.h>
+#include <common/aglResShaderSymbol.h>
+#include <common/aglResShaderVariation.h>
 
 namespace agl {
 
