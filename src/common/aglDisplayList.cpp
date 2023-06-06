@@ -33,7 +33,7 @@ void DisplayList::clear()
     if (mSelfAlloc && mpBuffer)
         rio::MemUtil::free(mpBuffer);
 
-    mpBuffer = NULL;
+    mpBuffer = nullptr;
     mSize = 0;
     mValidSize = 0;
     mSelfAlloc = false;
@@ -77,7 +77,7 @@ bool DisplayList::beginDisplayListBuffer(u8* buffer, size_t size)
 
 size_t DisplayList::endDisplayListBuffer()
 {
-    u8* buffer = NULL;
+    u8* buffer = nullptr;
     size_t size = endDisplayList();
     bool self_alloc = false;
     if (size != 0)
@@ -111,7 +111,7 @@ size_t DisplayList::suspend(void** p_dl)
 {
     RIO_ASSERT(p_dl != nullptr);
 
-    *p_dl = NULL;
+    *p_dl = nullptr;
     size_t size = 0;
 
 #if RIO_IS_CAFE
@@ -129,7 +129,7 @@ size_t DisplayList::suspend(void** p_dl)
 void DisplayList::resume(void* dl, size_t size)
 {
 #if RIO_IS_CAFE
-    if (dl != NULL)
+    if (dl != nullptr)
         GX2BeginDisplayListEx(dl, size, GX2_DISABLE);
 #endif // RIO_IS_CAFE
 }

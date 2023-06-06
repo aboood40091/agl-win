@@ -30,7 +30,7 @@ ShaderProgram::ShaderProgram()
     , mVertexShader()
     , mFragmentShader()
     , mGeometryShader()
-    , mpSharedData(NULL)
+    , mpSharedData(nullptr)
 {
 }
 
@@ -54,7 +54,7 @@ void ShaderProgram::initialize(const char* name)
 {
     mpSharedData = new SharedData();
     mpSharedData->mpOriginal = this;
-    mpSharedData->mpVariationBuffer = NULL;
+    mpSharedData->mpVariationBuffer = nullptr;
     mpSharedData->_10 = 0;
     mpSharedData->setName(name);
     mpSharedData->_28 = 0;
@@ -63,7 +63,7 @@ void ShaderProgram::initialize(const char* name)
     {
         typedef Buffer<ResShaderSymbolArray>::iterator _Iterator;
         for (_Iterator it = _Iterator(mpSharedData->mResShaderSymbolArray), it_end = _Iterator(mpSharedData->mResShaderSymbolArray, cShaderSymbolType_Num); it != it_end; ++it)
-            *it = NULL;
+            *it = nullptr;
     }
 }
 
@@ -129,7 +129,7 @@ Shader* ShaderProgram::getShader(ShaderType type)
     case cShaderType_Geometry:
         return &mGeometryShader;
     default:
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -144,7 +144,7 @@ const Shader* ShaderProgram::getShader(ShaderType type) const
     case cShaderType_Geometry:
         return &mGeometryShader;
     default:
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -413,7 +413,7 @@ u32 ShaderProgram::forceValidate_() const
 #endif // RIO_IS_WIN
             dump();
 
-            if (mDisplayList.getBuffer() != NULL)
+            if (mDisplayList.getBuffer() != nullptr)
             {
                 void* p_dl;
                 size_t size = DisplayList::suspend(&p_dl);
@@ -429,7 +429,7 @@ u32 ShaderProgram::forceValidate_() const
         }
         else
         {
-            if (mDisplayList.getBuffer() != NULL)
+            if (mDisplayList.getBuffer() != nullptr)
             {
               //sead::Graphics::instance()->lockDrawContext();
                 {

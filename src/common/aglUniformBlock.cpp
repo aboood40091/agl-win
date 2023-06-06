@@ -36,8 +36,8 @@ static const u8 sTypeInfo[agl::UniformBlock::cType_Num][3] = {
 namespace agl {
 
 UniformBlock::UniformBlock()
-    : mpHeader(NULL)
-    , mCurrentBuffer(NULL)
+    : mpHeader(nullptr)
+    , mCurrentBuffer(nullptr)
 #if RIO_IS_WIN
     , mpUBO(nullptr)
 #endif // RIO_IS_WIN
@@ -134,7 +134,7 @@ void UniformBlock::destroy()
         if (mCurrentBuffer)
         {
             rio::MemUtil::free(mCurrentBuffer);
-            mCurrentBuffer = NULL;
+            mCurrentBuffer = nullptr;
         }
 #if RIO_IS_WIN
         if (mpUBO)
@@ -146,7 +146,7 @@ void UniformBlock::destroy()
         mFlag.reset(cFlag_OwnBuffer);
     }
 
-    mCurrentBuffer = NULL;
+    mCurrentBuffer = nullptr;
 #if RIO_IS_WIN
     mpUBO = nullptr;
 #endif // RIO_IS_WIN
@@ -156,7 +156,7 @@ void UniformBlock::destroy()
     {
         delete mpHeader->mpMember; // Nintendo forgot to use delete[] again
         delete mpHeader;
-        mpHeader = NULL;
+        mpHeader = nullptr;
         mFlag.reset(cFlag_OwnHeader);
     }
 }

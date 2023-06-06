@@ -126,7 +126,7 @@ public:
         if (index >= 0 && index < mProgram.size())
             return mProgram.unsafeGet(index);
 
-        return NULL;
+        return nullptr;
     }
 
     void updateCompileInfo();

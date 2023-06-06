@@ -38,7 +38,7 @@ template <typename T>
 T* modifyBinaryAndNamePtr(void* base_ptr, T* ptr, s32 num)
 {
     if (!ptr)
-        return NULL;
+        return nullptr;
 
     ptr = (T*)(uintptr_t(base_ptr) + uintptr_t(ptr));
 
@@ -62,7 +62,7 @@ namespace agl {
 void ResShaderBinary::modifyBinaryEndian()
 {
     size_t size = 0;
-    void* data = NULL;
+    void* data = nullptr;
 
 #if RIO_IS_CAFE
     switch (ref().mShaderType)
@@ -221,7 +221,7 @@ ResShaderSymbol ResShaderSymbolArray::searchResShaderSymbolByID(const char* id) 
             return &(*it);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 ResShaderMacroArray ResShaderProgram::getResShaderMacroArray(ShaderType type) const

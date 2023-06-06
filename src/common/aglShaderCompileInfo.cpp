@@ -9,8 +9,8 @@ namespace agl {
 
 ShaderCompileInfo::ShaderCompileInfo()
     : INamable("unititled")
-    , mSourceText(NULL)
-    , mRawText(NULL)
+    , mSourceText(nullptr)
+    , mRawText(nullptr)
     , mMacroName()
     , mMacroValue()
     , mVariationName()

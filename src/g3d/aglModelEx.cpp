@@ -4,9 +4,9 @@
 namespace agl { namespace g3d {
 
 MaterialEx::MaterialEx()
-    : mpModelEx(NULL)
-    , mpMaterialObj(NULL)
-    , mpProgram(NULL)
+    : mpModelEx(nullptr)
+    , mpMaterialObj(nullptr)
+    , mpProgram(nullptr)
     , mMatBlock()
     , _20(true)
 {
@@ -32,7 +32,7 @@ void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const char*
     mpProgram = p_program;
 
     const nw::g3d::res::ResShaderAssign* p_res_shader_assign = mpMaterialObj->GetResource()->GetShaderAssign();
-    if (p_res_shader_assign == NULL || p_program == NULL)
+    if (p_res_shader_assign == nullptr || p_program == nullptr)
     {
         for (s32 idx_shape = 0; idx_shape < mpModelEx->GetShapeCount(); idx_shape++)
         {
@@ -41,7 +41,7 @@ void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const char*
                 mpModelEx->getShaderAssign(idx_shape).bindShaderResAssign(
                     mpMaterialObj->GetResource(),
                     mpModelEx->GetShape(idx_shape)->GetResource(),
-                    NULL
+                    nullptr
                 );
             }
         }
@@ -109,8 +109,8 @@ void MaterialEx::fixUpUBO()
 
 ModelEx::ModelEx()
     : nw::g3d::ModelObj()
-    , mpShaderAssign(NULL)
-    , mpMaterialEx(NULL)
+    , mpShaderAssign(nullptr)
+    , mpMaterialEx(nullptr)
 {
 }
 
@@ -140,12 +140,12 @@ void ModelEx::destroyEx()
     if (mpShaderAssign)
     {
         delete[] mpShaderAssign;
-        mpShaderAssign = NULL;
+        mpShaderAssign = nullptr;
     }
     if (mpMaterialEx)
     {
         delete[] mpMaterialEx;
-        mpMaterialEx = NULL;
+        mpMaterialEx = nullptr;
     }
 }
 

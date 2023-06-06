@@ -5,7 +5,7 @@
 
 namespace agl { namespace detail {
 
-FileIOMgr* FileIOMgr::sInstance = NULL;
+FileIOMgr* FileIOMgr::sInstance = nullptr;
 
 bool FileIOMgr::save(const void* p_buf, u32 size, const DialogArg& arg)
 {
@@ -69,11 +69,11 @@ s32 FileIOMgr::load(const DialogArg& arg)
     do
     {
         s32 index = -1;
-        File* pBinary = NULL;
+        File* pBinary = nullptr;
 
         for (Buffer<File>::iterator it = mBuffer.begin(), it_end = mBuffer.end(); it != it_end; ++it)
         {
-            if (it->mpData == NULL)
+            if (it->mpData == nullptr)
             {
                 index = it.getIndex();
                 pBinary = &(*it);
@@ -116,7 +116,7 @@ void FileIOMgr::close(s32 index)
         if (mBuffer[index].mpData)
         {
             delete[] mBuffer[index].mpData;
-            mBuffer[index].mpData = NULL;
+            mBuffer[index].mpData = nullptr;
             mBuffer[index].mSize = 0;
         }
     }
@@ -128,7 +128,7 @@ FileIOMgr::DialogArg::DialogArg()
     , mDefaultFilename()
     , mDefaultID("agl_default")
     , mPath()
-    , mOutPath(NULL)
+    , mOutPath(nullptr)
     , mLoadAlignment(0x20) // Why not rio::FileDevice::cBufferMinAlignment is beyond me
 {
 }

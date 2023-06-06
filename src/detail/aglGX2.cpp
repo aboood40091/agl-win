@@ -8,7 +8,7 @@
 
 namespace agl { namespace driver {
 
-GX2Resource* GX2Resource::sInstance = NULL;
+GX2Resource* GX2Resource::sInstance = nullptr;
 
 bool GX2Resource::createSingleton()
 {
@@ -33,9 +33,9 @@ GX2Resource::GX2Resource()
     , mDefaultOptimizeInfo()
     , mGeometryShaderInputRingItemSize(0)
     , mGeometryShaderOutputRingItemSize(0)
-    , mGeometryShaderInputRingBuffer(NULL)
+    , mGeometryShaderInputRingBuffer(nullptr)
     , mGeometryShaderInputRingBufferSize(0)
-    , mGeometryShaderOutputRingBuffer(NULL)
+    , mGeometryShaderOutputRingBuffer(nullptr)
     , mGeometryShaderOutputRingBufferSize(0)
     , mStateShadowEnable(true)
     , mUseStateDisplayList(false)
@@ -48,13 +48,13 @@ GX2Resource::~GX2Resource()
     if (mGeometryShaderInputRingBuffer)
     {
         rio::MemUtil::free(mGeometryShaderInputRingBuffer);
-        mGeometryShaderInputRingBuffer = NULL;
+        mGeometryShaderInputRingBuffer = nullptr;
     }
 
     if (mGeometryShaderOutputRingBuffer)
     {
         rio::MemUtil::free(mGeometryShaderOutputRingBuffer);
-        mGeometryShaderOutputRingBuffer = NULL;
+        mGeometryShaderOutputRingBuffer = nullptr;
     }
 }
 
@@ -112,7 +112,7 @@ void GX2Resource::setShaderMode(ShaderMode mode, const ShaderOptimizeInfo& info)
             info.getFragmentShaderGprs(),
             info.getFragmentShaderStackSize()
         );
-        GX2Invalidate(GX2_INVALIDATE_UNIFORM_BLOCK, NULL, 0xFFFFFFFF);
+        GX2Invalidate(GX2_INVALIDATE_UNIFORM_BLOCK, nullptr, 0xFFFFFFFF);
         break;
     case cShaderMode_GeometryShader:
         GX2SetShaderModeEx(
@@ -124,7 +124,7 @@ void GX2Resource::setShaderMode(ShaderMode mode, const ShaderOptimizeInfo& info)
             info.getFragmentShaderWithGSGprs(),
             info.getFragmentShaderWithGSStackSize()
         );
-        GX2Invalidate(GX2_INVALIDATE_UNIFORM_BLOCK, NULL, 0xFFFFFFFF);
+        GX2Invalidate(GX2_INVALIDATE_UNIFORM_BLOCK, nullptr, 0xFFFFFFFF);
         break;
     }
 #endif // RIO_IS_CAFE
@@ -160,7 +160,7 @@ void GX2Resource::restoreContextState()
     }
     else
     {
-        GX2SetContextState(NULL);
+        GX2SetContextState(nullptr);
     }
 }
 */

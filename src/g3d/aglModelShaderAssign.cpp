@@ -36,7 +36,7 @@ void ModelShaderAttribute::clear()
     {
         typedef Buffer<const nw::g3d::fnd::GfxBuffer*>::iterator _Iterator;
         for (_Iterator it = _Iterator(mpVertexBuffer), it_end = _Iterator(mpVertexBuffer, 16); it != it_end; ++it)
-            *it = NULL;
+            *it = nullptr;
     }
 }
 
@@ -49,7 +49,7 @@ void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, cons
     if (use_res_assign)
         p_res_shader_assign = p_res_mat->GetShaderAssign();
     else
-        p_res_shader_assign = NULL;
+        p_res_shader_assign = nullptr;
 
     const ResShaderSymbolArray& symbol_array = p_program->getResShaderSymbolArray(cShaderSymbolType_Attribute);
     Attribute attribute[16]; // UnsafeArray<Attribute, 16>
@@ -64,17 +64,17 @@ void ModelShaderAttribute::bind(const nw::g3d::res::ResMaterial* p_res_mat, cons
         if (!symbol.isVariationEnable(p_program->getVariationID()))
             continue;
 
-        const char* name = NULL;
+        const char* name = nullptr;
         if (p_res_shader_assign)
             name = p_res_shader_assign->GetAttribAssign(symbol_id);
 
-        if (name == NULL)
+        if (name == nullptr)
         {
             if (!use_shader_symbol_id)
                 continue;
 
             name = symbol.getID();
-            if (name == NULL)
+            if (name == nullptr)
                 continue;
         }
 
@@ -150,7 +150,7 @@ void ModelShaderAttribute::setVertexBuffer(const nw::g3d::fnd::GfxBuffer* p_buff
 }
 
 ModelShaderAssign::ModelShaderAssign()
-    : mpProgram(NULL)
+    : mpProgram(nullptr)
     , mUniformBlockLocation()
     , mSamplerLocation()
     , mpResSampler()
@@ -177,7 +177,7 @@ void ModelShaderAssign::clear_()
     {
         typedef Buffer<const nw::g3d::res::ResSampler*>::iterator _Iterator;
         for (_Iterator it = _Iterator(mpResSampler), it_end = _Iterator(mpResSampler, 16); it != it_end; ++it)
-            *it = NULL;
+            *it = nullptr;
     }
 }
 
@@ -187,7 +187,7 @@ void ModelShaderAssign::bind(const nw::g3d::res::ResMaterial* p_res_mat, const S
     if (use_res_assign)
         p_res_shader_assign = p_res_mat->GetShaderAssign();
     else
-        p_res_shader_assign = NULL;
+        p_res_shader_assign = nullptr;
 
     const ResShaderSymbolArray& symbol_array = p_program->getResShaderSymbolArray(cShaderSymbolType_Sampler);
     for (ResShaderSymbolArray::constIterator it = symbol_array.begin(), it_end = symbol_array.end(); it != it_end; ++it)
@@ -200,17 +200,17 @@ void ModelShaderAssign::bind(const nw::g3d::res::ResMaterial* p_res_mat, const S
         if (!symbol.isVariationEnable(p_program->getVariationID()))
             continue;
 
-        const char* name = NULL;
+        const char* name = nullptr;
         if (p_res_shader_assign)
             name = p_res_shader_assign->GetSamplerAssign(symbol_id);
 
-        if (name == NULL)
+        if (name == nullptr)
         {
             if (!use_shader_symbol_id)
                 continue;
 
             name = symbol.getID();
-            if (name == NULL)
+            if (name == nullptr)
                 continue;
         }
 

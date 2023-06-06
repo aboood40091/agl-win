@@ -89,7 +89,7 @@ void ShaderProgramArchive::destroy()
 {
     destroyResFile_();
     mProgram.freeBuffer();
-    mResBinary = NULL;
+    mResBinary = nullptr;
     _28 = 0;
 
     if (mpDLBuf)
@@ -108,7 +108,7 @@ void ShaderProgramArchive::destroyResFile_()
         mSourceName.freeBuffer();
         mSource.freeBuffer();
     }
-    mResText = NULL;
+    mResText = nullptr;
 }
 
 void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_archive, ResShaderArchive res_archive, u32 flag)
@@ -126,7 +126,7 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
 
         bool create_dl = !(flag & 1);
 
-        u8* dl_buf = NULL;
+        u8* dl_buf = nullptr;
         u32 cur_dl_offs = 0;
         const u32 dl_size = 0x220;
 
@@ -355,7 +355,7 @@ bool ShaderProgramArchive::setUp_(bool unk)
 
 ShaderProgramArchive::ShaderProgramEx::ShaderProgramEx()
     : mIndex(0)
-    , mpArchive(NULL)
+    , mpArchive(nullptr)
     , mCompileInfoEx()
     , _110()
     , mVariationIndex(0)
@@ -404,7 +404,7 @@ void ShaderProgramArchive::ShaderProgramEx::initialize(ShaderProgramArchive* arc
             }
             else
             {
-                it->mSource = NULL;
+                it->mSource = nullptr;
             }
         }
     }
@@ -444,10 +444,10 @@ void ShaderProgramArchive::ShaderProgramEx::updateAnalyze()
 
 ShaderProgramArchive::ShaderSource::ShaderSource()
     : mFlag(1)
-    , mpArchive(NULL)
+    , mpArchive(nullptr)
     , mRes()
-    , mText(NULL)
-    , mRawText(NULL)
+    , mText(nullptr)
+    , mRawText(nullptr)
     , mUsedInSource()
 {
 }
@@ -488,7 +488,7 @@ void ShaderProgramArchive::ShaderSource::expand()
     if (mRawText)
     {
         delete mRawText;
-        mRawText = NULL;
+        mRawText = nullptr;
     }
 
     RIO_ASSERT(mpArchive->mSource.size() < 1024);

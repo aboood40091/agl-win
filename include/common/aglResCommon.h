@@ -14,7 +14,7 @@ public:
 
 public:
     ResCommon()
-         : mpData(NULL)
+         : mpData(nullptr)
      {
      }
 
@@ -25,7 +25,7 @@ public:
 
     bool isValid() const
     {
-        return mpData != NULL;
+        return mpData != nullptr;
     }
 
     void verify() const
@@ -176,8 +176,8 @@ public:
     iterator begin() { return iterator(0, (ElemDataType*)(Base::ptr() + 1)); }
     constIterator begin() const { return constIterator(0, (const ElemDataType*)(Base::ptr() + 1)); }
 
-    iterator end() { return iterator(getNum(), NULL); }
-    constIterator end() const { return constIterator(getNum(), NULL); }
+    iterator end() { return iterator(getNum(), nullptr); }
+    constIterator end() const { return constIterator(getNum(), nullptr); }
 
 public:
     u32 getNum() const
@@ -190,7 +190,7 @@ public:
         RIO_ASSERT(0 <= n && n <= static_cast< int >( this->getNum() ));
 
         constIterator it = begin();
-        constIterator it_end = constIterator(n, NULL);
+        constIterator it_end = constIterator(n, nullptr);
 
         while (it != it_end)
             ++it;
