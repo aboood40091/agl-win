@@ -2,9 +2,12 @@
 
 namespace agl {
 
-void ModifyEndianU32(bool is_le, void* ptr, size_t size)
+void ModifyEndianU32(bool is_le, void* p_data, size_t size)
 {
-    u32* ptr_u32 = static_cast<u32*>(ptr);
+    RIO_ASSERT(p_data != nullptr);
+    RIO_ASSERT(size % 4 == 0);
+
+    u32* p_data_u32 = static_cast<u32*>(p_data);
     u32 count = size / sizeof(u32);
 
     for (u32 i = 0; i < count; i++)
@@ -14,9 +17,9 @@ void ModifyEndianU32(bool is_le, void* ptr, size_t size)
 #else
         if (!is_le)
 #endif
-            *ptr_u32 = __builtin_bswap32(*ptr_u32);
+            *p_data_u32 = __builtin_bswap32(*p_data_u32);
 
-        ptr_u32++;
+        p_data_u32++;
     }
 }
 

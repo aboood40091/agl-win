@@ -2,8 +2,6 @@
 
 #include <misc/rio_MemUtil.h>
 
-#include <gsl/span>
-
 template <typename T>
 class Buffer
 {
@@ -32,86 +30,175 @@ public:
     }
 
 public:
+    class iterator;
+    class constIterator;
+
     class iterator
     {
     public:
-        explicit iterator(T* buffer, s32 index = 0)
-            : mPtr(buffer + index)
-            , mStart(buffer)
+        iterator()
+            : mPtr(nullptr) // mIndex(0)
+            , mBuffer(nullptr)
         {
         }
 
-        bool operator==(const iterator& rhs) const
+        explicit iterator(Buffer* buffer)
+            : mPtr(buffer->mBuffer) // mIndex(0)
+            , mBuffer(buffer->mBuffer)
         {
-            return mPtr == rhs.mPtr;
         }
 
-        bool operator!=(const iterator& rhs) const
+        iterator(Buffer* buffer, s32 index)
+            : mPtr(&buffer->mBuffer[index]) // mIndex(index)
+            , mBuffer(buffer->mBuffer)
         {
-            return mPtr != rhs.mPtr;
         }
 
         iterator& operator++()
         {
-            mPtr++;
+            mPtr++; // mIndex++;
             return *this;
         }
 
-        T& operator*() const { return *mPtr; }
-        T* operator->() const { return mPtr; }
+        iterator& operator--()
+        {
+            mPtr--; // mIndex--;
+            return *this;
+        }
 
-        s32 getIndex() const { return ((uintptr_t)mPtr - (uintptr_t)mStart) / sizeof(T); }
+        friend bool operator==(const iterator& lhs, const iterator& rhs)
+        {
+            return lhs.mPtr == rhs.mPtr; // lhs.mIndex == rhs.mIndex;
+        }
+
+        friend bool operator!=(const iterator& lhs, const iterator& rhs)
+        {
+            return lhs.mPtr != rhs.mPtr; // lhs.mIndex != rhs.mIndex;
+        }
+
+        T& operator*() const { return *mPtr; } // mBuffer[mIndex];
+        T* operator->() const { return mPtr; } // &(mBuffer[mIndex]);
+
+        s32 getIndex() const { return (uintptr_t(mPtr) - uintptr_t(mBuffer)) / sizeof(T); } // mIndex;
 
     private:
-        T* mPtr;
-        T* mStart;
+        T* mPtr; // int mIndex;
+        T* mBuffer;
+
+        friend class constIterator;
     };
 
     class constIterator
     {
     public:
-        explicit constIterator(const T* buffer, s32 index = 0)
-            : mPtr(buffer + index)
-            , mStart(buffer)
+        constIterator()
+            : mPtr(nullptr) // mIndex(0)
+            , mBuffer(nullptr)
         {
         }
 
-        bool operator==(const constIterator& rhs) const
+        explicit constIterator(const Buffer* buffer)
+            : mPtr(buffer->mBuffer) // mIndex(0)
+            , mBuffer(buffer->mBuffer)
         {
-            return mPtr == rhs.mPtr;
         }
 
-        bool operator!=(const constIterator& rhs) const
+        constIterator(const Buffer* buffer, s32 index)
+            : mPtr(&buffer->mBuffer[index]) // mIndex(index)
+            , mBuffer(buffer->mBuffer)
         {
-            return mPtr != rhs.mPtr;
+        }
+
+        explicit constIterator(iterator it)
+            : mPtr(it.mPtr) // mIndex(it.mIndex)
+            , mBuffer(it.mBuffer)
+        {
         }
 
         constIterator& operator++()
         {
-            mPtr++;
+            mPtr++; // mIndex++;
             return *this;
         }
 
-        const T& operator*() const { return *mPtr; }
-        const T* operator->() const { return mPtr; }
+        constIterator& operator--()
+        {
+            mPtr--; // mIndex--;
+            return *this;
+        }
 
-        s32 getIndex() const { return ((uintptr_t)mPtr - (uintptr_t)mStart) / sizeof(T); }
+        friend bool operator==(const constIterator& lhs, const constIterator& rhs)
+        {
+            return lhs.mPtr == rhs.mPtr; // lhs.mIndex == rhs.mIndex;
+        }
+
+        friend bool operator!=(const constIterator& lhs, const constIterator& rhs)
+        {
+            return lhs.mPtr != rhs.mPtr; // lhs.mIndex != rhs.mIndex;
+        }
+
+        const T& operator*() const { return *mPtr; } // mBuffer[mIndex];
+        const T* operator->() const { return mPtr; } // &(mBuffer[mIndex]);
+
+        s32 getIndex() const { return (uintptr_t(mPtr) - uintptr_t(mBuffer)) / sizeof(T); } // mIndex;
 
     private:
-        const T* mPtr;
-        const T* mStart;
+        const T* mPtr; // int mIndex;
+        const T* mBuffer;
     };
 
 public:
-    iterator begin() { return iterator(mBuffer); }
-    constIterator begin() const { return constIterator(mBuffer); }
+    iterator begin() { return iterator(this); }
+    constIterator begin() const { return constIterator(this); }
 
-    iterator end() { return iterator(mBuffer, mSize); }
-    constIterator end() const { return constIterator(mBuffer, mSize); }
+    iterator end() { return iterator(this, mSize); }
+    constIterator end() const { return constIterator(this, mSize); }
 
-    constIterator constBegin() const { return constIterator(mBuffer); }
+    iterator toIterator(s32 x)
+    {
+        if (static_cast<u32>(x) <= static_cast<u32>(mSize))
+        {
+            return iterator(this, x);
+        }
+        else
+        {
+            RIO_LOG("range over [0,%d] : %d\n", mSize, x);
+            RIO_ASSERT(false);
+            return end();
+        }
+    }
 
-    constIterator constEnd() const { return constIterator(mBuffer, mSize); }
+    constIterator toIterator(s32 x) const
+    {
+        if (static_cast<u32>(x) <= static_cast<u32>(mSize))
+        {
+            return constIterator(this, x);
+        }
+        else
+        {
+            RIO_LOG("range over [0,%d] : %d\n", mSize, x);
+            RIO_ASSERT(false);
+            return end();
+        }
+    }
+
+    constIterator constBegin() const { return constIterator(this); }
+
+    constIterator constEnd() const { return constIterator(this, mSize); }
+
+    constIterator toConstIterator(s32 x) const
+    {
+        if (static_cast<u32>(x) <= static_cast<u32>(mSize))
+        {
+            return constIterator(this, x);
+        }
+        else
+        {
+            RIO_LOG("range over [0,%d] : %d\n", mSize, x);
+            RIO_ASSERT(false);
+            return constEnd();
+        }
+    }
 
 public:
     void allocBuffer(s32 size, s32 alignment = 4)
@@ -126,11 +213,12 @@ public:
                 new (static_cast<void*>(&buffer[i])) T;
 
             setBuffer(size, buffer);
-            return;
         }
-
-        RIO_LOG("size[%d] must be larger than zero\n", size);
-        RIO_ASSERT(false);
+        else
+        {
+            RIO_LOG("size[%d] must be larger than zero\n", size);
+            RIO_ASSERT(false);
+        }
     }
 
     bool tryAllocBuffer(s32 size, s32 alignment = 4)
@@ -147,8 +235,12 @@ public:
             setBuffer(size, buffer);
             return true;
         }
-
-        return false;
+        else
+        {
+            RIO_LOG("size[%d] must be larger than zero\n", size);
+            RIO_ASSERT(false);
+            return false;
+        }
     }
 
     void freeBuffer()

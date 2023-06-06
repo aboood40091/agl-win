@@ -291,9 +291,9 @@ public:
     }
 
 protected:
-    void setBuffer(s32, void*);
-    void allocBuffer(s32, T*, s32);
-    bool tryAllocBuffer(s32, T*, s32);
+    void setBuffer(s32 ptrNumMax, void* buf);
+    void allocBuffer(s32 ptrNumMax, s32 alignment);
+    bool tryAllocBuffer(s32 ptrNumMax, s32 alignment);
     void freeBuffer();
 
 protected:

@@ -4,7 +4,7 @@
 
 namespace agl {
 
-void ModifyEndianU32(bool is_le, void* ptr, size_t size);
+void ModifyEndianU32(bool is_le, void* p_data, size_t size);
 
 template <typename _DataType>
 class ResCommon
@@ -14,14 +14,14 @@ public:
 
 public:
     ResCommon()
-         : mpData(nullptr)
-     {
-     }
+        : mpData(nullptr)
+    {
+    }
 
-     ResCommon(const void* data)
-         : mpData(static_cast<const DataType*>(data))
-     {
-     }
+    ResCommon(const void* data)
+        : mpData(static_cast<const DataType*>(data))
+    {
+    }
 
     bool isValid() const
     {
@@ -86,6 +86,23 @@ private:
         {                                                       \
         }
 
+#define AGL_RES_FILE_HEADER()                                                   \
+    public:                                                                     \
+        bool modifyEndian() const                                               \
+        {                                                                       \
+            return ref().mEndian & DataType::cEndianCheckBit;                   \
+        }                                                                       \
+                                                                                \
+        bool isEndianResolved() const                                           \
+        {                                                                       \
+            return !modifyEndian();                                             \
+        }                                                                       \
+                                                                                \
+        void setEndianResolved()                                                \
+        {                                                                       \
+            ref().mEndian = 1 - ref().mEndian;                                  \
+        }
+
 template <typename DataType>
 struct ResArrayData
 {
@@ -117,17 +134,20 @@ public:
         {
         }
 
-        bool operator==(const iterator& rhs) const
+        friend bool operator==(const iterator& lhs, const iterator& rhs)
         {
-            return mIndex == rhs.mIndex;
+            return lhs.mIndex == rhs.mIndex;
         }
 
-        bool operator!=(const iterator& rhs) const { return !operator==(rhs); }
+        friend bool operator!=(const iterator& lhs, const iterator& rhs)
+        {
+            return lhs.mIndex != rhs.mIndex;
+        }
 
         iterator& operator++()
         {
             ++mIndex;
-            mElem = (ElemDataType*)((uintptr_t)mElem + mElem->mSize);
+            mElem = (ElemDataType*)((uintptr_t)mElem + Type(mElem).ref().mSize);
             return *this;
         }
 
@@ -149,17 +169,20 @@ public:
         {
         }
 
-        bool operator==(const constIterator& rhs) const
+        friend bool operator==(const constIterator& lhs, const constIterator& rhs)
         {
-            return mIndex == rhs.mIndex;
+            return lhs.mIndex == rhs.mIndex;
         }
 
-        bool operator!=(const constIterator& rhs) const { return !operator==(rhs); }
+        friend bool operator!=(const constIterator& lhs, const constIterator& rhs)
+        {
+            return lhs.mIndex != rhs.mIndex;
+        }
 
         constIterator& operator++()
         {
             ++mIndex;
-            mElem = (const ElemDataType*)((uintptr_t)mElem + mElem->mSize);
+            mElem = (const ElemDataType*)((uintptr_t)mElem + Type(mElem).ref().mSize);
             return *this;
         }
 
@@ -175,9 +198,11 @@ public:
 public:
     iterator begin() { return iterator(0, (ElemDataType*)(Base::ptr() + 1)); }
     constIterator begin() const { return constIterator(0, (const ElemDataType*)(Base::ptr() + 1)); }
+    constIterator constBegin() const { return constIterator(0, (const ElemDataType*)(Base::ptr() + 1)); }
 
     iterator end() { return iterator(getNum(), nullptr); }
     constIterator end() const { return constIterator(getNum(), nullptr); }
+    constIterator constEnd() const { return constIterator(getNum(), nullptr); }
 
 public:
     u32 getNum() const
@@ -189,13 +214,13 @@ public:
     {
         RIO_ASSERT(0 <= n && n <= static_cast< int >( this->getNum() ));
 
-        constIterator it = begin();
-        constIterator it_end = constIterator(n, nullptr);
+        constIterator itr = constBegin();
+        constIterator itr_end = constIterator(n, nullptr);
 
-        while (it != it_end)
-            ++it;
+        while (itr != itr_end)
+            ++itr;
 
-        return &(*it);
+        return &(*itr);
     }
 
     void modifyEndianArray(bool is_le)
