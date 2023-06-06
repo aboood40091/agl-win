@@ -32,7 +32,7 @@ public:
     {
         if (ref().mSigWord != DataType::cSignature)
         {
-            const char* signature = ptr()->mSignature;
+            [[maybe_unused]] const char* signature = ptr()->mSignature;
             RIO_LOG("Wrong binary. [%c%c%c%c].\n",
                 signature[0], signature[1],
                 signature[2], signature[3]);
