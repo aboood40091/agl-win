@@ -2,6 +2,8 @@
 
 #include <misc/rio_MemUtil.h>
 
+#include <new>
+
 template <typename T>
 class Buffer
 {
