@@ -15,7 +15,7 @@ void UniformLocation::setUniform(f32 v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4f{ v, 0.0f, 0.0f, 0.0f }, mVS, mFS);
+    setUniform(rio::BaseVec4f{ v, 0.0f, 0.0f, 0.0f });
 
 #elif RIO_IS_WIN
 
@@ -48,7 +48,7 @@ void UniformLocation::setUniform(s32 v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4i{ v, 0, 0, 0 }, mVS, mFS);
+    setUniform(rio::BaseVec4i{ v, 0, 0, 0 });
 
 #elif RIO_IS_WIN
 
@@ -81,7 +81,7 @@ void UniformLocation::setUniform(u32 v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4u{ v, 0, 0, 0 }, mVS, mFS);
+    setUniform(rio::BaseVec4u{ v, 0, 0, 0 });
 
 #elif RIO_IS_WIN
 
@@ -114,7 +114,7 @@ void UniformLocation::setUniform(const rio::BaseVec2f& v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4f{ v.x, v.y, 0.0f, 0.0f }, mVS, mFS);
+    setUniform(rio::BaseVec4f{ v.x, v.y, 0.0f, 0.0f });
 
 #elif RIO_IS_WIN
 
@@ -147,7 +147,7 @@ void UniformLocation::setUniform(const rio::BaseVec2i& v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4i{ v.x, v.y, 0, 0 }, mVS, mFS);
+    setUniform(rio::BaseVec4i{ v.x, v.y, 0, 0 });
 
 #elif RIO_IS_WIN
 
@@ -180,7 +180,7 @@ void UniformLocation::setUniform(const rio::BaseVec2u& v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4u{ v.x, v.y, 0, 0 }, mVS, mFS);
+    setUniform(rio::BaseVec4u{ v.x, v.y, 0, 0 });
 
 #elif RIO_IS_WIN
 
@@ -213,7 +213,7 @@ void UniformLocation::setUniform(const rio::BaseVec3f& v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4f{ v.x, v.y, v.z, 0.0f }, mVS, mFS);
+    setUniform(rio::BaseVec4f{ v.x, v.y, v.z, 0.0f });
 
 #elif RIO_IS_WIN
 
@@ -246,7 +246,7 @@ void UniformLocation::setUniform(const rio::BaseVec3i& v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4i{ v.x, v.y, v.z, 0 }, mVS, mFS);
+    setUniform(rio::BaseVec4i{ v.x, v.y, v.z, 0 });
 
 #elif RIO_IS_WIN
 
@@ -279,7 +279,7 @@ void UniformLocation::setUniform(const rio::BaseVec3u& v)
 
 #if RIO_IS_CAFE
 
-    setUniform(BaseVec4u{ v.x, v.y, v.z, 0 }, mVS, mFS);
+    setUniform(rio::BaseVec4u{ v.x, v.y, v.z, 0 });
 
 #elif RIO_IS_WIN
 

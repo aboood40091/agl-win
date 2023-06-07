@@ -149,8 +149,8 @@ inline void GetContextStateDisplayList(GX2ContextState* state, void** pp_dl, u32
     // GX2GetContextStateDisplayList(state, pp_dl, p_size);
 
     // ... Or they did this
-    *pp_dl = &state->data[0x9E00 / sizeof(u32)];
-    *p_size = state->data[0x9804 / sizeof(u32)];
+    *pp_dl  = state->shadowDisplayList;
+    *p_size = state->shadowDisplayListSize;
 }
 
 }
