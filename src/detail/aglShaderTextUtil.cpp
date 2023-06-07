@@ -227,9 +227,12 @@ std::string* ShaderTextUtil::createRawText(const char* text, const char* const* 
 
     while (*p_src != '\0')
     {
-        const char* const include_directive_begin = std::strchr(p_src, '#') + 1;
-        if (include_directive_begin - 1 == nullptr)
+        const char* include_directive_begin = std::strchr(p_src, '#');
+        if (include_directive_begin == nullptr)
+        {
             break;
+        }
+        include_directive_begin += 1;
 
         const char* directive = include_directive_begin + std::strspn(include_directive_begin, " \t\r\n");
 
@@ -241,13 +244,19 @@ std::string* ShaderTextUtil::createRawText(const char* text, const char* const* 
             directive[5] == 'd' &&
             directive[6] == 'e')
         {
-            const char* const include_name_begin = std::strchr(directive + 7, '\"') + 1;
-            if (include_name_begin - 1 == nullptr)
+            const char* include_name_begin = std::strchr(directive + 7, '\"');
+            if (include_name_begin == nullptr)
+            {
                 continue;
+            }
+            include_name_begin += 1;
 
-            const char* const include_directive_end = std::strchr(include_name_begin, '\"') + 1;
-            if (include_directive_end - 1 == nullptr)
+            const char* include_directive_end = std::strchr(include_name_begin, '\"');
+            if (include_directive_end == nullptr)
+            {
                 continue;
+            }
+            include_directive_end += 1;
 
             std::string name(include_name_begin, (s32)(include_directive_end - include_name_begin) - 1);
 
@@ -280,7 +289,7 @@ std::string* ShaderTextUtil::createRawText(const char* text, const char* const* 
             const char* const text_base = p_text->c_str();
             u8* temp_buf = new u8[text_len + 1];
             detail::ShaderTextUtil::replace(p_new_text->data(), p_source_text, (s32)(include_directive_begin - text_base) - 1, (s32)(include_directive_end - text_base), temp_buf, text_len + 1);
-            delete temp_buf; // Nintendo did not use delete[] (fixed in later versions)
+            delete[] temp_buf; // Nintendo used normal delete (fixed in later versions)
 
             delete p_text;
             p_text = new std::string(*p_new_text);
