@@ -273,7 +273,7 @@ std::string* ShaderTextUtil::createRawText(const char* text, const char* const* 
                     i_source++;
                 }
                 if (!found)
-                    return p_text;
+                    break;
             }
 
             const char* p_source_text = source_text[i_source];
@@ -283,8 +283,8 @@ std::string* ShaderTextUtil::createRawText(const char* text, const char* const* 
             if (!p_source_text)
                 break;
 
-            std::string* p_new_text = new std::string(p_text->c_str(), text_len);
-            p_new_text->reserve(text_len + std::strlen(p_source_text) + 1);
+            std::string* p_new_text = new std::string(text_len + std::strlen(p_source_text) + 1, '\0');
+            rio::MemUtil::copy(p_new_text->data(), p_text->c_str(), text_len);
 
             const char* const text_base = p_text->c_str();
             u8* temp_buf = new u8[text_len + 1];
@@ -292,8 +292,7 @@ std::string* ShaderTextUtil::createRawText(const char* text, const char* const* 
             delete[] temp_buf; // Nintendo used normal delete (fixed in later versions)
 
             delete p_text;
-            p_text = new std::string(*p_new_text);
-            delete p_new_text;
+            p_text = p_new_text;
 
             p_src = p_text->c_str();
             text_len = p_text->length();
