@@ -477,8 +477,8 @@ void ShaderProgramArchive::ShaderSource::initialize(ShaderProgramArchive* archiv
 
     mFlag.change(1 << 1, is_used);
 
-    mText = new std::string(res.getText(), res.ref().mTextLen);
-    mText->reserve(res.ref().mTextLen * 2);
+    mText = new std::string(res.ref().mTextLen * 2, '\0');
+    rio::MemUtil::copy(mText->data(), res.getText(), res.ref().mTextLen);
 
     mpArchive->mSourceName[mIndex] = mRes.getName();
     mpArchive->mSourceText[mIndex] = mText->c_str();
