@@ -169,7 +169,7 @@ void UniformBlock::dcbz() const
 
     while (begin_ptr < end_ptr)
     {
-        asm("dcbz %0, 0" : "+g"(begin_ptr));
+        asm("dcbz 0, %0" : "+g"(begin_ptr));
         begin_ptr += cCPUCacheLineSize;
     }
 #else
@@ -253,8 +253,8 @@ void UniformBlock::setData_(void* p_memory, s32 index, const void* p_data, s32 a
 #if RIO_IS_CAFE
     if ((uintptr_t)ptr % cCPUCacheLineSize == 0)
     {
-        u32 aligned_size = ROUNDDOWN(array_num * stride_array * sizeof(u32), cCPUCacheLineSize);
-        for (u32 i = 0; i < aligned_size; i += cCPUCacheLineSize)
+        s32 aligned_size = ROUNDDOWN(array_num * stride_array * sizeof(u32), cCPUCacheLineSize);
+        for (s32 i = 0; i < aligned_size; i += cCPUCacheLineSize)
             asm("dcbz %0, %1" : "+g"(ptr), "+g"(i));
     }
 #endif // RIO_IS_CAFE
