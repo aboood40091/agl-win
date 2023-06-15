@@ -9,7 +9,7 @@
 namespace agl {
 
 inline
-void UniformLocation::setUniform(f32 v)
+void UniformLocation::setUniform(f32 v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -42,7 +42,7 @@ void UniformLocation::setUniform(f32 v)
 }
 
 inline
-void UniformLocation::setUniform(s32 v)
+void UniformLocation::setUniform(s32 v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -75,7 +75,7 @@ void UniformLocation::setUniform(s32 v)
 }
 
 inline
-void UniformLocation::setUniform(u32 v)
+void UniformLocation::setUniform(u32 v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -108,7 +108,7 @@ void UniformLocation::setUniform(u32 v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec2f& v)
+void UniformLocation::setUniform(const rio::BaseVec2f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -141,7 +141,7 @@ void UniformLocation::setUniform(const rio::BaseVec2f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec2i& v)
+void UniformLocation::setUniform(const rio::BaseVec2i& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -174,7 +174,7 @@ void UniformLocation::setUniform(const rio::BaseVec2i& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec2u& v)
+void UniformLocation::setUniform(const rio::BaseVec2u& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -207,7 +207,7 @@ void UniformLocation::setUniform(const rio::BaseVec2u& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec3f& v)
+void UniformLocation::setUniform(const rio::BaseVec3f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -240,7 +240,7 @@ void UniformLocation::setUniform(const rio::BaseVec3f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec3i& v)
+void UniformLocation::setUniform(const rio::BaseVec3i& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -273,7 +273,7 @@ void UniformLocation::setUniform(const rio::BaseVec3i& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec3u& v)
+void UniformLocation::setUniform(const rio::BaseVec3u& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -306,7 +306,7 @@ void UniformLocation::setUniform(const rio::BaseVec3u& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec4f& v)
+void UniformLocation::setUniform(const rio::BaseVec4f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -343,7 +343,7 @@ void UniformLocation::setUniform(const rio::BaseVec4f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec4i& v)
+void UniformLocation::setUniform(const rio::BaseVec4i& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -380,7 +380,7 @@ void UniformLocation::setUniform(const rio::BaseVec4i& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseVec4u& v)
+void UniformLocation::setUniform(const rio::BaseVec4u& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -417,7 +417,7 @@ void UniformLocation::setUniform(const rio::BaseVec4u& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx22f& v)
+void UniformLocation::setUniform(const rio::BaseMtx22f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -464,7 +464,7 @@ void UniformLocation::setUniform(const rio::BaseMtx22f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx23f& v)
+void UniformLocation::setUniform(const rio::BaseMtx23f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -512,7 +512,7 @@ void UniformLocation::setUniform(const rio::BaseMtx23f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx24f& v)
+void UniformLocation::setUniform(const rio::BaseMtx24f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -561,7 +561,7 @@ void UniformLocation::setUniform(const rio::BaseMtx24f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx32f& v)
+void UniformLocation::setUniform(const rio::BaseMtx32f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -608,7 +608,7 @@ void UniformLocation::setUniform(const rio::BaseMtx32f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx33f& v)
+void UniformLocation::setUniform(const rio::BaseMtx33f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -656,7 +656,7 @@ void UniformLocation::setUniform(const rio::BaseMtx33f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx34f& v)
+void UniformLocation::setUniform(const rio::BaseMtx34f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -705,7 +705,7 @@ void UniformLocation::setUniform(const rio::BaseMtx34f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx42f& v)
+void UniformLocation::setUniform(const rio::BaseMtx42f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -752,7 +752,7 @@ void UniformLocation::setUniform(const rio::BaseMtx42f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx43f& v)
+void UniformLocation::setUniform(const rio::BaseMtx43f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -800,7 +800,7 @@ void UniformLocation::setUniform(const rio::BaseMtx43f& v)
 }
 
 inline
-void UniformLocation::setUniform(const rio::BaseMtx44f& v)
+void UniformLocation::setUniform(const rio::BaseMtx44f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -850,42 +850,42 @@ void UniformLocation::setUniform(const rio::BaseMtx44f& v)
 
 // GLSL type: float[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, f32* v)
+//void UniformLocation::setUniformArray(u32 count, f32* v) const
 
 // GLSL type: int[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, s32* v)
+//void UniformLocation::setUniformArray(u32 count, s32* v) const
 
 // GLSL type: uint[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, u32* v)
+//void UniformLocation::setUniformArray(u32 count, u32* v) const
 
 // GLSL type: vec2[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec2f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec2f* v) const
 
 // GLSL type: ivec2[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec2i* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec2i* v) const
 
 // GLSL type: uvec2[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec2u* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec2u* v) const
 
 // GLSL type: vec3[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec3f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec3f* v) const
 
 // GLSL type: ivec3[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec3i* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec3i* v) const
 
 // GLSL type: uvec3[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec3u* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseVec3u* v) const
 
 inline
-void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4f* v)
+void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4f* v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -928,7 +928,7 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4f* v)
 }
 
 inline
-void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4i* v)
+void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4i* v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -971,7 +971,7 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4i* v)
 }
 
 inline
-void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4u* v)
+void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4u* v) const
 {
     RIO_ASSERT(mGS == -1);
 
@@ -1015,38 +1015,38 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4u* v)
 
 // GLSL type: mtx2[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx22f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx22f* v) const
 
 // GLSL type: mtx32[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx23f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx23f* v) const
 
 // GLSL type: mtx42[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx24f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx24f* v) const
 
 // GLSL type: mtx23[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx32f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx32f* v) const
 
 // GLSL type: mtx3[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx33f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx33f* v) const
 
 // GLSL type: mtx43[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx34f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx34f* v) const
 
 // GLSL type: mtx24[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx42f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx42f* v) const
 
 // GLSL type: mtx34[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx43f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx43f* v) const
 
 // GLSL type: mtx4[]
 //inline
-//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx44f* v)
+//void UniformLocation::setUniformArray(u32 count, const rio::BaseMtx44f* v) const
 
 }
