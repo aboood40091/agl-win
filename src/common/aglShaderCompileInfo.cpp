@@ -5,6 +5,8 @@
 
 #include <cstring>
 
+#include "aglShaderCompileInfo_ShaderReplacements.hpp"
+
 namespace agl {
 
 ShaderCompileInfo::ShaderCompileInfo()
@@ -61,7 +63,19 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, std::string* p_buffer
     if (!mSourceText)
         return;
 
-    const char* text = mSourceText->c_str();
+    const char* text = nullptr;
+    for (u32 i = 0; i < STRING_REPLACEMENT_COUNT; i++)
+    {
+        const std::string& search_str = cStringReplacement_From[i];
+        if (search_str == *mSourceText)
+        {
+            text = cStringReplacement_To[i].c_str();
+            break;
+        }
+    }
+
+    if (text == nullptr)
+        text = mSourceText->c_str();
 
     bool is_gl = target == cTarget_GL;
 
