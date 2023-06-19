@@ -8,11 +8,6 @@
 
 #include <cstring>
 
-#if RIO_IS_WIN
-#include <detail/aglShaderHolder.h>
-#include <graphics/win/ShaderUtil.h>
-#endif // RIO_IS_WIN
-
 namespace agl {
 
 void ShaderProgram::changeShaderMode(ShaderMode mode)
@@ -32,10 +27,6 @@ ShaderProgram::ShaderProgram()
     , mFragmentShader()
     , mGeometryShader()
     , mpSharedData(nullptr)
-#if RIO_IS_WIN
-    , mVsCfileBlockIdx(-1)
-    , mPsCfileBlockIdx(-1)
-#endif // RIO_IS_WIN
 {
 }
 
@@ -491,8 +482,6 @@ u32 ShaderProgram::forceValidate_() const
         if (mFlag.isOn(1))
         {
 #if RIO_IS_WIN
-          //RIO_LOG("Load shader start\n");
-
             mShader.unload();
 
             static const std::string sSavePath[cShaderType_Num + 1] = {
@@ -502,50 +491,7 @@ u32 ShaderProgram::forceValidate_() const
                 "shaders/agl_shader_temp.gsh"
             };
 
-            [[maybe_unused]] bool compile_ret = ShaderUtil::compileSource(
-                sSavePath[cShaderType_Num],
-                sSavePath[cShaderType_Vertex],
-                sSavePath[cShaderType_Fragment],
-                sSavePath[cShaderType_Geometry]
-            );
-
-            RIO_ASSERT(compile_ret);
-
-            static const std::string sDecompPath[cShaderType_Num - 1] = {
-                "shaders/agl_shader_temp_out.vert",
-                "shaders/agl_shader_temp_out.frag"
-            };
-
-            [[maybe_unused]] bool decompile_ret = ShaderUtil::decompileGsh(
-                sSavePath[cShaderType_Num],
-                sDecompPath[cShaderType_Vertex],
-                sDecompPath[cShaderType_Fragment],
-                &mGFDFile
-            );
-
-            RIO_ASSERT(decompile_ret);
-
-            mShader.load("agl_shader_temp_out");
-
-            if (mGFDFile.mVertexShaders[0].shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
-            {
-                mVsCfileBlockIdx = mShader.getVertexUniformBlockIndex("VS_CFILE_DATA");
-            }
-            else
-            {
-                mVsCfileBlockIdx = -1;
-            }
-
-            if (mGFDFile.mPixelShaders[0].shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
-            {
-                mPsCfileBlockIdx = mShader.getFragmentUniformBlockIndex("PS_CFILE_DATA");
-            }
-            else
-            {
-                mPsCfileBlockIdx = -1;
-            }
-
-          //RIO_LOG("    Load shader end\n");
+            mShader.load("agl_shader_temp");
 #endif // RIO_IS_WIN
             dump();
 
@@ -640,24 +586,6 @@ void ShaderProgram::setShaderGX2_() const
         GX2SetGeometryShader(mGeometryShader.getBinary());
 #elif RIO_IS_WIN
     mShader.bind();
-
-    mShader.setUniform(rio::BaseVec4f{ 1.0f, -1.0f, 0.0f, 0.0f }, mShader.getVertexUniformLocation("VS_PUSH.posMulAdd"), u32(-1));
-    mShader.setUniform(rio::BaseVec4f{ 0.0f,  1.0f, 1.0f, 1.0f }, mShader.getVertexUniformLocation("VS_PUSH.zSpaceMul"), u32(-1));
-    mShader.setUniform(1.0f,                                      mShader.getVertexUniformLocation("VS_PUSH.pointSize"), u32(-1));
-
-
-    mShader.setUniform(7u,   u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.alphaFunc"));
-    mShader.setUniform(0u,   u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.needsPremultiply"));
-
-    if (mVsCfileBlockIdx != -1)
-    {
-        detail::ShaderHolder::instance()->mVsCfile.bind(mVsCfileBlockIdx);
-    }
-
-    if (mPsCfileBlockIdx != -1)
-    {
-        detail::ShaderHolder::instance()->mPsCfile.bind(mPsCfileBlockIdx);
-    }
 #endif
 }
 

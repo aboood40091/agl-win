@@ -66,107 +66,13 @@ GX2GetGeometryUniformVarOffset(const GX2GeometryShader* shader,
 
 }
 
-#elif RIO_IS_WIN
-
-#include <detail/aglShaderHolder.h>
-
-void GX2SetVertexUniformReg(u32 offset, u32 count, const void* values)
-{
-    RIO_ASSERT(count % 4 == 0);
-
-    agl::detail::ShaderHolder::instance()->mVsCfile.setSubData(values, offset * 4, count * 4);
-}
-
-void GX2SetPixelUniformReg(u32 offset, u32 count, const void* values)
-{
-    RIO_ASSERT(count % 4 == 0);
-
-    agl::detail::ShaderHolder::instance()->mPsCfile.setSubData(values, offset * 4, count * 4);
-}
-
-#include <sstream>
-
-namespace {
-
-static inline s32
-GetVertexAttribLocation(const rio::Shader& shader, const GX2VertexShader* p_shader, const char* name)
-{
-    for (u32 i = 0; i < p_shader->numAttribs; i++)
-    {
-        if (std::strcmp(p_shader->attribVars[i].name, name) == 0)
-        {
-            std::ostringstream attribNameStrm;
-            attribNameStrm << name << "_0_0";
-            return shader.getVertexAttribLocation(attribNameStrm.str().c_str());
-        }
-    }
-
-    return -1;
-}
-
-static inline GX2UniformVar*
-GX2GetVertexUniformVar(const GX2VertexShader* shader, const char* name)
-{
-    RIO_ASSERT(shader);
-    RIO_ASSERT(name);
-
-    for (u32 i = 0; i < shader->numUniforms; i++)
-       if (std::strcmp(shader->uniformVars[i].name, name) == 0)
-           return &(shader->uniformVars[i]);
-
-    return nullptr;
-}
-
-static inline s32
-GX2GetVertexUniformVarOffset(const GX2VertexShader* shader, const char* name)
-{
-    RIO_ASSERT(shader);
-    RIO_ASSERT(name);
-
-    GX2UniformVar* uniform = GX2GetVertexUniformVar(shader, name);
-    if (!uniform)
-        return -1;
-
-  //RIO_LOG("Found vertex uniform %s at location %d\n", name, s32(uniform->offset));
-    return s32(uniform->offset);
-}
-
-static inline GX2UniformVar*
-GX2GetPixelUniformVar(const GX2PixelShader* shader, const char* name)
-{
-    RIO_ASSERT(shader);
-    RIO_ASSERT(name);
-
-    for (u32 i = 0; i < shader->numUniforms; i++)
-       if (std::strcmp(shader->uniformVars[i].name, name) == 0)
-           return &(shader->uniformVars[i]);
-
-    return nullptr;
-}
-
-static inline s32
-GX2GetPixelUniformVarOffset(const GX2PixelShader* shader, const char* name)
-{
-    RIO_ASSERT(shader);
-    RIO_ASSERT(name);
-
-    GX2UniformVar* uniform = GX2GetPixelUniformVar(shader, name);
-    if (!uniform)
-        return -1;
-
-  //RIO_LOG("Found pixel uniform %s at location %d\n", name, s32(uniform->offset));
-    return s32(uniform->offset);
-}
-
-}
-
-#endif
+#endif // RIO_IS_CAFE
 
 namespace agl {
 
 void UniformLocation::search(const ShaderProgram& program)
 {
-#if RIO_IS_CAFE || RIO_IS_WIN
+#if RIO_IS_CAFE
     if (program.getVertexShaderBinary())
         mVS = GX2GetVertexUniformVarOffset(program.getVertexShaderBinary(), getName());
     else
@@ -177,17 +83,20 @@ void UniformLocation::search(const ShaderProgram& program)
     else
         mFS = -1;
 
-#if RIO_IS_CAFE
     if (program.getGeometryShaderBinary())
         mGS = GX2GetGeometryUniformVarOffset(program.getGeometryShaderBinary(), getName());
     else
-#endif // RIO_IS_CAFE
         mGS = -1;
+#else
+#if RIO_IS_WIN
+    mVS = program.getShaderRIO().getVertexUniformLocation(getName());
+    mFS = program.getShaderRIO().getFragmentUniformLocation(getName());
 #else
     mVS = -1;
     mFS = -1;
+#endif // RIO_IS_WIN
     mGS = -1;
-#endif
+#endif // RIO_IS_CAFE
 }
 
 void UniformBlockLocation::search(const ShaderProgram& program)
@@ -219,7 +128,6 @@ void UniformBlockLocation::search(const ShaderProgram& program)
             mGS = uniform_block->offset;
     }
 #elif RIO_IS_WIN
-  //RIO_LOG("Getting uniform block (%s) location from shader program (%s)\n", getName(), program.getName());
     mVS = program.getShaderRIO().getVertexUniformBlockIndex(getName());
     mFS = program.getShaderRIO().getFragmentUniformBlockIndex(getName());
     mGS = -1;
@@ -255,7 +163,6 @@ void SamplerLocation::search(const ShaderProgram& program)
             mGS = sampler_var->location;
     }
 #elif RIO_IS_WIN
-  //RIO_LOG("Getting sampler (%s) location from shader program (%s)\n", getName(), program.getName());
     mVS = program.getShaderRIO().getVertexSamplerLocation(getName());
     mFS = program.getShaderRIO().getFragmentSamplerLocation(getName());
     mGS = -1;
@@ -270,8 +177,7 @@ void AttributeLocation::search(const ShaderProgram& program)
     // else
     //     mVS = -1;
 #elif RIO_IS_WIN
-  //RIO_LOG("Getting attribute (%s) location from shader program (%s)\n", getName(), program.getName());
-    mVS = GetVertexAttribLocation(program.getShaderRIO(), program.getVertexShaderBinary(), getName());
+    mVS = program.getShaderRIO().getVertexAttribLocation(getName());
 #else
     mVS = -1;
 #endif

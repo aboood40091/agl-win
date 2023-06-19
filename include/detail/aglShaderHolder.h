@@ -164,40 +164,7 @@ private:
     UnsafeArray<ShaderProgramArchive, cArchiveType_Num> mProgramArchive;
 #if RIO_IS_CAFE
     bool mCreateDisplayLists;
-#elif RIO_IS_WIN
-public:
-    class Cfile
-    {
-    public:
-        static constexpr u32 cUniformElemCount = 256;
-        static constexpr u32 cUniformElemSize = 4 * 4;
-        static constexpr u32 cUniformSize = cUniformElemCount * cUniformElemSize;
-
-    public:
-        Cfile(rio::UniformBlock::ShaderStage stage)
-            : mUniformBlock(stage)
-        {
-            mUniformBlock.setData(nullptr, cUniformSize);
-        }
-
-        void setSubData(const void* data, u32 offset, u32 size)
-        {
-            mUniformBlock.setSubData(data, offset, size);
-        }
-
-        void bind(s32 index) const
-        {
-            mUniformBlock.setIndex(index);
-            mUniformBlock.bind();
-        }
-
-    private:
-        mutable rio::UniformBlock mUniformBlock;
-    };
-
-    Cfile mVsCfile;
-    Cfile mPsCfile;
-#endif
+#endif // RIO_IS_CAFE
 };
 //static_assert(sizeof(ShaderHolder) == 0x280, "agl::detail::ShaderHolder size mismatch");
 

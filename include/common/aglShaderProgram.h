@@ -126,30 +126,6 @@ public:
         validate_();
         return mShader;
     }
-
-    GX2VertexShader* getVertexShaderBinary()
-    {
-        validate_();
-        return &mGFDFile.mVertexShaders[0];
-    }
-
-    const GX2VertexShader* getVertexShaderBinary() const
-    {
-        validate_();
-        return &mGFDFile.mVertexShaders[0];
-    }
-
-    GX2PixelShader* getFragmentShaderBinary()
-    {
-        validate_();
-        return &mGFDFile.mPixelShaders[0];
-    }
-
-    const GX2PixelShader* getFragmentShaderBinary() const
-    {
-        validate_();
-        return &mGFDFile.mPixelShaders[0];
-    }
 #endif
 
     void createAttribute(s32 num);
@@ -327,9 +303,6 @@ private:
 #if RIO_IS_WIN
     // Custom
     mutable rio::Shader mShader;
-    mutable GFDFile mGFDFile;
-    mutable s32 mVsCfileBlockIdx;
-    mutable s32 mPsCfileBlockIdx;
 #endif // RIO_IS_WIN
 };
 //static_assert(sizeof(ShaderProgram) == 0x60, "agl::ShaderProgram size mismatch");

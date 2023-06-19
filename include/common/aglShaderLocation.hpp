@@ -8,15 +8,9 @@
 
 #elif RIO_IS_WIN
 
-//#include <misc/gl/rio_GL.h>
-//#define USE_GX2 0
-//#define USE_GL 1
-
-#define USE_GX2 1
-#define USE_GL 0
-
-void GX2SetVertexUniformReg(u32 offset, u32 count, const void* values);
-void GX2SetPixelUniformReg(u32 offset, u32 count, const void* values);
+#include <misc/gl/rio_GL.h>
+#define USE_GX2 0
+#define USE_GL 1
 
 #else
 
