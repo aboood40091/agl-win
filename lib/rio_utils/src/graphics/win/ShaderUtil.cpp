@@ -16,6 +16,22 @@
 #include <sstream>
 #include <unordered_map>
 
+#ifdef RIO_DEBUG
+
+#define RIO_SHADER_DEBUG_LOG_ENABLE 0
+
+#if RIO_SHADER_DEBUG_LOG_ENABLE
+#define RIO_SHADER_DEBUG_LOG RIO_LOG
+#else
+#define RIO_SHADER_DEBUG_LOG(...)
+#endif // RIO_SHADER_DEBUG_LOG_ENABLE
+
+#else
+
+#define RIO_SHADER_DEBUG_LOG(...)
+
+#endif // RIO_DEBUG
+
 namespace {
 
 bool FileExists(const char* path)
@@ -543,7 +559,7 @@ bool DecompileProgram(
     ShaderCacheMap::const_iterator it = sShaderCache.find(key);
     if (it != sShaderCache.end())
     {
-      //RIO_LOG("  Loading cache from map\n");
+        RIO_SHADER_DEBUG_LOG("  Loading cache from map\n");
         const ShaderCache& shaderCache = it->second;
         glVertexShader = shaderCache.vertexShader;
         glFragmentShader = shaderCache.fragmentShader;
@@ -560,7 +576,7 @@ bool DecompileProgram(
 
         if (FileExists(vertexShaderSrcPath.c_str()) && FileExists(fragmentShaderSrcPath.c_str()))
         {
-          //RIO_LOG("  Loading cache from disk\n");
+            RIO_SHADER_DEBUG_LOG("  Loading cache from disk\n");
             {
                 [[maybe_unused]] bool read = ReadFile(vertexShaderSrcPath, &glVertexShader);
                 RIO_ASSERT(read);
@@ -575,9 +591,9 @@ bool DecompileProgram(
             const std::string& vertexShaderSpirvPath = vertexShaderSrcPath + ".spv";
             const std::string& fragmentShaderSpirvPath = fragmentShaderSrcPath + ".spv";
 
-          //RIO_LOG("\n");
-          //RIO_LOG("%s\n", vertexShaderSpirvPath.c_str());
-          //RIO_LOG("%s\n", fragmentShaderSpirvPath.c_str());
+            RIO_SHADER_DEBUG_LOG("\n");
+            RIO_SHADER_DEBUG_LOG("%s\n", vertexShaderSpirvPath.c_str());
+            RIO_SHADER_DEBUG_LOG("%s\n", fragmentShaderSpirvPath.c_str());
 
             WriteFile(vertexShaderPath.c_str(), (u8*)vertexShaderBuf, vertexShaderBufSize);
             WriteFile(fragmentShaderPath.c_str(), (u8*)pixelShaderBuf, pixelShaderBufSize);
@@ -588,7 +604,7 @@ bool DecompileProgram(
                 cmdStrm << "\"" << ShaderUtil::sGx2ShaderDecompilerPath << "\" -v \"" << vertexShaderPath << "\" -p \"" << fragmentShaderPath << "\"";
                 cmd = cmdStrm.str();
             }
-          //RIO_LOG("%s\n", cmd.c_str());
+            RIO_SHADER_DEBUG_LOG("%s\n", cmd.c_str());
             RunCommand(cmd.c_str());
 
             DeleteFile(vertexShaderPath.c_str());
@@ -607,7 +623,7 @@ bool DecompileProgram(
                     "--version 410 --output \"" << vertexShaderSrcPath << "\"";
                 cmd = cmdStrm.str();
             }
-          //RIO_LOG("%s\n", cmd.c_str());
+            RIO_SHADER_DEBUG_LOG("%s\n", cmd.c_str());
             RunCommand(cmd.c_str());
 
             DeleteFile(vertexShaderSpirvPath.c_str());
@@ -621,7 +637,7 @@ bool DecompileProgram(
                     "--version 410 --output \"" << fragmentShaderSrcPath << "\"";
                 cmd = cmdStrm.str();
             }
-          //RIO_LOG("%s\n", cmd.c_str());
+            RIO_SHADER_DEBUG_LOG("%s\n", cmd.c_str());
             RunCommand(cmd.c_str());
 
             DeleteFile(fragmentShaderSpirvPath.c_str());
@@ -643,48 +659,76 @@ bool DecompileProgram(
             ReplaceString(glVertexShader, "\r\n", "\n");
             ReplaceString(glFragmentShader, "\r\n", "\n");
 
-            std::vector<GX2UniformBlock> vertexUBOs = std::vector<GX2UniformBlock>(vertexShader->uniformBlocks,
-                                                                                   vertexShader->uniformBlocks + vertexShader->numUniformBlocks);
+            RIO_ASSERT(vertexShader->shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS || vertexShader->shaderMode == GX2_SHADER_MODE_UNIFORM_BLOCKS);
 
-            std::sort(vertexUBOs.begin(), vertexUBOs.end(), GX2UniformBlockComp);
+            RIO_SHADER_DEBUG_LOG("Vertex shader mode: %u\n", u32(vertexShader->shaderMode));
 
-            for (u32 i = 0; i < vertexShader->numUniformBlocks; i++)
+            if (vertexShader->shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
             {
-                std::ostringstream formatOldStrm;
-                formatOldStrm << "layout(std430) readonly buffer CBUFFER_DATA_" << vertexUBOs[i].location << std::endl
-                              << "{" << std::endl
-                              << "    vec4 values[];" << std::endl
-                              << "}";
+                const std::string& formatOldStr = "layout(std430) readonly buffer CFILE_DATA";
+                const std::string& formatNewStr = "layout(std140) uniform VS_CFILE_DATA";
 
-                std::ostringstream formatNewStrm;
-                formatNewStrm << "layout(std140) uniform " << vertexUBOs[i].name << std::endl
-                              << "{" << std::endl
-                              << "    vec4 values[" << ((vertexUBOs[i].size + 15) / 16) << "];" << std::endl
-                              << "}";
+                ReplaceString(glVertexShader, formatOldStr, formatNewStr);
+            }
+            else
+            {
+                std::vector<GX2UniformBlock> vertexUBOs = std::vector<GX2UniformBlock>(vertexShader->uniformBlocks,
+                                                                                       vertexShader->uniformBlocks + vertexShader->numUniformBlocks);
 
-                ReplaceString(glVertexShader, formatOldStrm.str(), formatNewStrm.str());
+                std::sort(vertexUBOs.begin(), vertexUBOs.end(), GX2UniformBlockComp);
+
+                for (u32 i = 0; i < vertexShader->numUniformBlocks; i++)
+                {
+                    std::ostringstream formatOldStrm;
+                    formatOldStrm << "layout(std430) readonly buffer CBUFFER_DATA_" << vertexUBOs[i].location << std::endl
+                                  << "{" << std::endl
+                                  << "    vec4 values[];" << std::endl
+                                  << "}";
+
+                    std::ostringstream formatNewStrm;
+                    formatNewStrm << "layout(std140) uniform " << vertexUBOs[i].name << std::endl
+                                  << "{" << std::endl
+                                  << "    vec4 values[" << ((vertexUBOs[i].size + 15) / 16) << "];" << std::endl
+                                  << "}";
+
+                    ReplaceString(glVertexShader, formatOldStrm.str(), formatNewStrm.str());
+                }
             }
 
-            std::vector<GX2UniformBlock> pixelUBOs = std::vector<GX2UniformBlock>(pixelShader->uniformBlocks,
-                                                                                  pixelShader->uniformBlocks + pixelShader->numUniformBlocks);
+            RIO_ASSERT(pixelShader->shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS || pixelShader->shaderMode == GX2_SHADER_MODE_UNIFORM_BLOCKS);
 
-            std::sort(pixelUBOs.begin(), pixelUBOs.end(), GX2UniformBlockComp);
+            RIO_SHADER_DEBUG_LOG("Pixel shader mode: %u\n", u32(pixelShader->shaderMode));
 
-            for (u32 i = 0; i < pixelShader->numUniformBlocks; i++)
+            if (pixelShader->shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
             {
-                std::ostringstream formatOldStrm;
-                formatOldStrm << "layout(std430) readonly buffer CBUFFER_DATA_" << pixelUBOs[i].location << std::endl
-                              << "{" << std::endl
-                              << "    vec4 values[];" << std::endl
-                              << "}";
+                const std::string& formatOldStr = "layout(std430) readonly buffer CFILE_DATA";
+                const std::string& formatNewStr = "layout(std140) uniform PS_CFILE_DATA";
 
-                std::ostringstream formatNewStrm;
-                formatNewStrm << "layout(std140) uniform " << pixelUBOs[i].name << std::endl
-                              << "{" << std::endl
-                              << "    vec4 values[" << ((pixelUBOs[i].size + 15) / 16) << "];" << std::endl
-                              << "}";
+                ReplaceString(glFragmentShader, formatOldStr, formatNewStr);
+            }
+            else
+            {
+                std::vector<GX2UniformBlock> pixelUBOs = std::vector<GX2UniformBlock>(pixelShader->uniformBlocks,
+                                                                                      pixelShader->uniformBlocks + pixelShader->numUniformBlocks);
 
-                ReplaceString(glFragmentShader, formatOldStrm.str(), formatNewStrm.str());
+                std::sort(pixelUBOs.begin(), pixelUBOs.end(), GX2UniformBlockComp);
+
+                for (u32 i = 0; i < pixelShader->numUniformBlocks; i++)
+                {
+                    std::ostringstream formatOldStrm;
+                    formatOldStrm << "layout(std430) readonly buffer CBUFFER_DATA_" << pixelUBOs[i].location << std::endl
+                                  << "{" << std::endl
+                                  << "    vec4 values[];" << std::endl
+                                  << "}";
+
+                    std::ostringstream formatNewStrm;
+                    formatNewStrm << "layout(std140) uniform " << pixelUBOs[i].name << std::endl
+                                  << "{" << std::endl
+                                  << "    vec4 values[" << ((pixelUBOs[i].size + 15) / 16) << "];" << std::endl
+                                  << "}";
+
+                    ReplaceString(glFragmentShader, formatOldStrm.str(), formatNewStrm.str());
+                }
             }
 
             for (u32 i = 0; i < vertexShader->numSamplers; i++)
@@ -761,6 +805,41 @@ bool DecompileProgram(
                 }
             }
 
+            static const std::array<std::string, 5> qualifiers = {
+                "noperspective centroid ",
+                "noperspective ",
+                "centroid ",
+                "sample ",
+                "flat "
+            };
+
+            for (u32 i = 0; i < 32; i++)
+            {
+                std::ostringstream layoutStrm;
+                layoutStrm << "layout(location = " << i << ") ";
+                const std::string& layoutStr = layoutStrm.str();
+
+                std::ostringstream paramVsOldStrm;
+                paramVsOldStrm << layoutStr << "out ";
+
+                for (const std::string& qualifier : qualifiers)
+                {
+                    std::ostringstream paramFsStrm;
+                    paramFsStrm << layoutStr << qualifier << "in ";
+
+                    if (glFragmentShader.find(paramFsStrm.str()) != std::string::npos)
+                    {
+                        std::ostringstream paramVsNewStrm;
+                        paramVsNewStrm << layoutStr << qualifier << "out ";
+
+                        RIO_SHADER_DEBUG_LOG("Replacing \"%s\" with \"%s\"\n", paramVsOldStrm.str().c_str(), paramVsNewStrm.str().c_str());
+
+                        ReplaceString(glVertexShader, paramVsOldStrm.str(), paramVsNewStrm.str());
+                        break;
+                    }
+                }
+            }
+
             WriteFile(vertexShaderSrcPath, glVertexShader);
             WriteFile(fragmentShaderSrcPath, glFragmentShader);
         }
@@ -819,7 +898,7 @@ bool ShaderUtil::compileSource(
             return false;
 
         out_gsh_native_fname = device->getNativePath(out_gsh_fname_no_drive);
-      //RIO_LOG("Output: %s\n", out_gsh_native_fname.c_str());
+        RIO_SHADER_DEBUG_LOG("Output: %s\n", out_gsh_native_fname.c_str());
         if (FileExists(out_gsh_native_fname.c_str()))
             DeleteFile(out_gsh_native_fname.c_str());
     }
@@ -832,7 +911,7 @@ bool ShaderUtil::compileSource(
             return false;
 
         vert_native_fname = device->getNativePath(vert_fname_no_drive);
-      //RIO_LOG("Vertex shader: %s\n", vert_native_fname.c_str());
+        RIO_SHADER_DEBUG_LOG("Vertex shader: %s\n", vert_native_fname.c_str());
         if (!FileExists(vert_native_fname.c_str()))
             return false;
     }
@@ -845,7 +924,7 @@ bool ShaderUtil::compileSource(
             return false;
 
         frag_native_fname = device->getNativePath(frag_fname_no_drive);
-      //RIO_LOG("Fragment shader: %s\n", frag_native_fname.c_str());
+        RIO_SHADER_DEBUG_LOG("Fragment shader: %s\n", frag_native_fname.c_str());
         if (!FileExists(frag_native_fname.c_str()))
             return false;
     }
@@ -860,7 +939,7 @@ bool ShaderUtil::compileSource(
         else
         {
             geom_native_fname = device->getNativePath(geom_fname_no_drive);
-          //RIO_LOG("Geometry shader: %s\n", geom_native_fname.c_str());
+            RIO_SHADER_DEBUG_LOG("Geometry shader: %s\n", geom_native_fname.c_str());
             if (!FileExists(geom_native_fname.c_str()))
                 has_geom = false;
         }
@@ -875,7 +954,7 @@ bool ShaderUtil::compileSource(
         cmdStrm << " -o \"" << out_gsh_native_fname << "\"";
         cmd = cmdStrm.str();
     }
-  //RIO_LOG("%s\n", cmd.c_str());
+    RIO_SHADER_DEBUG_LOG("%s\n", cmd.c_str());
     RunCommand(cmd.c_str());
     return FileExists(out_gsh_native_fname.c_str());
 }
@@ -924,7 +1003,7 @@ bool ShaderUtil::decompileGsh(
             return false;
 
         gsh_native_fname = device->getNativePath(gsh_fname_no_drive);
-      //RIO_LOG("Output: %s\n", gsh_native_fname.c_str());
+        RIO_SHADER_DEBUG_LOG("Output: %s\n", gsh_native_fname.c_str());
         if (!FileExists(gsh_native_fname.c_str()))
             return false;
     }
@@ -937,7 +1016,7 @@ bool ShaderUtil::decompileGsh(
             return false;
 
         out_vert_native_fname = device->getNativePath(out_vert_fname_no_drive);
-      //RIO_LOG("Vertex shader: %s\n", out_vert_native_fname.c_str());
+        RIO_SHADER_DEBUG_LOG("Vertex shader: %s\n", out_vert_native_fname.c_str());
         if (FileExists(out_vert_native_fname.c_str()))
             DeleteFile(out_vert_native_fname.c_str());
     }
@@ -950,7 +1029,7 @@ bool ShaderUtil::decompileGsh(
             return false;
 
         out_frag_native_fname = device->getNativePath(out_frag_fname_no_drive);
-      //RIO_LOG("Fragment shader: %s\n", out_frag_native_fname.c_str());
+        RIO_SHADER_DEBUG_LOG("Fragment shader: %s\n", out_frag_native_fname.c_str());
         if (FileExists(out_frag_native_fname.c_str()))
             DeleteFile(out_frag_native_fname.c_str());
     }

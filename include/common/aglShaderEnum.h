@@ -33,7 +33,11 @@ enum ShaderMode
 
 enum
 {
-    cShaderArchiveAlignment = 0x100
+#if RIO_IS_CAFE
+    cShaderArchiveAlignment = 0x100,
+#else
+    cShaderArchiveAlignment = 1,
+#endif
 };
 
 }

@@ -6,9 +6,6 @@ namespace agl {
 
 // No idea which headers these are actually supposed to go in
 
-// enum TextureFilterType;
-// enum TextureCompSel;
-
 enum TextureFormat
 {
     cTextureFormat_Invalid,
@@ -75,5 +72,52 @@ enum TextureFormat
 };
 static_assert(sizeof(TextureFormat) == 4 &&
               cTextureFormat_Num == 0x3C, "agl::TextureFormat size mismatch");
+
+enum TextureCompSel
+{
+    cTextureCompSel_R,
+    cTextureCompSel_G,
+    cTextureCompSel_B,
+    cTextureCompSel_A,
+    cTextureCompSel_0,
+    cTextureCompSel_1,
+    cTextureCompSel_Num
+};
+static_assert(sizeof(TextureCompSel) == 4 &&
+              cTextureCompSel_Num == 6, "agl::TextureCompSel size mismatch");
+
+enum TextureFilterType
+{
+    cTextureFilterType_Point,
+    cTextureFilterType_Linear
+};
+static_assert(sizeof(TextureFilterType) == 4, "agl::TextureFilterType size mismatch");
+
+enum TextureMipFilterType
+{
+    cTextureMipFilterType_None,
+    cTextureMipFilterType_Point,
+    cTextureMipFilterType_Linear
+};
+static_assert(sizeof(TextureMipFilterType) == 4);
+
+enum TextureAnisoRatio
+{
+    cTextureAnisoRatio_1_to_1,
+    cTextureAnisoRatio_2_to_1,
+    cTextureAnisoRatio_4_to_1,
+    cTextureAnisoRatio_8_to_1,
+    cTextureAnisoRatio_16_to_1
+};
+static_assert(sizeof(TextureAnisoRatio) == 4);
+
+enum TextureWrapType
+{
+    cTextureWrapType_Repeat,
+    cTextureWrapType_Mirror,
+    cTextureWrapType_Clamp,
+    cTextureWrapType_MirrorOnce
+};
+static_assert(sizeof(TextureWrapType) == 4);
 
 }

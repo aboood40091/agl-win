@@ -152,6 +152,18 @@ public:
     }
 #endif
 
+    void createAttribute(s32 num);
+    void setAttributeName(s32 index, const char* name);
+
+    void createUniform(s32 num);
+    void setUniformName(s32 index, const char* name);
+
+    void createUniformBlock(s32 num);
+    void setUniformBlockName(s32 index, const char* name);
+
+    void createSamplerLocation(s32 num);
+    void setSamplerLocationName(s32 index, const char* name);
+
     u32 setUpAllVariation(); // I don't know the actual return type
     void reserveSetUpAllVariation();
 
@@ -173,6 +185,8 @@ public:
 
     s32 getVariationMacroValueVariationNum(s32 macro_index) const;
 
+#if RIO_IS_WIN
+
     bool getCompileEnable() const
     {
         return mFlag.isOn(1);
@@ -181,7 +195,15 @@ public:
     void setCompileEnable(bool enable)
     {
         mFlag.change(1, enable);
+
+        if (getVariation_())
+        {
+            for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+                it->mFlag.change(1, enable);
+        }
     }
+
+#endif // RIO_IS_WIN
 
     void update() const // Shrug
     {
@@ -306,6 +328,8 @@ private:
     // Custom
     mutable rio::Shader mShader;
     mutable GFDFile mGFDFile;
+    mutable s32 mVsCfileBlockIdx;
+    mutable s32 mPsCfileBlockIdx;
 #endif // RIO_IS_WIN
 };
 //static_assert(sizeof(ShaderProgram) == 0x60, "agl::ShaderProgram size mismatch");

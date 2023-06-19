@@ -159,7 +159,7 @@ void GX2Resource::restoreContextState()
 {
     if (mStateShadowEnable)
     {
-        GX2ContextState* state = rio::Window::instance()->getNativeWindow().p_context_state;
+        GX2ContextState* state = rio::Window::instance()->getNativeWindow().getContextState();
 
         if (!mUseStateDisplayList)
             GX2SetContextState(state);

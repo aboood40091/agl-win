@@ -9,6 +9,7 @@
 #include <cstring>
 
 #if RIO_IS_WIN
+#include <detail/aglShaderHolder.h>
 #include <graphics/win/ShaderUtil.h>
 #endif // RIO_IS_WIN
 
@@ -31,6 +32,10 @@ ShaderProgram::ShaderProgram()
     , mFragmentShader()
     , mGeometryShader()
     , mpSharedData(nullptr)
+#if RIO_IS_WIN
+    , mVsCfileBlockIdx(-1)
+    , mPsCfileBlockIdx(-1)
+#endif // RIO_IS_WIN
 {
 }
 
@@ -141,6 +146,114 @@ const Shader* ShaderProgram::getShader(ShaderType type) const
         return &mGeometryShader;
     default:
         return nullptr;
+    }
+}
+
+void ShaderProgram::createAttribute(s32 num)
+{
+    RIO_ASSERT(mAttributeLocation.size() == 0);
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mAttributeLocation.allocBuffer(num);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mAttributeLocation.allocBuffer(num);
+    }
+}
+
+void ShaderProgram::setAttributeName(s32 index, const char* name)
+{
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mAttributeLocation[index].setName(name);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mAttributeLocation[index].setName(name);
+    }
+}
+
+void ShaderProgram::createUniform(s32 num)
+{
+    RIO_ASSERT(mUniformLocation.size() == 0);
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mUniformLocation.allocBuffer(num);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mUniformLocation.allocBuffer(num);
+    }
+}
+
+void ShaderProgram::setUniformName(s32 index, const char* name)
+{
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mUniformLocation[index].setName(name);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mUniformLocation[index].setName(name);
+    }
+}
+
+void ShaderProgram::createUniformBlock(s32 num)
+{
+    RIO_ASSERT(mUniformBlockLocation.size() == 0);
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mUniformBlockLocation.allocBuffer(num);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mUniformBlockLocation.allocBuffer(num);
+    }
+}
+
+void ShaderProgram::setUniformBlockName(s32 index, const char* name)
+{
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mUniformBlockLocation[index].setName(name);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mUniformBlockLocation[index].setName(name);
+    }
+}
+
+void ShaderProgram::createSamplerLocation(s32 num)
+{
+    RIO_ASSERT(mSamplerLocation.size() == 0);
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mSamplerLocation.allocBuffer(num);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mSamplerLocation.allocBuffer(num);
+    }
+}
+
+void ShaderProgram::setSamplerLocationName(s32 index, const char* name)
+{
+    RIO_ASSERT(getVariation_() == nullptr || getVariation_()->mpOriginal == this);
+
+    mSamplerLocation[index].setName(name);
+
+    if (getVariation_())
+    {
+        for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+            it->mSamplerLocation[index].setName(name);
     }
 }
 
@@ -414,6 +527,24 @@ u32 ShaderProgram::forceValidate_() const
 
             mShader.load("agl_shader_temp_out");
 
+            if (mGFDFile.mVertexShaders[0].shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
+            {
+                mVsCfileBlockIdx = mShader.getVertexUniformBlockIndex("VS_CFILE_DATA");
+            }
+            else
+            {
+                mVsCfileBlockIdx = -1;
+            }
+
+            if (mGFDFile.mPixelShaders[0].shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
+            {
+                mPsCfileBlockIdx = mShader.getFragmentUniformBlockIndex("PS_CFILE_DATA");
+            }
+            else
+            {
+                mPsCfileBlockIdx = -1;
+            }
+
           //RIO_LOG("    Load shader end\n");
 #endif // RIO_IS_WIN
             dump();
@@ -514,7 +645,19 @@ void ShaderProgram::setShaderGX2_() const
     mShader.setUniform(rio::BaseVec4f{ 0.0f,  1.0f, 1.0f, 1.0f }, mShader.getVertexUniformLocation("VS_PUSH.zSpaceMul"), u32(-1));
     mShader.setUniform(1.0f,                                      mShader.getVertexUniformLocation("VS_PUSH.pointSize"), u32(-1));
 
-    mShader.setUniform(0u, u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.needsPremultiply"));
+
+    mShader.setUniform(7u,   u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.alphaFunc"));
+    mShader.setUniform(0u,   u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.needsPremultiply"));
+
+    if (mVsCfileBlockIdx != -1)
+    {
+        detail::ShaderHolder::instance()->mVsCfile.bind(mVsCfileBlockIdx);
+    }
+
+    if (mPsCfileBlockIdx != -1)
+    {
+        detail::ShaderHolder::instance()->mPsCfile.bind(mPsCfileBlockIdx);
+    }
 #endif
 }
 
@@ -667,7 +810,8 @@ void ShaderProgram::VariationBuffer::create()
         variation_num *= it->mValue.size();
     }
 
-    mProgram.allocBuffer(variation_num - 1);
+    if (variation_num > 1)
+        mProgram.allocBuffer(variation_num - 1);
 }
 
 s32 ShaderProgram::VariationBuffer::getMacroAndValueArray(s32 index, const char** macro_array, const char** value_array) const

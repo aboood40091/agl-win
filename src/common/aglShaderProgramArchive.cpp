@@ -43,10 +43,10 @@ void createShaderProgram(
             it.getIndex(),
             variation.getName(),
             variation.getID(),
-            variation.ref().mValueNum
+            static_cast<s32>(variation.ref().mValueNum)
         );
 
-        for (s32 i = 0; i < variation.ref().mValueNum; i++)
+        for (s32 i = 0; i < static_cast<s32>(variation.ref().mValueNum); i++)
         {
             program->setVariationMacroValue(
                 it.getIndex(),
@@ -407,7 +407,7 @@ void ShaderProgramArchive::ShaderProgramEx::initialize(ShaderProgramArchive* arc
             it->mCompileInfo.create(macro_arr.getNum(), program.getVariationMacroNum());
 
             it->mCompileInfo.setName(it->mSource->getName());
-            it->mCompileInfo.setRawText(&it->mRawText);
+            it->mCompileInfo.setRawText(&it->mRawTextEx);
 
             for (ResShaderMacroArray::constIterator macro_it = macro_arr.begin(), macro_it_end = macro_arr.end(); macro_it != macro_it_end; ++macro_it)
             {

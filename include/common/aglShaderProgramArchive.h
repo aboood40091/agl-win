@@ -32,7 +32,7 @@ class ShaderProgramArchive
         ShaderSource* mSource;
 
         // Custom
-        std::string mRawText;
+        std::string mRawTextEx;
 
         friend class ShaderProgramArchive;
     };
@@ -93,6 +93,11 @@ public:
 
     void destroy();
 
+    bool isValid() const
+    {
+        return mResBinary.isValid() || mResText.isValid();
+    }
+
     const char* getName() const
     {
         if (mResBinary.isValid())
@@ -128,6 +133,11 @@ public:
             return mProgram.unsafeGet(index);
 
         return nullptr;
+    }
+
+    const ShaderProgram* searchShaderProgram(s32 index) const
+    {
+        return mProgram.get(index);
     }
 
     void updateCompileInfo();
