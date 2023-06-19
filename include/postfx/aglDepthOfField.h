@@ -78,6 +78,9 @@ class DepthOfField : public utl::IParameterIO
 
     struct VignettingShape
     {
+        VignettingShape();
+        ~VignettingShape();
+
         Buffer<Vertex> mVertex;
         Buffer<u16> mIndex;
         VertexBuffer mVertexBuffer;
