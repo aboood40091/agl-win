@@ -72,11 +72,6 @@ ShaderProgramArchive::ShaderProgramArchive()
     , _28(0)
     , mFlag()
     , mProgramEx()
-    /*
-    , mSource()
-    , mSourceText()
-    , mSourceName()
-    */
     , mpDLBuf(nullptr)
 {
   //detail::RootNode::setNodeMeta(this, "Icon = LAYOUT, Security = agl_shader");
@@ -106,11 +101,7 @@ void ShaderProgramArchive::destroyResFile_()
     if (mResText.isValid())
     {
         mProgramEx.freeBuffer();
-        /*
-        mSourceText.freeBuffer();
-        mSourceName.freeBuffer();
-        mSource.freeBuffer();
-        */
+
         mSourceVec.clear();
         mSourceMap.clear();
     }
@@ -276,13 +267,6 @@ void ShaderProgramArchive::setResShaderArchive_(ResShaderArchive res_archive)
         RIO_ASSERT(mResText.getResShaderProgramNum() == mResBinary.getResBinaryShaderProgramNum());
     }
 
-    /*
-    mSource.allocBuffer(mResText.getResShaderSourceNum());
-
-    mSourceText.allocBuffer(mSource.size());
-    mSourceName.allocBuffer(mSource.size());
-    */
-
     mSourceVec.resize(mResText.getResShaderSourceNum());
     mSourceMap.reserve(mSourceVec.size());
 
@@ -423,7 +407,6 @@ void ShaderProgramArchive::ShaderProgramEx::initialize(ShaderProgramArchive* arc
             it->mSource = &mpArchive->mSourceVec[source_index];
 
             const ResShaderMacroArray macro_arr = res.getResShaderMacroArray(type);
-            it->mCompileInfo.create(macro_arr.getNum(), program.getVariationMacroNum());
 
             it->mCompileInfo.setName(it->mSource->getName());
             it->mCompileInfo.setRawText(&it->mRawTextEx);
@@ -459,7 +442,7 @@ void ShaderProgramArchive::ShaderProgramEx::updateRawText()
         ShaderSource* source = it->mSource;
         if (source && source->mFlag.isOn(1))
         {
-            it->mCompileInfo.setSourceText(&source->mRawTexta);
+            it->mCompileInfo.setSourceText(&source->mRawText);
             mpArchive->getShaderProgram(mIndex).reserveSetUpAllVariation();
         }
     }
@@ -475,21 +458,7 @@ ShaderProgramArchive::ShaderSource::ShaderSource()
     : mFlag(1)
     , mpArchive(nullptr)
     , mRes()
-    /*
-    , mText(nullptr)
-    , mRawText(nullptr)
-    , mUsedInSource()
-    */
 {
-}
-
-ShaderProgramArchive::ShaderSource::~ShaderSource()
-{
-    /*
-    delete mRawText;
-    delete mText;
-    mUsedInSource.freeBuffer();
-    */
 }
 
 void ShaderProgramArchive::ShaderSource::initialize(ShaderProgramArchive* archive, s32 index, ResShaderSource res, bool is_used)
@@ -500,19 +469,8 @@ void ShaderProgramArchive::ShaderSource::initialize(ShaderProgramArchive* archiv
 
     mFlag.change(1 << 1, is_used);
 
-    /*
-    mText = new std::string(res.ref().mTextLen * 2, '\0');
-    rio::MemUtil::copy(mText->data(), res.getText(), res.ref().mTextLen);
-    */
-
     mOriginalName.assign(mRes.getName(), mRes.getNameLength());
     mOriginalText.assign(mRes.getText(), mRes.getTextLength());
-
-    /*
-    mUsedInSource.allocBuffer(mpArchive->mSourceVec.size());
-    for (bool& used : mUsedInSource)
-        used = false;
-    */
 
   //detail::RootNode::setNodeMeta(this, "Icon = NOTE");
 }
@@ -522,29 +480,12 @@ void ShaderProgramArchive::ShaderSource::expand()
     if (mFlag.isOff(1 << 1))
         return;
 
-    /*
-    if (mRawText)
-    {
-        delete mRawText;
-        mRawText = nullptr;
-    }
-    */
-    mRawTexta = mOriginalText;
-
-    /*
-    RIO_ASSERT(mpArchive->mSource.size() < 1024);
-    bool source_is_used[1024];
-    */
+    mRawText = mOriginalText;
 
     detail::ShaderTextUtil::createRawText(
-        &mRawTexta,
+        &mRawText,
         mpArchive->mSourceMap
     );
-
-    /*
-    for (Buffer<ShaderSource>::iterator it = mpArchive->mSource.begin(), it_end = mpArchive->mSource.end(); it != it_end; ++it)
-        it->mUsedInSource[mIndex] = source_is_used[it.getIndex()];
-    */
 }
 
 }

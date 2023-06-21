@@ -13,52 +13,16 @@ ShaderCompileInfo::ShaderCompileInfo()
     : INamable("unititled")
     , mSourceText(nullptr)
     , mRawText(nullptr)
-    /*
-    , mMacroName()
-    , mMacroValue()
-    , mVariationName()
-    , mVariationValue()
-    */
-    /*
-    , _40()
-    , _48()
-    */
 {
-}
-
-ShaderCompileInfo::~ShaderCompileInfo()
-{
-    destroy();
-}
-
-void ShaderCompileInfo::create(s32 num_macro, s32 num_variation)
-{
-    if (num_macro > 0)
-    {
-      //mMacroName.allocBuffer(num_macro);
-      //mMacroValue.allocBuffer(num_macro);
-    }
-
-    if (num_variation > 0)
-    {
-      //mVariationName.allocBuffer(num_variation);
-      //mVariationValue.allocBuffer(num_variation);
-    }
 }
 
 void ShaderCompileInfo::clearVariation()
 {
-  //mVariationName.clear();
-  //mVariationValue.clear();
-
     mVariationMap.clear();
 }
 
 void ShaderCompileInfo::pushBackVariation(const std::string& name, const std::string& value)
 {
-  //mVariationName.pushBack(name);
-  //mVariationValue.pushBack(value);
-
     [[maybe_unused]] const auto& itr = mVariationMap.try_emplace(name, value);
     RIO_ASSERT(itr.second);
 }
@@ -152,12 +116,6 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, std::string* p_buffer
 
     if (mRawText)
         mRawText->assign(*p_buffer);
-}
-
-void ShaderCompileInfo::destroy()
-{
-    mMacroMap = std::unordered_map<std::string, const std::string>();
-    mVariationMap = std::unordered_map<std::string, const std::string>();
 }
 
 }

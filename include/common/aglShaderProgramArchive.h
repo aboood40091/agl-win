@@ -64,7 +64,6 @@ class ShaderProgramArchive
     {
     public:
         ShaderSource();
-        ~ShaderSource();
 
         void initialize(ShaderProgramArchive* archive, s32 index, ResShaderSource res, bool is_used);
         void expand();
@@ -79,15 +78,10 @@ class ShaderProgramArchive
         rio::BitFlag32 mFlag;
         ShaderProgramArchive* mpArchive;
         ResShaderSource mRes;
-        /*
-        std::string* mText;
-        std::string* mRawText;
-        Buffer<bool> mUsedInSource;
-        */
 
         std::string mOriginalName;
         std::string mOriginalText;
-        std::string mRawTexta;
+        std::string mRawText;
 
         friend class ShaderProgramArchive;
     };
@@ -162,16 +156,11 @@ private:
     u16 _28;
     rio::BitFlag16 mFlag;
     Buffer<ShaderProgramEx> mProgramEx;
-    /*
-    Buffer<ShaderSource> mSource;
-    Buffer<const char*> mSourceText;
-    Buffer<const char*> mSourceName;
-    */
 
+    // Custom
     std::vector<ShaderSource> mSourceVec;
     std::unordered_map<std::string, const std::string> mSourceMap;
 
-    // Custom
     void* mpDLBuf;
 
     friend class ShaderSource;
