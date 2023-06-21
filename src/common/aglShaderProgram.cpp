@@ -100,7 +100,9 @@ ShaderMode ShaderProgram::activate(ShaderMode current_mode, bool use_dl) const
 
     if (current_mode == cShaderMode_GeometryShader)
         driver::GX2Resource::instance()->setGeometryShaderRingBuffer();
-#endif // RIO_IS_CAFE
+#elif RIO_IS_WIN
+    updateCompile();
+#endif
 
     if (use_dl && !mDisplayList.isEmpty())
         mDisplayList.call();
@@ -254,12 +256,12 @@ u32 ShaderProgram::setUpAllVariation()
 
     if (getVariation_())
     {
-        ret = getVariation_()->mpOriginal->validate_();
+        ret = getVariation_()->mpOriginal->update();
         if (ret == 0)
         {
             for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
             {
-                ret = it->validate_();
+                ret = it->update();
                 if (ret != 0)
                     break;
             }
@@ -267,7 +269,7 @@ u32 ShaderProgram::setUpAllVariation()
     }
     else
     {
-        ret = validate_();
+        ret = update();
     }
 
     return ret;

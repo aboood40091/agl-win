@@ -81,50 +81,58 @@ public:
 #if RIO_IS_CAFE
     GX2VertexShader* getVertexShaderBinary()
     {
-        validate_();
+        update();
         return mVertexShader.getBinary();
     }
 
     const GX2VertexShader* getVertexShaderBinary() const
     {
-        validate_();
+        update();
         return mVertexShader.getBinary();
     }
 
     GX2PixelShader* getFragmentShaderBinary()
     {
-        validate_();
+        update();
         return mFragmentShader.getBinary();
     }
 
     const GX2PixelShader* getFragmentShaderBinary() const
     {
-        validate_();
+        update();
         return mFragmentShader.getBinary();
     }
 
     GX2GeometryShader* getGeometryShaderBinary()
     {
-        validate_();
+        update();
         return mGeometryShader.getBinary();
     }
 
     const GX2GeometryShader* getGeometryShaderBinary() const
     {
-        validate_();
+        update();
         return mGeometryShader.getBinary();
     }
 #elif RIO_IS_WIN
-    rio::Shader& getShaderRIO()
+    rio::Shader* getShaderRIO()
     {
-        validate_();
-        return mShader;
+        updateCompile();
+        return mShader.isLoaded() ? &mShader : nullptr;
     }
 
-    const rio::Shader& getShaderRIO() const
+    const rio::Shader* getShaderRIO() const
     {
-        validate_();
-        return mShader;
+        updateCompile();
+        return mShader.isLoaded() ? &mShader : nullptr;
+    }
+
+    u32 updateCompile() const
+    {
+        if (mFlag.isOff(1))
+            mFlag.set(1 | 2 | 8);
+
+        return update();
     }
 #endif
 
@@ -161,36 +169,16 @@ public:
 
     s32 getVariationMacroValueVariationNum(s32 macro_index) const;
 
-#if RIO_IS_WIN
-
-    bool getCompileEnable() const
+    u32 update() const // Shrug
     {
-        return mFlag.isOn(1);
+        return validate_();
     }
 
-    void setCompileEnable(bool enable)
-    {
-        mFlag.change(1, enable);
-
-        if (getVariation_())
-        {
-            for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
-                it->mFlag.change(1, enable);
-        }
-    }
-
-#endif // RIO_IS_WIN
-
-    void update() const // Shrug
-    {
-        validate_();
-    }
-
-    void updateVariation(s32 index) // I don't know the actual name
+    u32 updateVariation(s32 index) // I don't know the actual name
     {
         ShaderProgram* program = getVariation(index);
         program->mFlag.set(8 | 2);
-        program->validate_();
+        return program->update();
     }
 
     const AttributeLocation& getAttributeLocation(s32 index) const { return mAttributeLocation[index]; }

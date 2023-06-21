@@ -352,21 +352,8 @@ bool ShaderProgramArchive::setUp_(bool unk)
         // TODO
         // it->mpSharedData->_10 = _20;
 
-        if ((!unk || _28 <= 1))
-        {
-#if RIO_IS_WIN
-            bool compile_enable = it->getCompileEnable();
-          //RIO_LOG("compile start: %s\n", it->getName());
-            it->setCompileEnable(true);
-            u32 ret = it->setUpAllVariation();
-            it->setCompileEnable(compile_enable);
-          //RIO_LOG("compile end\n");
-#else
-            u32 ret = it->setUpAllVariation();
-#endif // RIO_IS_WIN
-            if (ret != 0)
-                return false;
-        }
+        if ((!unk || _28 <= 1) && it->setUpAllVariation() != 0)
+            return false;
     }
 
     // TODO

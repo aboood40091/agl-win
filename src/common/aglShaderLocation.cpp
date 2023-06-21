@@ -89,8 +89,10 @@ void UniformLocation::search(const ShaderProgram& program)
         mGS = -1;
 #else
 #if RIO_IS_WIN
-    mVS = program.getShaderRIO().getVertexUniformLocation(getName());
-    mFS = program.getShaderRIO().getFragmentUniformLocation(getName());
+    const rio::Shader* p_shader_rio = program.getShaderRIO();
+    RIO_ASSERT(p_shader_rio);
+    mVS = p_shader_rio->getVertexUniformLocation(getName());
+    mFS = p_shader_rio->getFragmentUniformLocation(getName());
 #else
     mVS = -1;
     mFS = -1;
@@ -128,8 +130,10 @@ void UniformBlockLocation::search(const ShaderProgram& program)
             mGS = uniform_block->offset;
     }
 #elif RIO_IS_WIN
-    mVS = program.getShaderRIO().getVertexUniformBlockIndex(getName());
-    mFS = program.getShaderRIO().getFragmentUniformBlockIndex(getName());
+    const rio::Shader* p_shader_rio = program.getShaderRIO();
+    RIO_ASSERT(p_shader_rio);
+    mVS = p_shader_rio->getVertexUniformBlockIndex(getName());
+    mFS = p_shader_rio->getFragmentUniformBlockIndex(getName());
     mGS = -1;
 #endif // cafe
 }
@@ -163,8 +167,10 @@ void SamplerLocation::search(const ShaderProgram& program)
             mGS = sampler_var->location;
     }
 #elif RIO_IS_WIN
-    mVS = program.getShaderRIO().getVertexSamplerLocation(getName());
-    mFS = program.getShaderRIO().getFragmentSamplerLocation(getName());
+    const rio::Shader* p_shader_rio = program.getShaderRIO();
+    RIO_ASSERT(p_shader_rio);
+    mVS = p_shader_rio->getVertexSamplerLocation(getName());
+    mFS = p_shader_rio->getFragmentSamplerLocation(getName());
     mGS = -1;
 #endif // cafe
 }
@@ -177,7 +183,9 @@ void AttributeLocation::search(const ShaderProgram& program)
     // else
     //     mVS = -1;
 #elif RIO_IS_WIN
-    mVS = program.getShaderRIO().getVertexAttribLocation(getName());
+    const rio::Shader* p_shader_rio = program.getShaderRIO();
+    RIO_ASSERT(p_shader_rio);
+    mVS = p_shader_rio->getVertexAttribLocation(getName());
 #else
     mVS = -1;
 #endif
