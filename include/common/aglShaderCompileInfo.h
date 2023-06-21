@@ -1,11 +1,13 @@
 #pragma once
 
 #include <common/aglShaderEnum.h>
-#include <container/Buffer.h>
-#include <container/PtrArray.h>
+//#include <container/Buffer.h>
+//#include <container/PtrArray.h>
 #include <misc/Namable.h>
 
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace agl {
 
@@ -27,18 +29,23 @@ public:
 
     void clearMacro()
     {
-        mMacroName.clear();
-        mMacroValue.clear();
+      //mMacroName.clear();
+      //mMacroValue.clear();
+
+        mMacroMap.clear();
     }
 
-    void pushBackMacro(const char* name, const char* value)
+    void pushBackMacro(const std::string& name, const std::string& value)
     {
-        mMacroName.pushBack(name);
-        mMacroValue.pushBack(value);
+      //mMacroName.pushBack(name);
+      //mMacroValue.pushBack(value);
+
+        [[maybe_unused]] const auto& itr = mMacroMap.try_emplace(name, value);
+        RIO_ASSERT(itr.second);
     }
 
     void clearVariation();
-    void pushBackVariation(const char* name, const char* value);
+    void pushBackVariation(const std::string& name, const std::string& value);
 
     void setSourceText(const std::string* text)
     {
@@ -67,13 +74,11 @@ public:
 private:
     const std::string* mSourceText;
     std::string* mRawText;
-    PtrArray<const char> mMacroName;
-    PtrArray<const char> mMacroValue;
-    PtrArray<const char> mVariationName;
-    PtrArray<const char> mVariationValue;
-    Buffer<u8> _40; // No idea buffer of what
-    Buffer<u8> _48; // ^^
+    std::unordered_map<std::string, const std::string> mMacroMap;
+    std::unordered_map<std::string, const std::string> mVariationMap;
+  //Buffer<u8> _40; // No idea buffer of what
+  //Buffer<u8> _48; // ^^
 };
-static_assert(sizeof(ShaderCompileInfo) == 0x54, "agl::ShaderCompileInfo size mismatch");
+//static_assert(sizeof(ShaderCompileInfo) == 0x54, "agl::ShaderCompileInfo size mismatch");
 
 }

@@ -13,12 +13,16 @@ ShaderCompileInfo::ShaderCompileInfo()
     : INamable("unititled")
     , mSourceText(nullptr)
     , mRawText(nullptr)
+    /*
     , mMacroName()
     , mMacroValue()
     , mVariationName()
     , mVariationValue()
+    */
+    /*
     , _40()
     , _48()
+    */
 {
 }
 
@@ -31,65 +35,72 @@ void ShaderCompileInfo::create(s32 num_macro, s32 num_variation)
 {
     if (num_macro > 0)
     {
-        mMacroName.allocBuffer(num_macro);
-        mMacroValue.allocBuffer(num_macro);
+      //mMacroName.allocBuffer(num_macro);
+      //mMacroValue.allocBuffer(num_macro);
     }
 
     if (num_variation > 0)
     {
-        mVariationName.allocBuffer(num_variation);
-        mVariationValue.allocBuffer(num_variation);
+      //mVariationName.allocBuffer(num_variation);
+      //mVariationValue.allocBuffer(num_variation);
     }
 }
 
 void ShaderCompileInfo::clearVariation()
 {
-    mVariationName.clear();
-    mVariationValue.clear();
+  //mVariationName.clear();
+  //mVariationValue.clear();
+
+    mVariationMap.clear();
 }
 
-void ShaderCompileInfo::pushBackVariation(const char* name, const char* value)
+void ShaderCompileInfo::pushBackVariation(const std::string& name, const std::string& value)
 {
-    mVariationName.pushBack(name);
-    mVariationValue.pushBack(value);
+  //mVariationName.pushBack(name);
+  //mVariationValue.pushBack(value);
+
+    [[maybe_unused]] const auto& itr = mVariationMap.try_emplace(name, value);
+    RIO_ASSERT(itr.second);
 }
 
 void ShaderCompileInfo::calcCompileSource(ShaderType type, std::string* p_buffer, Target target, bool) const
 {
     RIO_ASSERT(p_buffer != nullptr);
 
-    p_buffer->operator=("");
+    p_buffer->clear();
 
     if (!mSourceText)
         return;
 
-    const char* text = nullptr;
+    const std::string* p_text = nullptr;
     for (u32 i = 0; i < STRING_REPLACEMENT_COUNT; i++)
     {
         const std::string& search_str = cStringReplacement_From[i];
         if (search_str == *mSourceText)
         {
-            text = cStringReplacement_To[i].c_str();
+            p_text = &(cStringReplacement_To[i]);
             break;
         }
     }
 
-    if (text == nullptr)
-        text = mSourceText->c_str();
+    if (p_text == nullptr)
+        p_text = mSourceText;
+
+    const std::string& text = *p_text;
+    std::string::size_type text_start_pos = 0;
 
     bool is_gl = target == cTarget_GL;
 
-    const char* version_pos = std::strstr(text, "#version");
-    if (version_pos)
-    {
-        s32 line_feed_pos, line_feed_len;
 
-        line_feed_pos = detail::ShaderTextUtil::findLineFeedCode(version_pos, &line_feed_len);
-        if (line_feed_pos != -1)
-            text = version_pos + line_feed_pos + line_feed_len;
+    const std::string::size_type version_pos = text.find("#version", 0, 8);
+    if (version_pos != std::string::npos)
+    {
+        const std::string::size_type line_feed_pos = text.find_first_of("\r\n", version_pos, 2);
+        if (line_feed_pos != std::string::npos)
+            text_start_pos = line_feed_pos + 1 + u32(text[line_feed_pos] == '\r' && text[line_feed_pos + 1] == '\n');
     }
 
-    static const char* sMacroDefine[] = {
+    static const std::string sMacroDefine[] = {
         // GL
         "#version 400\n" \
         "#extension GL_ARB_texture_cube_map_array : enable\n" \
@@ -100,69 +111,53 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, std::string* p_buffer
         "#extension GL_ARB_texture_cube_map_array : enable\n"
     };
 
-    static const char* sTargetDefine[] = {
+    static const std::string sTargetDefine[] = {
         "#define AGL_TARGET_GL \n",
         "#define AGL_TARGET_GX2 \n"
     };
 
-    static const char* sTypeDefine[cShaderType_Num] = {
+    static const std::string sTypeDefine[cShaderType_Num] = {
         "#define AGL_VERTEX_SHADER \n",
         "#define AGL_FRAGMENT_SHADER \n",
         "#define AGL_GEOMETRY_SHADER \n"
     };
 
-    p_buffer->operator+=(sMacroDefine[is_gl ? 0 : 1]);
-    p_buffer->operator+=("// ----- These macros are auto defined by AGL.-----\n");
-    p_buffer->operator+=(sTypeDefine[type]);
-    p_buffer->operator+=(sTargetDefine[is_gl ? 0 : 1]);
-    p_buffer->operator+=("// ------------------------------------------------\n");
-    p_buffer->operator+=(text);
+    static const std::string cComments[] = {
+        "// ----- These macros are auto defined by AGL.-----\n",
+        "// ------------------------------------------------\n"
+    };
 
-    if (mMacroName.size() > 0)
+    p_buffer->append(sMacroDefine[is_gl ? 0 : 1]);
+    p_buffer->append(cComments[0]);
+    p_buffer->append(sTypeDefine[type]);
+    p_buffer->append(sTargetDefine[is_gl ? 0 : 1]);
+    p_buffer->append(cComments[1]);
+    p_buffer->append(text, text_start_pos);
+
+    if (mMacroMap.size() > 0)
     {
         detail::ShaderTextUtil::replaceMacro(
             p_buffer,
-            static_cast<const char**>(mMacroName.getWork()),
-            static_cast<const char**>(mMacroValue.getWork()),
-            mMacroName.size(),
-            detail::PrivateResource::sShaderWorkBuffer.getBufferPtr(),
-            detail::PrivateResource::sShaderWorkBuffer.size()
+            mMacroMap
         );
     }
 
-    if (mVariationName.size() > 0)
+    if (mVariationMap.size() > 0)
     {
         detail::ShaderTextUtil::replaceMacro(
             p_buffer,
-            static_cast<const char**>(mVariationName.getWork()),
-            static_cast<const char**>(mVariationValue.getWork()),
-            mVariationName.size(),
-            detail::PrivateResource::sShaderWorkBuffer.getBufferPtr(),
-            detail::PrivateResource::sShaderWorkBuffer.size()
+            mVariationMap
         );
     }
 
     if (mRawText)
-        mRawText->operator=(*p_buffer);
+        mRawText->assign(*p_buffer);
 }
 
 void ShaderCompileInfo::destroy()
 {
-    if (mMacroName.isBufferReady())
-    {
-        mMacroName.freeBuffer();
-
-        RIO_ASSERT(mMacroValue.isBufferReady());
-        mMacroValue.freeBuffer();
-    }
-
-    if (mVariationName.isBufferReady())
-    {
-        mVariationName.freeBuffer();
-
-        RIO_ASSERT(mVariationValue.isBufferReady());
-        mVariationValue.freeBuffer();
-    }
+    mMacroMap = std::unordered_map<std::string, const std::string>();
+    mVariationMap = std::unordered_map<std::string, const std::string>();
 }
 
 }

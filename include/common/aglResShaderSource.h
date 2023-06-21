@@ -27,9 +27,31 @@ public:
         return (const char*)(ptr() + 1);
     }
 
+    u32 getNameLength() const
+    {
+        const char* const name = getName();
+        u32 length = ptr()->mNameLen;
+
+        while (length > 0 && name[length - 1] == '\0')
+            length--;
+
+        return length;
+    }
+
     const char* getText() const
     {
         return getName() + ptr()->mNameLen;
+    }
+
+    u32 getTextLength() const
+    {
+        const char* const text = getText();
+        u32 length = ptr()->mTextLen;
+
+        while (length > 0 && text[length - 1] == '\0')
+            length--;
+
+        return length;
     }
 };
 

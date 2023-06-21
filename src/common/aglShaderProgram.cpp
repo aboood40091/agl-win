@@ -484,14 +484,19 @@ u32 ShaderProgram::forceValidate_() const
 #if RIO_IS_WIN
             mShader.unload();
 
-            static const std::string sSavePath[cShaderType_Num + 1] = {
-                "shaders/agl_shader_temp.vert",
-                "shaders/agl_shader_temp.frag",
-                "shaders/agl_shader_temp.geom",
-                "shaders/agl_shader_temp.gsh"
-            };
+            const ShaderCompileInfo* p_vert_compile_info = mVertexShader.getCompileInfo();
+            RIO_ASSERT(p_vert_compile_info != nullptr);
 
-            mShader.load("agl_shader_temp");
+            const std::string* p_vert_src = p_vert_compile_info->getRawText();
+            RIO_ASSERT(p_vert_src != nullptr);
+
+            const ShaderCompileInfo* p_frag_compile_info = mFragmentShader.getCompileInfo();
+            RIO_ASSERT(p_frag_compile_info != nullptr);
+
+            const std::string* p_frag_src = p_frag_compile_info->getRawText();
+            RIO_ASSERT(p_frag_src != nullptr);
+
+            mShader.load(p_vert_src->c_str(), p_frag_src->c_str());
 #endif // RIO_IS_WIN
             dump();
 
