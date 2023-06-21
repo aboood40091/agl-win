@@ -42,22 +42,6 @@ u32 Shader::setUp(bool compile_source, bool) const
 
         detail::FileIOMgr::instance()->save(temp_text->c_str(), temp_text->length(), arg);
         */
-#elif RIO_IS_WIN
-        static const char* sSavePath[cShaderType_Num] = {
-            "shaders/agl_shader_temp.vert",
-            "shaders/agl_shader_temp.frag",
-            "shaders/agl_shader_temp.geom",
-        };
-
-        RIO_ASSERT(getShaderType() != agl::cShaderType_Geometry);
-
-        rio::FileHandle handle;
-
-        [[maybe_unused]] rio::FileDevice* device = rio::FileDeviceMgr::instance()->open(&handle, sSavePath[getShaderType()], rio::FileDevice::FILE_OPEN_FLAG_WRITE);
-        RIO_ASSERT(device != nullptr);
-
-        handle.write(reinterpret_cast<const u8*>(temp_text->c_str()), temp_text->length());
-        handle.close();
 #endif
 
         ret = 0;

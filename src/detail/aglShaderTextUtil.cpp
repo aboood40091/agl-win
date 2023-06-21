@@ -1,309 +1,150 @@
 #include <detail/aglShaderTextUtil.h>
 #include <misc/rio_MemUtil.h>
 
-// TODO: Custom implementations of std::strchr && std::strspn
-#include <cstring>
+#include <map>
+#include <unordered_map>
 
 namespace agl { namespace detail {
 
-s32 ShaderTextUtil::findLineFeedCode(const char* p_string, s32* p_length)
-{
-    RIO_ASSERT(p_string != nullptr);
-
-    s32 length;
-
-    s32 i = 0;
-    for (;;)
-    {
-        if (p_string[i] == '\0')
-        {
-            length = 0;
-            break;
-        }
-        else if (p_string[i] == '\r')
-        {
-            length = (p_string[i + 1] == '\n') ? 2 : 1;
-            break;
-        }
-        else if (p_string[i] == '\n')
-        {
-            length = 1;
-            break;
-        }
-
-        i++;
-    }
-
-    if (length != 0)
-    {
-        if (p_length)
-            *p_length = length;
-
-        return i;
-    }
-
-    return -1;
-}
-
-void ShaderTextUtil::replaceMacro(std::string* p_text, const char* const* macro, const char* const* value, s32 macro_num, char* p_work, s32 worksize)
+void ShaderTextUtil::replaceMacro(std::string* p_text, const std::unordered_map<std::string, const std::string>& macro_map_)
 {
     RIO_ASSERT(p_text != nullptr);
-    RIO_ASSERT(p_work != nullptr);
-    RIO_ASSERT(macro != nullptr);
-    RIO_ASSERT(value != nullptr);
+  //RIO_ASSERT(p_text->length() == std::strlen(p_text->c_str()));
 
-    RIO_ASSERT(macro_num < 1024);
-    bool macro_replaced[1024];
-    for (s32 i_macro = 0; i_macro < macro_num; i_macro++)
-        macro_replaced[i_macro] = false;
+    std::string::size_type text_pos = 0;
 
-    const char* p_src = p_text->c_str();
-    char* p_dst = p_work;
+    std::map<std::string, const std::string> macro_map(macro_map_.begin(), macro_map_.end());
 
-    s32 i_macro = 0;
-    for (;;)
+    while (text_pos < p_text->length())
     {
-        s32 line_feed_pos, line_feed_len;
-        line_feed_pos = detail::ShaderTextUtil::findLineFeedCode(p_src, &line_feed_len);
-        if (line_feed_pos == -1)
+        const std::string::size_type include_directive_begin = p_text->find_first_of('#', text_pos);
+        if (include_directive_begin == std::string::npos)
             break;
 
-        bool replaced = false;
+        text_pos = p_text->find_first_not_of(" \t", include_directive_begin + 1, 2);
+        if (text_pos == std::string::npos)
+            break;
 
-        if (*p_src == '#')
+        if (p_text->compare(text_pos, 6, "define", 6) != 0)
+            continue;
+
+        if (text_pos + 6 >= p_text->length() ||
+            (p_text->at(text_pos + 6) != ' ' &&
+             p_text->at(text_pos + 6) != '\t'))
         {
-            s32 macro_pos = 1;
-            while (p_src[macro_pos] != '\0')
-            {
-                if (p_src[macro_pos] != ' ' &&
-                    p_src[macro_pos] != '\t' &&
-                    p_src[macro_pos] != '\r' &&
-                    p_src[macro_pos] != '\n')
-                {
-                    break;
-                }
-                macro_pos++;
-            }
-
-            if (p_src[macro_pos + 0] == 'd' &&
-                p_src[macro_pos + 1] == 'e' &&
-                p_src[macro_pos + 2] == 'f' &&
-                p_src[macro_pos + 3] == 'i' &&
-                p_src[macro_pos + 4] == 'n' &&
-                p_src[macro_pos + 5] == 'e' &&
-                (p_src[macro_pos + 6] == ' ' ||
-                 p_src[macro_pos + 6] == '\t'))
-            {
-                macro_pos += 7;
-                while (p_src[macro_pos] != '\0')
-                {
-                    if (p_src[macro_pos] != ' ' &&
-                        p_src[macro_pos] != '\t' &&
-                        p_src[macro_pos] != '\r' &&
-                        p_src[macro_pos] != '\n')
-                    {
-                        break;
-                    }
-                    macro_pos++;
-                }
-
-                for (s32 i_match_macro = 0; i_match_macro < macro_num; i_match_macro++)
-                {
-                    if (macro_replaced[i_match_macro])
-                        continue;
-
-                    const char* const match_macro = macro[i_match_macro];
-                    bool match = true;
-                    u32 save_macro_pos = macro_pos;
-
-                    for (s32 i = 0; match_macro[i] != '\0'; i++)
-                    {
-                        if (p_src[macro_pos] != match_macro[i])
-                        {
-                            match = false;
-                            break;
-                        }
-
-                        macro_pos++;
-                    }
-
-                    if (!match || (p_src[macro_pos] != ' ' &&
-                                   p_src[macro_pos] != '\t'))
-                    {
-                        macro_pos = save_macro_pos;
-                        continue;
-                    }
-
-                    {
-                        const s32 buf_size = worksize - (s32)(p_dst - p_work);
-                        const s32 def_size = std::snprintf(p_dst, buf_size, "#define %s %s", match_macro, value[i_match_macro]);
-                        RIO_ASSERT(def_size >= 0 && def_size < buf_size);
-                        p_dst += def_size;
-                    }
-
-                    for (s32 i = 0; i < line_feed_len; i++)
-                    {
-                        const s32 buf_size = worksize - (s32)(p_dst - p_work);
-                        const s32 src_size = std::snprintf(p_dst, buf_size, "%c", p_src[line_feed_pos + i]);
-                        RIO_ASSERT(src_size >= 0 && src_size < buf_size);
-                        p_dst += src_size;
-                    }
-
-                    macro_replaced[i_match_macro] = true;
-                    replaced = true;
-                    break;
-                }
-            }
-        }
-
-        if (!replaced)
-        {
-            rio::MemUtil::copy(p_dst, p_src, line_feed_pos + line_feed_len);
-            p_dst += line_feed_pos + line_feed_len;
-            *p_dst = '\0';
-        }
-
-        p_src += line_feed_pos + line_feed_len;
-
-        if (replaced)
-        {
-            i_macro++;
-            if (i_macro == macro_num)
-                break;
-        }
-    }
-
-    while (*p_src != '\0')
-        *p_dst++ = *p_src++;
-
-    RIO_ASSERT(static_cast<int>(p_dst - p_work) <= worksize);
-    *p_dst = '\0';
-
-    *p_text = p_work;
-}
-
-void ShaderTextUtil::replace(char* pSrc, const char* pValue, s32 begin, s32 end, void* pWork, s32 size)
-{
-    RIO_ASSERT(pSrc != nullptr);
-    RIO_ASSERT(pWork != nullptr);
-    char* const work = (char*)pWork;
-
-    s32 i_count = 0;
-    while (pSrc[end + i_count] != '\0')
-    {
-        work[i_count] = pSrc[end + i_count];
-        i_count++;
-    }
-    RIO_ASSERT(i_count < size);
-    work[i_count] = '\0';
-
-    s32 i = 0;
-    while (pValue[i] != '\0')
-    {
-        pSrc[begin + i] = pValue[i];
-        i++;
-    }
-
-    s32 j = 0;
-    while (work[j] != '\0')
-    {
-        pSrc[begin + i + j] = work[j];
-        j++;
-    }
-
-    pSrc[begin + i + j] = '\0';
-}
-
-std::string* ShaderTextUtil::createRawText(const char* text, const char* const* source_name, const char* const* source_text, s32 source_num, bool* source_used)
-{
-    if (source_used != nullptr)
-        for (s32 i_source = 0; i_source < source_num; i_source++)
-            source_used[i_source] = false;
-
-    std::string* p_text = new std::string(text);
-    s32 text_len = p_text->length();
-
-    const char* p_src = p_text->c_str(); // r22 = p_src, r28 = p_text
-
-    while (*p_src != '\0')
-    {
-        const char* include_directive_begin = std::strchr(p_src, '#');
-        if (include_directive_begin == nullptr)
-        {
+          //RIO_ASSERT(false);
             break;
         }
-        include_directive_begin += 1;
 
-        const char* directive = include_directive_begin + std::strspn(include_directive_begin, " \t\r\n");
-
-        if (directive[0] == 'i' &&
-            directive[1] == 'n' &&
-            directive[2] == 'c' &&
-            directive[3] == 'l' &&
-            directive[4] == 'u' &&
-            directive[5] == 'd' &&
-            directive[6] == 'e')
+        text_pos = p_text->find_first_not_of(" \t", text_pos + 7, 2);
+        if (text_pos == std::string::npos)
         {
-            const char* include_name_begin = std::strchr(directive + 7, '\"');
-            if (include_name_begin == nullptr)
-            {
-                continue;
-            }
-            include_name_begin += 1;
+          //RIO_ASSERT(false);
+            break;
+        }
 
-            const char* include_directive_end = std::strchr(include_name_begin, '\"');
-            if (include_directive_end == nullptr)
-            {
-                continue;
-            }
-            include_directive_end += 1;
+        std::string::size_type line_feed_pos = p_text->find_first_of("\r\n", text_pos, 2);
+        if (line_feed_pos == std::string::npos)
+            line_feed_pos = p_text->length();
 
-            std::string name(include_name_begin, (s32)(include_directive_end - include_name_begin) - 1);
+        auto itr_match_macro = macro_map.lower_bound(p_text->substr(text_pos, line_feed_pos - text_pos));
+        if (itr_match_macro == macro_map.begin())
+            continue;
 
-            s32 i_source = 0;
-            {
-                bool found = false;
-                while (i_source < source_num)
-                {
-                    if (name == source_name[i_source])
-                    {
-                        found = true;
-                        break;
-                    }
-                    i_source++;
-                }
-                if (!found)
-                    break;
-            }
+        --itr_match_macro;
 
-            const char* p_source_text = source_text[i_source];
-            if (source_used != nullptr)
-                source_used[i_source] = true;
+        bool found = false;
 
-            if (!p_source_text)
+        while (true)
+        {
+            if (p_text->compare(text_pos, itr_match_macro->first.length(), itr_match_macro->first) != 0)
                 break;
 
-            std::string* p_new_text = new std::string(text_len + std::strlen(p_source_text) + 1, '\0');
-            rio::MemUtil::copy(p_new_text->data(), p_text->c_str(), text_len);
+            if (text_pos + itr_match_macro->first.length() >= p_text->length() ||
+                (p_text->at(text_pos + itr_match_macro->first.length()) != ' ' &&
+                 p_text->at(text_pos + itr_match_macro->first.length()) != '\t'))
+            {
+                if (itr_match_macro == macro_map.begin())
+                    break;
 
-            const char* const text_base = p_text->c_str();
-            u8* temp_buf = new u8[text_len + 1];
-            detail::ShaderTextUtil::replace(p_new_text->data(), p_source_text, (s32)(include_directive_begin - text_base) - 1, (s32)(include_directive_end - text_base), temp_buf, text_len + 1);
-            delete[] temp_buf; // Nintendo used normal delete (fixed in later versions)
+                --itr_match_macro;
+                continue;
+            }
 
-            delete p_text;
-            p_text = p_new_text;
-
-            p_src = p_text->c_str();
-            text_len = p_text->length();
+            found = true;
+            break;
         }
-        else
-        {
-            p_src = directive;
-        }
+
+        if (!found)
+            continue;
+
+        const std::string& match_macro = itr_match_macro->first;
+      //RIO_ASSERT(match_macro.length() == std::strlen(match_macro.c_str()));
+
+        const std::string& macro_value = itr_match_macro->second;
+      //RIO_ASSERT(macro_value.length() == std::strlen(macro_value.c_str()));
+
+        const std::string::size_type define_len = 9 + match_macro.length() + macro_value.length(); // 9 == strlen("#define") + strlen(" ") + strlen(" ")
+        char* const define_buf = new char[define_len + 1];
+        std::snprintf(define_buf, define_len + 1, "#define %s %s", match_macro.c_str(), itr_match_macro->second.c_str());
+      //RIO_ASSERT(define_len == std::strlen(define_buf));
+
+        p_text->replace(include_directive_begin, line_feed_pos - include_directive_begin, define_buf, define_len);
+
+        delete[] define_buf;
+
+        text_pos = include_directive_begin + define_len;
+
+        macro_map.erase(itr_match_macro);
     }
 
-    return p_text;
+  //RIO_ASSERT(p_text->length() == std::strlen(p_text->c_str()));
+}
+
+void ShaderTextUtil::createRawText(std::string* p_text, const std::unordered_map<std::string, const std::string>& source_map)
+{
+    RIO_ASSERT(p_text != nullptr);
+  //RIO_ASSERT(p_text->length() == std::strlen(p_text->c_str()));
+
+    std::string::size_type text_pos = 0;
+
+    while (text_pos < p_text->length())
+    {
+        const std::string::size_type include_directive_begin = p_text->find_first_of('#', text_pos);
+        if (include_directive_begin == std::string::npos)
+            break;
+
+        text_pos = p_text->find_first_not_of(" \t\r\n", include_directive_begin + 1, 4);
+        if (text_pos == std::string::npos)
+            break;
+
+        if (p_text->compare(text_pos, 7, "include", 7) != 0)
+            continue;
+
+        const std::string::size_type include_name_begin = p_text->find_first_of('\"', text_pos);
+        if (include_name_begin == std::string::npos)
+            continue;
+
+        const std::string::size_type include_directive_end = p_text->find_first_of('\"', include_name_begin + 1);
+        if (include_directive_end == std::string::npos)
+            continue;
+
+        const auto& itr_source = source_map.find(p_text->substr(include_name_begin + 1, include_directive_end - (include_name_begin + 1)));
+        if (itr_source == source_map.end())
+            break;
+
+      //const std::string& source_name = itr_source->first;
+      //RIO_ASSERT(source_name.length() == std::strlen(source_name.c_str()));
+
+        const std::string& source_text = itr_source->second;
+      //RIO_ASSERT(source_text.length() == std::strlen(source_text.c_str()));
+
+        p_text->replace(include_directive_begin, include_directive_end + 1 - include_directive_begin, source_text);
+
+        text_pos = include_directive_begin + source_text.length();
+    }
+
+  //RIO_ASSERT(p_text->length() == std::strlen(p_text->c_str()));
 }
 
 } }
