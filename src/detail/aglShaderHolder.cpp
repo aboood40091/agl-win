@@ -43,7 +43,7 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
     static const char* sProgramArchiveNames[cArchiveType_Num] = {
         "agl_common",
         "agl_technique",
-      //"simple_model"
+        "simple_model"
     };
 
     for (UnsafeArray<ShaderProgramArchive, cArchiveType_Num>::iterator itr = mProgramArchive.begin(), itr_end = mProgramArchive.end(); itr != itr_end; ++itr)
@@ -77,100 +77,100 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
         ArchiveType archive;
         const char* name;
     } sShaders[cShader_Num] = {
-      //{ cArchiveType_Common,      "dev_util"                                 },
-      //{ cArchiveType_Common,      "depth_visualize"                          },
+        { cArchiveType_Common,      "dev_util"                                 },
+        { cArchiveType_Common,      "depth_visualize"                          },
         { cArchiveType_Common,      "texture"                                  },
-      //{ cArchiveType_Common,      "reduce_2"                                 },
-      //{ cArchiveType_Common,      "reduce_4"                                 },
-      //{ cArchiveType_Common,      "reduce_8"                                 },
-      //{ cArchiveType_Common,      "reduce_16"                                },
-      //{ cArchiveType_Technique,   "color_correction"                         },
-      //{ cArchiveType_Technique,   "color_correction_map"                     },
-      //{ cArchiveType_Common,      "xlu_snap"                                 },
-      //{ cArchiveType_Common,      "image_filter_gaussian"                    },
-      //{ cArchiveType_Common,      "image_filter_cubic"                       },
-      //{ cArchiveType_Common,      "image_filter_blur"                        },
-      //{ cArchiveType_Common,      "texture_mult_color"                       },
-      //{ cArchiveType_Common,      "red"                                      },
-      //{ cArchiveType_Common,      "green"                                    },
-      //{ cArchiveType_Common,      "blue"                                     },
-      //{ cArchiveType_Common,      "alpha"                                    },
-      //{ cArchiveType_Common,      "depth_raw"                                },
-      //{ cArchiveType_Common,      "depth_linear"                             },
-      //{ cArchiveType_Common,      "texture_2d_array"                         },
-      //{ cArchiveType_Common,      "texture_3d"                               },
-      //{ cArchiveType_Common,      "texture_cube_map"                         },
-      //{ cArchiveType_Common,      "texture_cube_map_array"                   },
-      //{ cArchiveType_Common,      "texture_texcoord"                         },
-      //{ cArchiveType_Common,      "texture_multi_sample_1x"                  },
-      //{ cArchiveType_Common,      "texture_multi_sample_2x"                  },
-      //{ cArchiveType_Common,      "texture_multi_sample_4x"                  },
-      //{ cArchiveType_Common,      "texture_multi_sample_8x"                  },
-      //{ cArchiveType_Common,      "alpha_modify"                             },
-      //{ cArchiveType_Common,      "texture_color_drift"                      },
-      //{ cArchiveType_Common,      "color_quad"                               },
-      //{ cArchiveType_Common,      "top_bottom_color"                         },
-      //{ cArchiveType_Common,      "draw_imm"                                 },
-      //{ cArchiveType_Common,      "draw_fan"                                 },
-      //{ cArchiveType_Common,      "frame_buffer_flip_y"                      },
-      //{ cArchiveType_Common,      "frame_buffer_no_flip"                     },
-      //{ cArchiveType_Technique,   "bloom_mask"                               },
-      //{ cArchiveType_Technique,   "bloom_gaussian"                           },
-      //{ cArchiveType_Technique,   "bloom_compose"                            },
-      //{ cArchiveType_Technique,   "hdr_compose"                              },
+        { cArchiveType_Common,      "reduce_2"                                 },
+        { cArchiveType_Common,      "reduce_4"                                 },
+        { cArchiveType_Common,      "reduce_8"                                 },
+        { cArchiveType_Common,      "reduce_16"                                },
+        { cArchiveType_Technique,   "color_correction"                         },
+        { cArchiveType_Technique,   "color_correction_map"                     },
+        { cArchiveType_Common,      "xlu_snap"                                 },
+        { cArchiveType_Common,      "image_filter_gaussian"                    },
+        { cArchiveType_Common,      "image_filter_cubic"                       },
+        { cArchiveType_Common,      "image_filter_blur"                        },
+        { cArchiveType_Common,      "texture_mult_color"                       },
+        { cArchiveType_Common,      "red"                                      },
+        { cArchiveType_Common,      "green"                                    },
+        { cArchiveType_Common,      "blue"                                     },
+        { cArchiveType_Common,      "alpha"                                    },
+        { cArchiveType_Common,      "depth_raw"                                },
+        { cArchiveType_Common,      "depth_linear"                             },
+        { cArchiveType_Common,      "texture_2d_array"                         },
+        { cArchiveType_Common,      "texture_3d"                               },
+        { cArchiveType_Common,      "texture_cube_map"                         },
+        { cArchiveType_Common,      "texture_cube_map_array"                   },
+        { cArchiveType_Common,      "texture_texcoord"                         },
+        { cArchiveType_Common,      "texture_multi_sample_1x"                  },
+        { cArchiveType_Common,      "texture_multi_sample_2x"                  },
+        { cArchiveType_Common,      "texture_multi_sample_4x"                  },
+        { cArchiveType_Common,      "texture_multi_sample_8x"                  },
+        { cArchiveType_Common,      "alpha_modify"                             },
+        { cArchiveType_Common,      "texture_color_drift"                      },
+        { cArchiveType_Common,      "color_quad"                               },
+        { cArchiveType_Common,      "top_bottom_color"                         },
+        { cArchiveType_Common,      "draw_imm"                                 },
+        { cArchiveType_Common,      "draw_fan"                                 },
+        { cArchiveType_Common,      "frame_buffer_flip_y"                      },
+        { cArchiveType_Common,      "frame_buffer_no_flip"                     },
+        { cArchiveType_Technique,   "bloom_mask"                               },
+        { cArchiveType_Technique,   "bloom_gaussian"                           },
+        { cArchiveType_Technique,   "bloom_compose"                            },
+        { cArchiveType_Technique,   "hdr_compose"                              },
         { cArchiveType_Technique,   "dof_near_mask"                            },
         { cArchiveType_Technique,   "dof_mipmap"                               },
         { cArchiveType_Technique,   "dof_depth_mask"                           },
         { cArchiveType_Technique,   "dof_final"                                },
         { cArchiveType_Technique,   "dof_vignetting"                           },
-      //{ cArchiveType_Technique,   "fxaa"                                     },
-      //{ cArchiveType_Technique,   "fxaa_coloronly"                           },
-      //{ cArchiveType_Technique,   "fxaa_luma"                                },
-      //{ cArchiveType_Technique,   "fxaa_reprojection"                        },
-      //{ cArchiveType_Technique,   "filter_aa_reprojection"                   },
-      //{ cArchiveType_Technique,   "reduce_aa"                                },
-      //{ cArchiveType_Technique,   "lightmap"                                 },
-      //{ cArchiveType_Technique,   "lightmap_clear"                           }, <-- Not in Nintendo Land
-      //{ cArchiveType_Technique,   "light_pre_pass_point_light"               },
-      //{ cArchiveType_Technique,   "light_pre_pass_spot_light"                },
-      //{ cArchiveType_Technique,   "light_pre_pass_proj_light"                },
-      //{ cArchiveType_Technique,   "light_pre_pass_double_same_pos_with_back" },
-      //{ cArchiveType_Technique,   "light_pre_pass_tbr"                       },
-      //{ cArchiveType_Technique,   "light_pre_pass_tbr_sp"                    },
-      //{ cArchiveType_Technique,   "light_pre_pass_quad"                      },
-      //{ cArchiveType_Technique,   "light_pre_pass_dev"                       },
-      //{ cArchiveType_Technique,   "multi_filter_reduce"                      },
-      //{ cArchiveType_Technique,   "multi_filter_expand"                      },
-      //{ cArchiveType_Technique,   "static_depth_shadow"                      },
-      //{ cArchiveType_Common,      "cubemap_gaussian"                         },
-      //{ cArchiveType_Common,      "cubemap_color_correction"                 },
-      //{ cArchiveType_Common,      "cubemap_head_extract"                     },
-      //{ cArchiveType_Common,      "cubemap_head_convolute_first"             },
-      //{ cArchiveType_Common,      "cubemap_head_convolute_other"             },
-      //{ cArchiveType_Common,      "cubemap_hdr_compose"                      },
-      //{ cArchiveType_Common,      "cubemap_draw_illuminant"                  },
-      //{ cArchiveType_Common,      "nv12decode"                               },
-      //{ cArchiveType_Technique,   "screen_pick"                              },
-      //{ cArchiveType_Common,      "debug_cubemap"                            },
-      //{ cArchiveType_Technique,   "depth_shadow_debug"                       },
-      //{ cArchiveType_Technique,   "vsm"                                      },
-      //{ cArchiveType_Technique,   "ssao_ao_buffer"                           },
-      //{ cArchiveType_Technique,   "ssao_blur"                                },
-      //{ cArchiveType_Technique,   "ssao_reduce"                              },
-      //{ cArchiveType_Technique,   "ssao_mask"                                },
-      //{ cArchiveType_Technique,   "occlusion_query"                          },
-      //{ cArchiveType_Technique,   "occlusion_renderer_clear_buf"             },
-      //{ cArchiveType_Technique,   "occlusion_renderer"                       },
-      //{ cArchiveType_Technique,   "occluded_effect_lensflare"                },
-      //{ cArchiveType_Common,      "texture_compress"                         },
-      //{ cArchiveType_Technique,   "shadow_mask"                              },
-      //{ cArchiveType_Technique,   "radial_blur"                              },
-      //{ cArchiveType_Technique,   "radial_blur_compose"                      },
-      //{ cArchiveType_Common,      "debug_primitive"                          },
-      //{ cArchiveType_Common,      "debug_shape_instanced"                    },
-      //{ cArchiveType_Common,      "debug_point_instanced"                    },
-      //{ cArchiveType_Common,      "debug_line_instanced"                     },
-      //{ cArchiveType_Common,      "debug_triangle_instanced"                 }
+        { cArchiveType_Technique,   "fxaa"                                     },
+        { cArchiveType_Technique,   "fxaa_coloronly"                           },
+        { cArchiveType_Technique,   "fxaa_luma"                                },
+        { cArchiveType_Technique,   "fxaa_reprojection"                        },
+        { cArchiveType_Technique,   "filter_aa_reprojection"                   },
+        { cArchiveType_Technique,   "reduce_aa"                                },
+        { cArchiveType_Technique,   "lightmap"                                 },
+        { cArchiveType_Technique,   "lightmap_clear"                           }, // <-- Not in Nintendo Land
+        { cArchiveType_Technique,   "light_pre_pass_point_light"               },
+        { cArchiveType_Technique,   "light_pre_pass_spot_light"                },
+        { cArchiveType_Technique,   "light_pre_pass_proj_light"                },
+        { cArchiveType_Technique,   "light_pre_pass_double_same_pos_with_back" },
+        { cArchiveType_Technique,   "light_pre_pass_tbr"                       },
+        { cArchiveType_Technique,   "light_pre_pass_tbr_sp"                    },
+        { cArchiveType_Technique,   "light_pre_pass_quad"                      },
+        { cArchiveType_Technique,   "light_pre_pass_dev"                       },
+        { cArchiveType_Technique,   "multi_filter_reduce"                      },
+        { cArchiveType_Technique,   "multi_filter_expand"                      },
+        { cArchiveType_Technique,   "static_depth_shadow"                      },
+        { cArchiveType_Common,      "cubemap_gaussian"                         },
+        { cArchiveType_Common,      "cubemap_color_correction"                 },
+        { cArchiveType_Common,      "cubemap_head_extract"                     },
+        { cArchiveType_Common,      "cubemap_head_convolute_first"             },
+        { cArchiveType_Common,      "cubemap_head_convolute_other"             },
+        { cArchiveType_Common,      "cubemap_hdr_compose"                      },
+        { cArchiveType_Common,      "cubemap_draw_illuminant"                  },
+        { cArchiveType_Common,      "nv12decode"                               },
+        { cArchiveType_Technique,   "screen_pick"                              },
+        { cArchiveType_Common,      "debug_cubemap"                            },
+        { cArchiveType_Technique,   "depth_shadow_debug"                       },
+        { cArchiveType_Technique,   "vsm"                                      },
+        { cArchiveType_Technique,   "ssao_ao_buffer"                           },
+        { cArchiveType_Technique,   "ssao_blur"                                },
+        { cArchiveType_Technique,   "ssao_reduce"                              },
+        { cArchiveType_Technique,   "ssao_mask"                                },
+        { cArchiveType_Technique,   "occlusion_query"                          },
+        { cArchiveType_Technique,   "occlusion_renderer_clear_buf"             },
+        { cArchiveType_Technique,   "occlusion_renderer"                       },
+        { cArchiveType_Technique,   "occluded_effect_lensflare"                },
+        { cArchiveType_Common,      "texture_compress"                         },
+        { cArchiveType_Technique,   "shadow_mask"                              },
+        { cArchiveType_Technique,   "radial_blur"                              },
+        { cArchiveType_Technique,   "radial_blur_compose"                      },
+        { cArchiveType_Common,      "debug_primitive"                          },
+        { cArchiveType_Common,      "debug_shape_instanced"                    },
+        { cArchiveType_Common,      "debug_point_instanced"                    },
+        { cArchiveType_Common,      "debug_line_instanced"                     },
+        { cArchiveType_Common,      "debug_triangle_instanced"                 }
     };
 
     for (s32 i = 0; i < cShader_Num; i++)
@@ -199,7 +199,6 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
         {
         default:
             break;
-        /*
         case cShader_DevUtil:
             p->createUniform(6);
             {
@@ -225,9 +224,7 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
                 p->setSamplerLocationName(0, "cTexDepth");
             }
             break;
-        */
         case cShader_Texture:
-        /*
         case cShader_Reduce2:
         case cShader_Reduce4:
         case cShader_Reduce8:
@@ -258,7 +255,6 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
         case cShader_TopBottomColor:
         //
         case cShader_NV12Decode:
-        */
             p->createAttribute(utl::ImageFilter2D::cAttribute_Num);
             {
                 p->setAttributeName(utl::ImageFilter2D::cAttribute_Position,        "aPosition");
@@ -294,7 +290,6 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
                 p->setSamplerLocationName(utl::ImageFilter2D::cSampler_Texture_1,   "uTexture_1");
             }
             break;
-        /*
         case cShader_ColorCorrection:
         case cShader_ColorCorrectionMap:
             p->createUniform(3);
@@ -401,7 +396,6 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
                 p->setSamplerLocationName(2, "cColorCorrectionTable");
             }
             break;
-        */
         case cShader_DOFNearMask:
         case cShader_DOFMipmap:
         case cShader_DOFDepthMask:
@@ -432,7 +426,6 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
                 p->setSamplerLocationName(pfx::DepthOfField::cSampler_TexIndirect,      "cTexIndirect");
             }
             break;
-        /*
         case cShader_FXAA:
         case cShader_FXAAColorOnly:
         case cShader_FXAALuma:
@@ -471,7 +464,7 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
             }
             break;
         case cShader_Lightmap:
-      //case cShader_LightmapClear:
+        case cShader_LightmapClear:
             p->createUniformBlock(3);
             {
                 p->setUniformBlockName(0, "Light");
@@ -874,7 +867,6 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
                 p->setUniformBlockName(4, "PointInfo");
             }
             break;
-        */
         }
     }
 
