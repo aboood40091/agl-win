@@ -1,5 +1,4 @@
 #include <common/aglShaderProgramArchive.h>
-#include <detail/aglPrivateResource.h>
 #include <detail/aglShaderTextUtil.h>
 
 #include <cstring>

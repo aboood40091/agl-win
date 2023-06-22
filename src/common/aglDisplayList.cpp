@@ -1,5 +1,5 @@
 #include <common/aglDisplayList.h>
-#include <detail/aglPrivateResource.h>
+#include <misc/rio_MemUtil.h>
 
 namespace agl {
 
