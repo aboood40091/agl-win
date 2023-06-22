@@ -145,12 +145,6 @@ public:
         const T* mStart;
     };
 
-    // TODO
-    class reverseIterator { };
-
-    // TODO
-    class reverseConstIterator { };
-
 public:
     iterator begin() { return iterator(mBuffer); }
     constIterator begin() const { return constIterator(mBuffer); }
@@ -158,28 +152,9 @@ public:
     iterator end() { return iterator(mBuffer, N); }
     constIterator end() const { return constIterator(mBuffer, N); }
 
-    iterator toIterator(s32);
-    constIterator toIterator(s32) const;
-
     constIterator constBegin() const { return constIterator(mBuffer); }
 
     constIterator constEnd() const { return constIterator(mBuffer, N); }
-
-    constIterator toConstIterator(s32) const;
-
-    reverseIterator reverseBegin();
-    reverseConstIterator reverseBegin() const;
-
-    reverseIterator reverseEnd();
-    reverseConstIterator reverseEnd() const;
-
-    reverseIterator toReverseIterator(s32);
-    reverseConstIterator toReverseIterator(s32) const;
-
-    reverseConstIterator reverseConstBegin() const;
-    reverseConstIterator reverseConstEnd() const;
-
-    reverseConstIterator toReverseConstIterator(s32) const;
 
     T mBuffer[N];
 };
@@ -214,8 +189,6 @@ public:
 public:
     typedef typename SafeArray<T, N>::iterator iterator;
     typedef typename SafeArray<T, N>::constIterator constIterator;
-    typedef typename SafeArray<T, N>::reverseIterator reverseIterator;
-    typedef typename SafeArray<T, N>::reverseConstIterator reverseConstIterator;
 
 public:
     iterator begin() { return iterator(mBuffer); }
@@ -224,28 +197,9 @@ public:
     iterator end() { return iterator(mBuffer, N); }
     constIterator end() const { return constIterator(mBuffer, N); }
 
-    iterator toIterator(s32);
-    constIterator toIterator(s32) const;
-
     constIterator constBegin() const { return constIterator(mBuffer); }
 
     constIterator constEnd() const { return constIterator(mBuffer, N); }
-
-    constIterator toConstIterator(s32) const;
-
-    reverseIterator reverseBegin();
-    reverseConstIterator reverseBegin() const;
-
-    reverseIterator reverseEnd();
-    reverseConstIterator reverseEnd() const;
-
-    reverseIterator toReverseIterator(s32);
-    reverseConstIterator toReverseIterator(s32) const;
-
-    reverseConstIterator reverseConstBegin() const;
-    reverseConstIterator reverseConstEnd() const;
-
-    reverseConstIterator toReverseConstIterator(s32) const;
 
     T mBuffer[N];
 };

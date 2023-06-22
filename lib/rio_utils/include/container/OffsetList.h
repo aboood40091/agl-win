@@ -125,21 +125,6 @@ public:
         s32 mOffset;
     };
 
-    // TODO
-    class constIterator { };
-
-    // TODO
-    class robustIterator { };
-
-    // TODO
-    class reverseIterator { };
-
-    // TODO
-    class reverseConstIterator { };
-
-    // TODO
-    class reverseRobustIterator { };
-
 public:
     iterator begin() const
     {
@@ -150,23 +135,6 @@ public:
     {
         return iterator(listNodeToObj(const_cast<rio::LinkListNode*>(&mStartEnd)), mOffset);
     }
-
-    iterator toIterator(T*) const;
-    constIterator constBegin() const;
-    constIterator constEnd() const;
-    constIterator toConstIterator(const T*) const;
-    robustIterator robustBegin();
-    robustIterator robustEnd();
-    robustIterator toRobustIterator(T*);
-    reverseIterator reverseBegin() const;
-    reverseIterator reverseEnd() const;
-    reverseIterator toReverseIterator(T*) const;
-    reverseConstIterator reverseConstBegin() const;
-    reverseConstIterator reverseConstEnd() const;
-    reverseConstIterator toReverseConstIterator(const T*) const;
-    reverseRobustIterator reverseRobustBegin();
-    reverseRobustIterator reverseRobustEnd();
-    reverseRobustIterator toReverseRobustIterator(T*);
 
 protected:
     static s32 compareT(const T*, const T*);

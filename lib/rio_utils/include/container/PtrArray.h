@@ -236,12 +236,6 @@ public:
         const T* const* mPPtr;
     };
 
-    // TODO
-    class reverseIterator { };
-
-    // TODO
-    class reverseConstIterator { };
-
 public:
     iterator begin() const
     {
@@ -253,8 +247,6 @@ public:
         return iterator(reinterpret_cast<T**>(mPtrs) + mPtrNum);
     }
 
-    iterator toIterator(s32) const;
-
     constIterator constBegin() const
     {
         return constIterator(reinterpret_cast<T**>(mPtrs));
@@ -263,18 +255,6 @@ public:
     {
         return constIterator(reinterpret_cast<T**>(mPtrs) + mPtrNum);
     }
-
-    constIterator toConstIterator(s32) const;
-
-    reverseIterator reverseBegin() const;
-    reverseIterator reverseEnd() const;
-
-    reverseIterator toReverseIterator(s32) const;
-
-    reverseConstIterator reverseConstBegin() const;
-    reverseConstIterator reverseConstEnd() const;
-
-    reverseConstIterator toReverseConstIterator(s32) const;
 
 protected:
     static s32 compareT(const T*, const T*);
