@@ -1,6 +1,6 @@
 #pragma once
 
-#include <container/Buffer.h>
+#include <misc/rio_Types.h>
 
 #include <string>
 
@@ -10,7 +10,6 @@ class PrivateResource
 {
 public:
     static std::string sShaderText;
-    static Buffer<char> sShaderWorkBuffer;
 };
 
 } }
