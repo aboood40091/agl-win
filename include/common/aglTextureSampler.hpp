@@ -142,4 +142,16 @@ TextureSampler::setBorderColor(const rio::Color4f& color)
     setBorderColor(color.r, color.g, color.b, color.a);
 }
 
+inline void
+TextureSampler::setDepthCompareEnable(bool enable)
+{
+    mSamplerInner.setDepthCompareEnable(enable);
+}
+
+inline void
+TextureSampler::setDepthCompareFunc(rio::Graphics::CompareFunc func)
+{
+    mSamplerInner.setDepthCompareFunc(func);
+}
+
 }

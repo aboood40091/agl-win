@@ -53,8 +53,8 @@ public:
     void setUnk1(u8 v) { _e9 = v; }
     u8 getUnk1() const { return _e9; }
 
-    void setUnk2(u8 v) { _ea = v; }
-    u8 setUnk2() const { return _ea; }
+    void setDepthCompareEnable(bool enable);
+    void setDepthCompareFunc(rio::Graphics::CompareFunc func);
 
     bool activate(const SamplerLocation& location, s32 slot) const;
 
@@ -74,7 +74,6 @@ private:
     TextureData mTextureData;
     rio::TextureSampler2D mSamplerInner;
     u8 _e9;
-    u8 _ea;
 #if RIO_IS_CAFE
     mutable GX2Texture mGX2Texture;
 #endif // RIO_IS_CAFE

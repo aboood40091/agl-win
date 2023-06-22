@@ -7,7 +7,6 @@ TextureSampler::TextureSampler()
     : mTextureData()
     , mSamplerInner()
     , _e9(0)
-    , _ea(0)
 {
 }
 
