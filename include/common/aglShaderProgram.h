@@ -191,8 +191,6 @@ public:
     void updateUniformBlockLocation() const;
     void updateSamplerLocation() const;
 
-    void dump() const;
-
     void cleanUp();
 
     void destroyAttribute();

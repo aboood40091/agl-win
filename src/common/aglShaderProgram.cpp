@@ -382,73 +382,6 @@ void ShaderProgram::updateSamplerLocation() const
         it->search(*this);
 }
 
-void ShaderProgram::dump() const
-{
-/*
-#if RIO_IS_CAFE
-    sead::FormatFixedSafeString<1024> cmd_arg(
-        "File = %s, WaitEnd = True, WindowStyle = Hidden",
-        "%AGL_ROOT%/tools/bin/Win32/gshCompile_tmp.bat"
-    );
-
-    // Stripped in release build:
-    // sead::hostio::ShellExecuteRequest(cmd_arg, "");
-
-    detail::FileIOMgr::DialogArg arg;
-
-    arg.mPath = "%AGL_ROOT%/tools/temporary/temp.gsh";
-    arg.mLoadAlignment = GX2_SHADER_ALIGNMENT;
-
-    if (detail::FileIOMgr::instance()->load(arg) != -1 && // Never unloaded...
-        mFlag.isOn(8))
-    {
-        sead::SafeString disasm_str = "; --------  Disassembly --------------------";
-        sead::SafeString symbol_str = "-----------------Symbol Section ----------------------";
-        s32 disasm_str_len = disasm_str.calcLength();
-        s32 symbol_str_len = symbol_str.calcLength();
-
-        sead::Heap* heap = detail::PrivateResource::instance()->getShaderCompileHeap();
-
-        sead::HeapSafeString* analyze_str = new (heap) sead::HeapSafeString(heap, "", 0x100000);
-
-        static const char* sTempFname[cShaderType_Num] = {
-            "%AGL_ROOT%/tools/temporary/temp_vs.dmp",
-            "%AGL_ROOT%/tools/temporary/temp_ps.dmp",
-            "%AGL_ROOT%/tools/temporary/temp_gs.dmp"
-        };
-
-        static const char* sShaderType[cShaderType_Num] = {
-            "Vertex Shader",
-            "Fragment Shader",
-            "Geometry Shader"
-        };
-
-        for (s32 type = 0; type < cShaderType_Num; type++)
-        {
-            arg.mPath = sTempFname[type];
-            s32 index = detail::FileIOMgr::instance()->load(arg);
-            if (index != -1)
-            {
-                const char* text = (char*)detail::FileIOMgr::instance()->getFile(index).mpData;
-                while (*text != '\0')
-                {
-                    // TODO: Too much is happening here
-                    ++text;
-                    (void)sShaderType;
-                }
-                detail::FileIOMgr::instance()->close(index);
-            }
-        }
-
-        arg.mPath = sead::FormatFixedSafeString<1024>("%%AGL_ROOT%%/tools/temporary/shader_analyze/%s.txt", getName().cstr());
-        detail::FileIOMgr::instance()->save(analyze_str->cstr(), analyze_str->calcLength(), arg);
-
-        delete analyze_str;
-    }
-#endif // RIO_IS_CAFE
-*/
-}
-
 u32 ShaderProgram::validate_() const
 {
     if (mFlag.isOn(2))
@@ -500,7 +433,6 @@ u32 ShaderProgram::forceValidate_() const
 
             mShader.load(p_vert_src->c_str(), p_frag_src->c_str());
 #endif // RIO_IS_WIN
-            dump();
 
             if (mDisplayList.getBuffer() != nullptr)
             {
