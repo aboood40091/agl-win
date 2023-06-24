@@ -250,7 +250,7 @@ private:
     utl::Parameter<rio::Vector2f> mIndirectTexScale;
     utl::Parameter<f32> mIndirectTexRotate;
     utl::Parameter<f32> mIndirectScale;
-  //utl::Parameter<f32> mVignettingBlur;
+    utl::Parameter<f32> mVignettingBlur;
     utl::Parameter<s32> mVignettingBlend; // -> enum VignettingBlendType
     utl::Parameter<rio::Color4f> mVignettingColor;
     TempVignetting mTempVignetting0;

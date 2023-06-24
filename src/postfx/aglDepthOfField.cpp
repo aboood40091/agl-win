@@ -40,7 +40,7 @@ DepthOfField::DepthOfField()
     , mIndirectTexScale         (rio::Vector2f{1.0f, 1.0f},                         "indirect_tex_scale",        "テクスチャ行列Scale",  &mParameterObj)
     , mIndirectTexRotate        (0.0f,                                              "indirect_tex_rotate",       "テクスチャ行列Rotate", &mParameterObj)
     , mIndirectScale            (0.2f,                                              "indirect_scale",            "ゆがみ幅",           &mParameterObj)
-  //, mVignettingBlur           (1.0f,                                              "vignetting_blur",           "周辺ぼけ強さ",        &mParameterObj)
+    , mVignettingBlur           (1.0f,                                              "vignetting_blur",           "周辺ぼけ強さ",        &mParameterObj)
     , mVignettingBlend          (0,                                                 "vignetting_blend",          "ブレンド",            &mParameterObj)
     , mVignettingColor          (rio::Color4f{0.0f, 0.0f, 0.0f, 0.75f},             "vignetting_color",          "周辺減光色",        &mParameterObj)
     , mTempVignetting0(this, "vignetting_shape_0")
@@ -829,12 +829,7 @@ ShaderMode DepthOfField::drawCompose_(const DrawArg& arg, ShaderMode mode) const
     uniformComposeParam_(arg, program);
 
     if (*mEnableVignettingBlur)
-    {
-        // TODO
-      //uniformVignettingParam_(arg, program);
-        RIO_LOG("Tried to set vignetting param\n");
-        RIO_ASSERT(false);
-    }
+        uniformVignettingParam_(arg, program);
 
     drawKick_(arg);
 
@@ -872,16 +867,11 @@ ShaderMode DepthOfField::drawVignetting_(const DrawArg& arg, ShaderMode mode) co
 
     arg.p_render_buffer->bind();
 
-    // TODO
-    /*
     mode = mpCurrentProgramVignetting->activate(mode);
 
     uniformVignettingParam_(arg, mpCurrentProgramVignetting);
 
     drawKick_(arg);
-    */
-    RIO_LOG("Tried to draw vignetting\n");
-    RIO_ASSERT(false);
 
     return mode;
 }
@@ -1027,6 +1017,80 @@ void DepthOfField::uniformComposeParam_(const DrawArg& arg, const ShaderProgram*
         program->getUniformLocation(cUniform_IndirectTexMtx0).setUniform(reinterpret_cast<const rio::Vector3f&>(mIndirectTexMtx0)); // Passing Vec3f to Vec4f... whoops!
         program->getUniformLocation(cUniform_IndirectTexMtx1).setUniform(reinterpret_cast<const rio::Vector3f&>(mIndirectTexMtx1)); // ^^^
     }
+}
+
+void DepthOfField::uniformVignettingParam_(const DrawArg& arg, const ShaderProgram* program) const
+{
+    bool compose_depth_of_field = arg.pass == 2 && enableDepthOfField_();
+    bool vignetting_differnt_shape = arg.pass == 3 && enableDifferntShape_();
+
+    const TempVignetting& temp_vignetting =
+        vignetting_differnt_shape
+            ? mTempVignetting1
+            : mTempVignetting0;
+
+    rio::Vector2f vignetting_scale = *temp_vignetting.mScale;
+    vignetting_scale.x = std::max<f32>(vignetting_scale.x, 0.001f);
+    vignetting_scale.y = std::max<f32>(vignetting_scale.y, 0.001f);
+
+    f32 radius_scale_1 = 1 - temp_vignetting.mRange->x;
+    radius_scale_1 = std::clamp(radius_scale_1, 0.0f, 1.0f);
+
+    f32 radius_scale_3_div = std::min<f32>(vignetting_scale.x, vignetting_scale.y);
+    f32 radius_scale_3_add = std::max<f32>(rio::Mathf::abs(temp_vignetting.mTrans->x), rio::Mathf::abs(temp_vignetting.mTrans->y));
+    f32 radius_scale_3_mul = 1.0f / radius_scale_3_div;
+
+    f32 radius_scale_0;
+    if (compose_depth_of_field)
+        radius_scale_0 = 0.0f;
+    else
+        radius_scale_0 = radius_scale_1;
+
+    f32 radius_scale_2 = (1 - radius_scale_1) * temp_vignetting.mRange->y;
+    f32 radius_scale_3 = 1.1f * radius_scale_3_mul + radius_scale_3_add;
+
+    rio::Vector4f vignetting_radius {
+        radius_scale_0,
+        radius_scale_1,
+        radius_scale_2,
+        radius_scale_3
+    };
+
+    program->getUniformLocation(cUniform_VignettingRadius).setUniform(vignetting_radius);
+
+    f32 param_0_scale = 1.0f;
+    f32 param_1_scale = 1.0f;
+
+    if (*temp_vignetting.mType == 0)
+    {
+        f32 diagonal_length = rio::Mathf::sqrt(rio::Mathi::square(arg.width) + rio::Mathi::square(arg.height));
+        param_0_scale = diagonal_length / arg.width;    // sec
+        param_1_scale = diagonal_length / arg.height;   // csc
+    }
+
+    f32 param_0 = param_0_scale * vignetting_scale.x;
+    f32 param_1 = param_1_scale * vignetting_scale.y;
+    f32 param_2 = std::clamp(*mVignettingBlur, 0.0f, 1.0f);
+
+    rio::Vector4f vignetting_param {
+        param_0,
+        param_1,
+        param_2,
+        0.0f
+    };
+
+    program->getUniformLocation(cUniform_VignettingParam).setUniform(vignetting_param);
+
+    program->getUniformLocation(cUniform_VignettingColor).setUniform(mVignettingColor->v);
+
+    rio::Vector4f vignetting_trans {
+        temp_vignetting.mTrans->x,
+        temp_vignetting.mTrans->y,
+        0.0f,
+        0.0f
+    };
+
+    program->getUniformLocation(cUniform_VignettingTrans).setUniform(vignetting_trans);
 }
 
 void DepthOfField::setIndirectTextureData(const TextureData* p_texture_data)
