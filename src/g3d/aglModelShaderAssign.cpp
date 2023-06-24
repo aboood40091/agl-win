@@ -169,38 +169,32 @@ void ModelShaderAssign::clear_()
 
 void ModelShaderAssign::bind(const nw::g3d::res::ResMaterial* p_res_mat, const ShaderProgram* p_program, bool use_res_assign, bool use_shader_symbol_id)
 {
-    const nw::g3d::res::ResShaderAssign* p_res_shader_assign;
-    if (use_res_assign)
-        p_res_shader_assign = p_res_mat->GetShaderAssign();
-    else
-        p_res_shader_assign = nullptr;
+    const nw::g3d::res::ResShaderAssign* const p_res_shader_assign = use_res_assign ? p_res_mat->GetShaderAssign() : nullptr;
 
     const ResShaderSymbolArray& symbol_array = p_program->getResShaderSymbolArray(cShaderSymbolType_Sampler);
-    for (ResShaderSymbolArray::constIterator it = symbol_array.begin(), it_end = symbol_array.end(); it != it_end; ++it)
+    for (const ResShaderSymbolData& symbol_data : symbol_array)
     {
-        const ResShaderSymbol& symbol = &(*it);
+        const ResShaderSymbol& symbol = &symbol_data;
         if (!symbol.isValid())
             continue;
 
-        const char* symbol_id = symbol.getID();
+        const char* const symbol_id = symbol.getID();
         if (!symbol.isVariationEnable(p_program->getVariationID()))
             continue;
 
-        const char* name = nullptr;
-        if (p_res_shader_assign)
-            name = p_res_shader_assign->GetSamplerAssign(symbol_id);
-
+        const char* name = p_res_shader_assign ? p_res_shader_assign->GetSamplerAssign(symbol_id) : nullptr;
         if (name == nullptr)
         {
             if (!use_shader_symbol_id)
                 continue;
 
-            name = symbol.getID();
+            name = symbol_id;
             if (name == nullptr)
                 continue;
         }
 
-        const nw::g3d::res::ResSampler* p_res_sampler = p_res_mat->GetSampler(name);
+
+        const nw::g3d::res::ResSampler* const p_res_sampler = p_res_mat->GetSampler(name);
         if (p_res_sampler)
             pushBackSampler(p_res_sampler, SamplerLocation(symbol.getName(), *p_program));
     }
@@ -208,7 +202,7 @@ void ModelShaderAssign::bind(const nw::g3d::res::ResMaterial* p_res_mat, const S
 
 void ModelShaderAssign::bindShaderResAssign(const nw::g3d::res::ResMaterial* p_res_mat, const nw::g3d::res::ResShape* p_res_shp, const ShaderProgram* p_program, const char*)
 {
-    const nw::g3d::res::ResShaderAssign* p_res_shader_assign = p_res_mat->GetShaderAssign();
+    const nw::g3d::res::ResShaderAssign* const p_res_shader_assign = p_res_mat->GetShaderAssign();
 
     clear_();
 
