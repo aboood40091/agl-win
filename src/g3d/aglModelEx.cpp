@@ -26,21 +26,24 @@ void MaterialEx::init(agl::g3d::ModelEx* p_model, u32 index)
 
 void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const char* skin_macro, const char** skin_value_array)
 {
-    const char* skin_macro_array[1] = { skin_macro };
-    const u32 skin_macro_num = 1;
+    std::unordered_map<std::string, std::string> skin_macro_map;
+    const std::string& s_skin_macro = skin_macro ? std::string(skin_macro) : std::string();
 
     mpProgram = p_program;
 
-    const nw::g3d::res::ResShaderAssign* p_res_shader_assign = mpMaterialObj->GetResource()->GetShaderAssign();
+    const nw::g3d::res::ResMaterial* const p_res_material = mpMaterialObj->GetResource();
+
+    const nw::g3d::res::ResShaderAssign* const p_res_shader_assign = p_res_material->GetShaderAssign();
     if (p_res_shader_assign == nullptr || p_program == nullptr)
     {
         for (s32 idx_shape = 0; idx_shape < mpModelEx->GetShapeCount(); idx_shape++)
         {
-            if (&mpModelEx->getMaterialEx(mpModelEx->GetShape(idx_shape)->GetMaterialIndex()) == this)
+            const nw::g3d::ShapeObj* const p_shape = mpModelEx->GetShape(idx_shape);
+            if (&mpModelEx->getMaterialEx(p_shape->GetMaterialIndex()) == this)
             {
                 mpModelEx->getShaderAssign(idx_shape).bindShaderResAssign(
-                    mpMaterialObj->GetResource(),
-                    mpModelEx->GetShape(idx_shape)->GetResource(),
+                    p_res_material,
+                    p_shape->GetResource(),
                     nullptr
                 );
             }
@@ -48,32 +51,45 @@ void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const char*
         return;
     }
 
-    const char* macro_array[ShaderProgram::cVariationMacroMax];
-    const char* value_array[ShaderProgram::cVariationValueMax];
     s32 macro_num = p_res_shader_assign->GetShaderOptionCount();
+
+    std::unordered_map<std::string, std::string> macro_map;
+    macro_map.reserve(macro_num);
 
     for (s32 idx_macro = 0; idx_macro < macro_num; idx_macro++)
     {
-        const char* id = p_res_shader_assign->GetShaderOptionName(idx_macro);
-        const char* value = p_res_shader_assign->GetShaderOption(idx_macro);
+        const char* const id = p_res_shader_assign->GetShaderOptionName(idx_macro);
+        const char* const value = p_res_shader_assign->GetShaderOption(idx_macro);
 
-        macro_array[idx_macro] = p_program->searchVariationMacroName(id);
-        value_array[idx_macro] = value;
+        const std::string* const p_macro_name = p_program->searchVariationMacroName(id);
+        if (p_macro_name)
+        {
+            [[maybe_unused]] const auto& itr = macro_map.try_emplace(
+                *p_macro_name,
+                value
+            );
+
+            RIO_ASSERT(itr.second);
+        }
     }
 
-    const ShaderProgram* p_base_variation = p_program->searchVariationShaderProgram(macro_num, macro_array, value_array);
+    const ShaderProgram* p_base_variation = p_program->searchVariationShaderProgram(macro_map);
 
     for (s32 idx_shape = 0; idx_shape < mpModelEx->GetShapeCount(); idx_shape++)
     {
-        if (&mpModelEx->getMaterialEx(mpModelEx->GetShape(idx_shape)->GetMaterialIndex()) == this)
+        const nw::g3d::ShapeObj* p_shape = mpModelEx->GetShape(idx_shape);
+        if (&mpModelEx->getMaterialEx(p_shape->GetMaterialIndex()) == this)
         {
             const ShaderProgram* p_variation = p_base_variation;
             if (p_base_variation && skin_value_array)
-                p_variation = p_base_variation->searchVariationShaderProgram(skin_macro_num, skin_macro_array, &skin_value_array[mpModelEx->GetShape(idx_shape)->GetVtxSkinCount()]);
+            {
+                skin_macro_map[s_skin_macro] = skin_value_array[p_shape->GetVtxSkinCount()];
+                p_variation = p_base_variation->searchVariationShaderProgram(skin_macro_map);
+            }
 
             mpModelEx->getShaderAssign(idx_shape).bindShaderResAssign(
-                mpMaterialObj->GetResource(),
-                mpModelEx->GetShape(idx_shape)->GetResource(),
+                p_res_material,
+                p_shape->GetResource(),
                 p_variation
             );
         }

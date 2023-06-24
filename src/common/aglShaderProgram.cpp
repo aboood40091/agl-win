@@ -306,13 +306,13 @@ s32 ShaderProgram::getVariationMacroNum() const
     return variation_buffer->mMacroData.size();
 }
 
-s32 ShaderProgram::searchVariationShaderProgramIndex(s32 macro_num, const char* const* macro_array, const char* const* value_array) const
+s32 ShaderProgram::searchVariationShaderProgramIndex(const std::unordered_map<std::string, std::string>& macro_map) const
 {
     const VariationBuffer* variation_buffer = getVariation_();
     if (!variation_buffer)
         return 0;
 
-    return variation_buffer->searchShaderProgramIndex(macro_num, macro_array, value_array, mVariationID);
+    return variation_buffer->searchShaderProgramIndex(macro_map, mVariationID);
 }
 
 ShaderProgram* ShaderProgram::getVariation(s32 index)
@@ -339,11 +339,11 @@ const ShaderProgram* ShaderProgram::getVariation(s32 index) const
     return &variation_buffer->mProgram[index - 1];
 }
 
-const char* ShaderProgram::searchVariationMacroName(const char* id) const
+const std::string* ShaderProgram::searchVariationMacroName(const char* id) const
 {
     const VariationBuffer* variation_buffer = getVariation_();
     if (!variation_buffer)
-        return "";
+        return nullptr;
 
     return variation_buffer->searchMacroName(id);
 }
@@ -488,9 +488,8 @@ void ShaderProgram::setUpForVariation_() const
 
     const ShaderProgram* program = getVariation_()->mpOriginal;
 
-    const char* macro_array[cVariationMacroMax];
-    const char* value_array[cVariationValueMax];
-    s32 num_macro_value = getVariation_()->getMacroAndValueArray(mVariationID, macro_array, value_array);
+    std::unordered_map<std::string, std::string> macro_map;
+    getVariation_()->getMacroAndValueArray(mVariationID, &macro_map);
 
     for (s32 type = 0; type < cShaderType_Num; type++)
     {
@@ -500,12 +499,8 @@ void ShaderProgram::setUpForVariation_() const
 
         compile_info->clearVariation();
 
-        for (s32 i_variation_type = 0; i_variation_type < num_macro_value; i_variation_type++)
-        {
-            RIO_ASSERT(i_variation_type < cVariationMacroMax);
-            RIO_ASSERT(i_variation_type < cVariationValueMax);
-            compile_info->pushBackVariation(macro_array[i_variation_type], value_array[i_variation_type]);
-        }
+        for (const auto& itr_variation : macro_map)
+            compile_info->pushBackVariation(itr_variation.first, itr_variation.second);
 
         getShader(ShaderType(type))->setCompileInfo(compile_info);
     }
@@ -590,10 +585,6 @@ ShaderProgram::VariationBuffer::VariationBuffer()
 ShaderProgram::VariationBuffer::~VariationBuffer()
 {
     mProgram.freeBuffer();
-
-    for (Buffer<MacroData>::iterator it = mMacroData.begin(), it_end = mMacroData.end(); it != it_end; ++it)
-        it->mValue.freeBuffer();
-
     mMacroData.freeBuffer();
 }
 
@@ -609,7 +600,7 @@ void ShaderProgram::VariationBuffer::createMacro(s32 index, const char* name, co
     macro.mName = name;
     macro.mID = id;
     macro.mValueVariationNum = 1;
-    macro.mValue.allocBuffer(value_num);
+    macro.mValue.resize(value_num);
 }
 
 void ShaderProgram::VariationBuffer::setMacroValue(s32 macro_index, s32 value_index, const char* value)
@@ -617,37 +608,35 @@ void ShaderProgram::VariationBuffer::setMacroValue(s32 macro_index, s32 value_in
     mMacroData[macro_index].mValue[value_index] = value;
 }
 
-s32 ShaderProgram::VariationBuffer::searchShaderProgramIndex(s32 macro_num, const char* const* macro_array, const char* const* value_array, s32 index) const
+s32 ShaderProgram::VariationBuffer::searchShaderProgramIndex(const std::unordered_map<std::string, std::string>& macro_map, s32 index) const
 {
-    s32 value_index_array[cVariationValueMax];
+    std::vector<s32> value_index_array;
 
     if (index == -1)
     {
-        for (Buffer<MacroData>::constIterator itr_type = mMacroData.begin(), it_end = mMacroData.end(); itr_type != it_end; ++itr_type)
-            value_index_array[itr_type.getIndex()] = 0;
+        value_index_array.resize(mMacroData.size());
     }
     else
     {
-        getMacroValueIndexArray(index, value_index_array);
+        getMacroValueIndexArray(index, &value_index_array);
     }
 
-    for (Buffer<MacroData>::constIterator itr_type = mMacroData.begin(), it_end = mMacroData.end(); itr_type != it_end; ++itr_type)
+    if (!macro_map.empty())
     {
-        for (s32 idx_macro = 0; idx_macro < macro_num; idx_macro++)
+        for (Buffer<MacroData>::constIterator itr_type = mMacroData.begin(), it_end = mMacroData.end(); itr_type != it_end; ++itr_type)
         {
-            const char* macro_name = macro_array[idx_macro];
-            if (std::strcmp(itr_type->mName, macro_name) == 0)
+            const auto& itr_match_macro = macro_map.find(itr_type->mName);
+            if (itr_match_macro == macro_map.end())
+                continue;
+
+            const std::string& macro_value = itr_match_macro->second;
+            for (std::vector<std::string>::const_iterator itr_value = itr_type->mValue.begin(), value_it_end = itr_type->mValue.end(); itr_value != value_it_end; ++itr_value)
             {
-                const char* macro_value = value_array[idx_macro];
-                for (Buffer<const char*>::constIterator itr_value = itr_type->mValue.begin(), value_it_end = itr_type->mValue.end(); itr_value != value_it_end; ++itr_value)
+                if (macro_value == *itr_value)
                 {
-                    if (std::strcmp(*itr_value, macro_value) == 0)
-                    {
-                        value_index_array[itr_type.getIndex()] = itr_value.getIndex();
-                        break;
-                    }
+                    value_index_array[itr_type.getIndex()] = itr_value - itr_type->mValue.begin();
+                    break;
                 }
-                break;
             }
         }
     }
@@ -655,13 +644,13 @@ s32 ShaderProgram::VariationBuffer::searchShaderProgramIndex(s32 macro_num, cons
     return calcVariationIndex(value_index_array);
 }
 
-const char* ShaderProgram::VariationBuffer::searchMacroName(const char* id) const
+const std::string* ShaderProgram::VariationBuffer::searchMacroName(const char* id) const
 {
     for (Buffer<MacroData>::constIterator itr_type = mMacroData.begin(), it_end = mMacroData.end(); itr_type != it_end; ++itr_type)
         if (std::strcmp(id, itr_type->mID) == 0)
-            return itr_type->mName;
+            return &itr_type->mName;
 
-    return "";
+    return nullptr;
 }
 
 void ShaderProgram::VariationBuffer::create()
@@ -680,45 +669,50 @@ void ShaderProgram::VariationBuffer::create()
         mProgram.allocBuffer(variation_num - 1);
 }
 
-s32 ShaderProgram::VariationBuffer::getMacroAndValueArray(s32 index, const char** macro_array, const char** value_array) const
+void ShaderProgram::VariationBuffer::getMacroAndValueArray(s32 index, std::unordered_map<std::string, std::string>* p_macro_map) const
 {
-    RIO_ASSERT(macro_array != nullptr);
-    RIO_ASSERT(value_array != nullptr);
+    RIO_ASSERT(p_macro_map != nullptr);
+    p_macro_map->clear();
+    p_macro_map->reserve(mMacroData.size());
 
-    for (Buffer<MacroData>::constIterator itr_type = mMacroData.begin(), it_end = mMacroData.end(); itr_type != it_end; ++itr_type)
+    for (const MacroData& macro : mMacroData)
     {
         s32 value_index; // = 0;
-      // if (itr_type->mValueVariationNum != 0)
-            value_index = index / itr_type->mValueVariationNum;
-        RIO_ASSERT(itr_type.getIndex() < cVariationMacroMax);
-        RIO_ASSERT(itr_type.getIndex() < cVariationValueMax);
-        macro_array[itr_type.getIndex()] = itr_type->mName;
-        value_array[itr_type.getIndex()] = itr_type->mValue[value_index];
+      // if (macro.mValueVariationNum != 0)
+            value_index = index / macro.mValueVariationNum;
 
-        index -= value_index * itr_type->mValueVariationNum;
+        [[maybe_unused]] const auto& itr = p_macro_map->try_emplace(
+            macro.mName,
+            macro.mValue[value_index]
+        );
+        RIO_ASSERT(itr.second);
+
+        index -= value_index * macro.mValueVariationNum;
     }
-
-    return mMacroData.size();
 }
 
-s32 ShaderProgram::VariationBuffer::getMacroValueIndexArray(s32 index, s32* value_index_array) const
+void ShaderProgram::VariationBuffer::getMacroValueIndexArray(s32 index, std::vector<s32>* p_value_index_array) const
 {
-    for (Buffer<MacroData>::constIterator itr_type = mMacroData.begin(), it_end = mMacroData.end(); itr_type != it_end; ++itr_type)
+    RIO_ASSERT(p_value_index_array != nullptr);
+    p_value_index_array->clear();
+    p_value_index_array->reserve(mMacroData.size());
+
+    for (const MacroData& macro : mMacroData)
     {
         s32 value_index; // = 0;
-      // if (itr_type->mValueVariationNum != 0)
-            value_index = index / itr_type->mValueVariationNum;
+      // if (macro.mValueVariationNum != 0)
+            value_index = index / macro.mValueVariationNum;
 
-        value_index_array[itr_type.getIndex()] = value_index;
+        p_value_index_array->push_back(value_index);
 
-        index -= value_index * itr_type->mValueVariationNum;
+        index -= value_index * macro.mValueVariationNum;
     }
-
-    return mMacroData.size();
 }
 
-s32 ShaderProgram::VariationBuffer::calcVariationIndex(const s32* value_index_array) const
+s32 ShaderProgram::VariationBuffer::calcVariationIndex(const std::vector<s32>& value_index_array) const
 {
+    RIO_ASSERT(value_index_array.size() >= size_t(mMacroData.size()));
+
     s32 index = 0;
     for (Buffer<MacroData>::constIterator itr_type = mMacroData.begin(), it_end = mMacroData.end(); itr_type != it_end; ++itr_type)
     {

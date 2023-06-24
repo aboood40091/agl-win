@@ -15,6 +15,10 @@
 #include <cafe/gfd.h>
 #endif // RIO_IS_WIN
 
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 namespace agl {
 
 class ShaderProgram
@@ -154,18 +158,18 @@ public:
     s32 getVariationNum() const;
     s32 getVariationMacroNum() const;
 
-    s32 searchVariationShaderProgramIndex(s32 macro_num, const char* const* macro_array, const char* const* value_array) const;
+    s32 searchVariationShaderProgramIndex(const std::unordered_map<std::string, std::string>& macro_map) const;
 
     ShaderProgram* getVariation(s32 index);
     const ShaderProgram* getVariation(s32 index) const;
 
-    const ShaderProgram* searchVariationShaderProgram(s32 macro_num, const char* const* macro_array, const char* const* value_array) const
+    const ShaderProgram* searchVariationShaderProgram(const std::unordered_map<std::string, std::string>& macro_map) const
     {
-        s32 index = searchVariationShaderProgramIndex(macro_num, macro_array, value_array);
+        s32 index = searchVariationShaderProgramIndex(macro_map);
         return getVariation(index);
     }
 
-    const char* searchVariationMacroName(const char* id) const;
+    const std::string* searchVariationMacroName(const char* id) const;
 
     s32 getVariationMacroValueVariationNum(s32 macro_index) const;
 
@@ -220,15 +224,15 @@ private:
         void createMacro(s32 index, const char* name, const char* id, s32 value_num);
         void setMacroValue(s32 macro_index, s32 value_index, const char* value);
 
-        s32 searchShaderProgramIndex(s32 macro_num, const char* const* macro_array, const char* const* value_array, s32 index) const;
+        s32 searchShaderProgramIndex(const std::unordered_map<std::string, std::string>& macro_map, s32 index) const;
 
-        const char* searchMacroName(const char* id) const;
+        const std::string* searchMacroName(const char* id) const;
 
         void create();
 
-        s32 getMacroAndValueArray(s32 index, const char** macro_array, const char** value_array) const;
-        s32 getMacroValueIndexArray(s32 index, s32* value_index_array) const;
-        s32 calcVariationIndex(const s32* value_index_array) const;
+        void getMacroAndValueArray(s32 index, std::unordered_map<std::string, std::string>* p_macro_map) const;
+        void getMacroValueIndexArray(s32 index, std::vector<s32>* p_value_index_array) const;
+        s32 calcVariationIndex(const std::vector<s32>& value_index_array) const;
 
         s32 getMacroValueVariationNum(s32 macro_index) const
         {
@@ -237,9 +241,9 @@ private:
 
         class MacroData
         {
-            const char* mName;
+            std::string mName;
             const char* mID;
-            Buffer<const char*> mValue;
+            std::vector<std::string> mValue;
             u16 mValueVariationNum;                 // Number of variations using *succeeding* macros (i.e., ignoring preceding macros), if value of this macro is fixed.
                                                     // i.e., In a matrix where variations are the rows, macros are the columns, and a cell would be a macro's value
                                                     // in a certain variation, this field is the number a macro's value occurs before the next value in the macro's column.
