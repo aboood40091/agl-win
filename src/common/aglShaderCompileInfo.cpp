@@ -6,6 +6,25 @@
 
 #include "aglShaderCompileInfo_ShaderReplacements.hpp"
 
+namespace {
+
+static inline void ReplaceSubstr(std::string& s, const std::string& sub_s, const std::string& replace_with)
+{
+    std::string::size_type pos = 0;
+
+    while (true)
+    {
+        pos = s.find(sub_s, pos);
+        if (pos == std::string::npos)
+            break;
+
+        s.replace(pos, sub_s.length(), replace_with);
+        pos += replace_with.length();
+    }
+}
+
+}
+
 namespace agl {
 
 ShaderCompileInfo::ShaderCompileInfo()
@@ -70,8 +89,14 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, std::string* p_buffer
         "#extension GL_ARB_shading_language_420pack : enable\n",
 
         // GX2
+#if RIO_IS_CAFE
         "#version 330\n" \
         "#extension GL_ARB_texture_cube_map_array : enable\n"
+#else
+        "#version 330\n" \
+        "#extension GL_ARB_texture_cube_map_array : enable\n" \
+        "#extension GL_ARB_shading_language_420pack : enable\n"
+#endif // RIO_IS_CAFE
     };
 
     static const std::string sTargetDefine[] = {
@@ -112,6 +137,9 @@ void ShaderCompileInfo::calcCompileSource(ShaderType type, std::string* p_buffer
             mVariationMap
         );
     }
+
+    ReplaceSubstr(*p_buffer, "[##n]" , "[n]" );
+    ReplaceSubstr(*p_buffer, "##n##.", "##n.");
 
     if (mRawText)
         mRawText->assign(*p_buffer);
