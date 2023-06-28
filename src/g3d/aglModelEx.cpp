@@ -24,7 +24,7 @@ void MaterialEx::init(agl::g3d::ModelEx* p_model, u32 index)
     mMatBlock = static_cast<nw::g3d::fnd::GfxBuffer_t&>(mpMaterialObj->GetMatBlock());
 }
 
-void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const std::string* p_skin_macro, const std::vector<std::string>* p_skin_value_array)
+void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const std::string* p_skin_macro, std::span<const std::string> skin_value_array)
 {
     std::unordered_map<std::string, std::string> skin_macro_map;
 
@@ -80,12 +80,12 @@ void MaterialEx::bindShaderResAssign(const ShaderProgram* p_program, const std::
         if (&mpModelEx->getMaterialEx(p_shape->GetMaterialIndex()) == this)
         {
             const ShaderProgram* p_variation = p_base_variation;
-            if (p_base_variation && p_skin_value_array)
+            if (p_base_variation && !skin_value_array.empty())
             {
                 RIO_ASSERT(p_skin_macro != nullptr);
-                RIO_ASSERT(size_t(p_shape->GetVtxSkinCount()) < p_skin_value_array->size());
+                RIO_ASSERT(size_t(p_shape->GetVtxSkinCount()) < skin_value_array.size());
 
-                skin_macro_map[*p_skin_macro] = (*p_skin_value_array)[p_shape->GetVtxSkinCount()];
+                skin_macro_map[*p_skin_macro] = skin_value_array[p_shape->GetVtxSkinCount()];
                 p_variation = p_base_variation->searchVariationShaderProgram(skin_macro_map);
             }
 

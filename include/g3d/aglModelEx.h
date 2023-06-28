@@ -4,8 +4,8 @@
 
 #include <nw/g3d/g3d_ModelObj.h>
 
+#include <span>
 #include <string>
-#include <vector>
 
 namespace agl { namespace g3d {
 
@@ -24,7 +24,7 @@ public:
 
     void init(ModelEx* p_model, u32 index);
 
-    void bindShaderResAssign(const ShaderProgram* p_program, const std::string* p_skin_macro = nullptr, const std::vector<std::string>* p_skin_value_array = nullptr);
+    void bindShaderResAssign(const ShaderProgram* p_program, const std::string* p_skin_macro = nullptr, std::span<const std::string> skin_value_array = std::span<const std::string>());
     void bindShader(const ShaderProgram* p_program);
 
     void replaceUBO(const nw::g3d::fnd::GfxBuffer_t& buffer);
