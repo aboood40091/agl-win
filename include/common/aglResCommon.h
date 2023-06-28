@@ -116,7 +116,7 @@ struct ResArrayData
 template <typename Type>
 class ResArray : public ResCommon< ResArrayData<typename Type::DataType> >
 {
-    AGL_RES_COMMON(ResArray<Type>)
+    AGL_RES_COMMON(ResArray)
 
 public:
     typedef Type ElemType;
