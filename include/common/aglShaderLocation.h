@@ -292,16 +292,19 @@ class AttributeLocation : public INamable
 public:
     AttributeLocation()
         : INamable("Undefined")
+        , mVS() // Nintendo mistakingly didn't set this to -1
     {
     }
 
     explicit AttributeLocation(const char* name)
         : INamable(name)
+        , mVS() // I don't actually know if this is set here
     {
     }
 
     AttributeLocation(const char* name, const ShaderProgram& program)
         : INamable(name)
+      //, mVS() // Set by search()
     {
         search(program);
     }

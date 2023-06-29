@@ -46,9 +46,12 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
         "simple_model"
     };
 
-    for (UnsafeArray<ShaderProgramArchive, cArchiveType_Num>::iterator itr = mProgramArchive.begin(), itr_end = mProgramArchive.end(); itr != itr_end; ++itr)
+    UnsafeArray<ShaderProgramArchive, cArchiveType_Num>::iterator itr_archive_begin = mProgramArchive.begin();
+    UnsafeArray<ShaderProgramArchive, cArchiveType_Num>::iterator itr_archive_end = mProgramArchive.end();
+
+    for (UnsafeArray<ShaderProgramArchive, cArchiveType_Num>::iterator itr_archive = itr_archive_begin; itr_archive != itr_archive_end; ++itr_archive)
     {
-        const std::string arc_name(sProgramArchiveNames[itr.getIndex()]);
+        const std::string arc_name(sProgramArchiveNames[itr_archive.getIndex()]);
 
         const std::string& sharc_name = arc_name + "." + ResShaderArchiveData::getExtension();
         void* sharc = p_arc->getFile(sharc_name.c_str());
@@ -62,7 +65,7 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
 
         if (sharc || sharcfb)
         {
-            itr->createWithOption(
+            itr_archive->createWithOption(
                 ResBinaryShaderArchive(sharcfb),
                 ResShaderArchive(sharc),
 #if RIO_IS_CAFE
@@ -870,9 +873,9 @@ void ShaderHolder::initialize(SharcArchiveRes* p_arc)
         }
     }
 
-    for (UnsafeArray<ShaderProgramArchive, cArchiveType_Num>::iterator itr = mProgramArchive.begin(), itr_end = mProgramArchive.end(); itr != itr_end; ++itr)
-        if (itr->isValid())
-            itr->setUp();
+    for (UnsafeArray<ShaderProgramArchive, cArchiveType_Num>::iterator itr_archive = itr_archive_begin; itr_archive != itr_archive_end; ++itr_archive)
+        if (itr_archive->isValid())
+            itr_archive->setUp();
 
   //RootNode::setNodeMeta(this, "Icon = CIRCLE_BLUE");
 }

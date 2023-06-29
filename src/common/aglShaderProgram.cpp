@@ -665,7 +665,7 @@ void ShaderProgram::VariationBuffer::create()
         variation_num *= it->mValue.size();
     }
 
-    if (variation_num > 1)
+    if (variation_num - 1 > 0)
         mProgram.allocBuffer(variation_num - 1);
 }
 
