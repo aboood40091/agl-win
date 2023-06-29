@@ -1,6 +1,8 @@
 #include <misc/rio_MemUtil.h>
 #include <utility/aglPrimitiveTexture.h>
 
+#include <bit>
+
 namespace agl { namespace utl {
 
 PrimitiveTexture* PrimitiveTexture::sInstance = nullptr;
@@ -47,35 +49,35 @@ void PrimitiveTexture::initialize()
         TextureSamplerType type = TextureSamplerType(itr_sampler.getIndex());
 
         TextureFormat format = cTextureFormat_R8_G8_B8_A8_uNorm;
-        u8 pixel[4];
+        u32 pixel = 0x00000000;
 
         switch (type)
         {
         case cSampler_White2D:
-            *(u32*)&pixel = 0xffffffff;
+            pixel = 0xffffffff;
             break;
         case cSampler_Gray2D:
-            *(u32*)&pixel = 0x808080ff;
+            pixel = 0x808080ff;
             break;
         case cSampler_Black2D:
       //case cSampler_Black2DArray:
-            *(u32*)&pixel = 0x000000ff;
+            pixel = 0x000000ff;
             break;
         /*
         case cSampler_BlackCube:
         case cSampler_BlackCubeArray:
-            *(u32*)&pixel = 0x00000000;
+            pixel = 0x00000000;
             break;
         */
         case cSampler_Depth32_0:
             format = cTextureFormat_Depth_32;
-            *(f32*)&pixel = 0.0f;
+          //pixel = 0x00000000;
             break;
         case cSampler_Depth32_1:
         case cSampler_DepthShadow:
       //case cSampler_DepthShadowArray:
             format = cTextureFormat_Depth_32;
-            *(f32*)&pixel = 1.0f;
+            pixel = std::bit_cast<u32, f32>(1.0f);
             break;
         default:
             break;
@@ -126,7 +128,7 @@ void PrimitiveTexture::initialize()
             u32 count = texture_data.getImageByteSize() / sizeof(u32);
 
             for (u32 i = 0; i < count; i++)
-                ((u32*)image_ptr)[i] = *(u32*)&pixel;
+                ((u32*)image_ptr)[i] = pixel;
 
 #if RIO_IS_CAFE
             texture_data.setImagePtr(image_ptr);
