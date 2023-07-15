@@ -161,7 +161,9 @@ private:
     std::vector<ShaderSource> mSourceVec;
     std::unordered_map<std::string, const std::string> mSourceMap;
 
+#if RIO_IS_CAFE
     void* mpDLBuf;
+#endif // RIO_IS_CAFE
 
     friend class ShaderSource;
     friend class ShaderProgramEx;

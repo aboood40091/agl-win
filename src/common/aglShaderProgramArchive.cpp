@@ -71,7 +71,9 @@ ShaderProgramArchive::ShaderProgramArchive()
     , _28(0)
     , mFlag()
     , mProgramEx()
+#if RIO_IS_CAFE
     , mpDLBuf(nullptr)
+#endif // RIO_IS_CAFE
 {
   //detail::RootNode::setNodeMeta(this, "Icon = LAYOUT, Security = agl_shader");
 }
@@ -88,11 +90,13 @@ void ShaderProgramArchive::destroy()
     mResBinary = nullptr;
     _28 = 0;
 
+#if RIO_IS_CAFE
     if (mpDLBuf)
     {
         rio::MemUtil::free(mpDLBuf);
         mpDLBuf = nullptr;
     }
+#endif // RIO_IS_CAFE
 }
 
 void ShaderProgramArchive::destroyResFile_()
@@ -126,6 +130,7 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
 
         mProgram.allocBuffer(mResBinary.getResBinaryShaderProgramNum());
 
+#if RIO_IS_CAFE
         bool create_dl = !(flag & 1);
 
         u8* dl_buf = nullptr;
@@ -136,12 +141,11 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
         {
             u32 dl_buf_size = mResBinary.getResShaderBinaryNum() * dl_size;
             dl_buf = static_cast<u8*>(rio::MemUtil::alloc(dl_buf_size, DisplayList::cDisplayListAlignment));
-#if RIO_IS_CAFE
             DCFlushRange(dl_buf, dl_buf_size);
-#endif // RIO_IS_CAFE
         }
 
         mpDLBuf = dl_buf;
+#endif // RIO_IS_CAFE
 
         const ResBinaryShaderProgramArray binary_prog_arr = mResBinary.getResBinaryShaderProgramArray();
         [[maybe_unused]] u32 verify_binary_num = 0;
@@ -193,11 +197,13 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
                     }
                 }
 
+#if RIO_IS_CAFE
                 if (create_dl)
                 {
                     var_program->getDisplayList().setBuffer(dl_buf + cur_dl_offs, dl_size);
                     cur_dl_offs += dl_size;
                 }
+#endif // RIO_IS_CAFE
             }
         }
 
@@ -208,6 +214,12 @@ void ShaderProgramArchive::createWithOption(ResBinaryShaderArchive res_binary_ar
 
     for (Buffer<ShaderProgram>::iterator it = mProgram.begin(), it_end = mProgram.end(); it != it_end; ++it)
         it->reserveSetUpAllVariation();
+
+#if RIO_IS_WIN
+    if (!res_archive.isValid())
+        for (Buffer<ShaderProgram>::iterator it = mProgram.begin(), it_end = mProgram.end(); it != it_end; ++it)
+            it->setUseBinaryProgram(true);
+#endif // RIO_IS_WIN
 
     if (mProgram.size() > 0)
         return;

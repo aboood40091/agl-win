@@ -7,6 +7,11 @@
 
 #include <cstring>
 
+#if RIO_IS_WIN
+#include <detail/aglShaderHolder.h>
+#include <graphics/win/ShaderUtil.h>
+#endif // RIO_IS_WIN
+
 namespace agl {
 
 void ShaderProgram::changeShaderMode(ShaderMode mode)
@@ -17,7 +22,9 @@ void ShaderProgram::changeShaderMode(ShaderMode mode)
 ShaderProgram::ShaderProgram()
     : mFlag(0)
     , mVariationID(0)
+#if RIO_IS_CAFE
     , mDisplayList()
+#endif // RIO_IS_CAFE
     , mAttributeLocation()
     , mUniformLocation()
     , mUniformBlockLocation()
@@ -26,6 +33,10 @@ ShaderProgram::ShaderProgram()
     , mFragmentShader()
     , mGeometryShader()
     , mpSharedData(nullptr)
+#if RIO_IS_WIN
+    , mVsCfileBlockIdx(-1)
+    , mPsCfileBlockIdx(-1)
+#endif // RIO_IS_WIN
 {
 }
 
@@ -103,9 +114,11 @@ ShaderMode ShaderProgram::activate(ShaderMode current_mode, bool use_dl) const
     updateCompile();
 #endif
 
+#if RIO_IS_CAFE
     if (use_dl && !mDisplayList.isEmpty())
         mDisplayList.call();
     else
+#endif // RIO_IS_CAFE
         setShaderGX2_();
 
     return current_mode;
@@ -399,6 +412,47 @@ u32 ShaderProgram::forceValidate_() const
 
     setUpForVariation_();
 
+#if RIO_IS_WIN
+    if (mFlag.isOn(1) && isUseBinaryProgram())
+    {
+        const GX2VertexShader* p_vertex_shader = getVertexShaderBinary();
+        const GX2PixelShader* p_pixel_shader = getFragmentShaderBinary();
+
+        RIO_ASSERT(p_vertex_shader && p_pixel_shader);
+
+        const GX2VertexShader& vertex_shader = *p_vertex_shader;
+        const GX2PixelShader& pixel_shader = *p_pixel_shader;
+
+        static const std::string sDecompPath[cShaderType_Num - 1] = {
+            "shaders/agl_shader_temp_out.vert",
+            "shaders/agl_shader_temp_out.frag"
+        };
+
+        [[maybe_unused]] bool decompile_ret = ShaderUtil::decompileGsh(
+            vertex_shader,
+            pixel_shader,
+            sDecompPath[cShaderType_Vertex],
+            sDecompPath[cShaderType_Fragment]
+        );
+
+        RIO_ASSERT(decompile_ret);
+
+        mShader.load("agl_shader_temp_out");
+
+        if (vertex_shader.shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
+            mVsCfileBlockIdx = mShader.getVertexUniformBlockIndex("VS_CFILE_DATA");
+
+        else
+            mVsCfileBlockIdx = -1;
+
+        if (pixel_shader.shaderMode == GX2_SHADER_MODE_UNIFORM_REGISTERS)
+            mPsCfileBlockIdx = mShader.getFragmentUniformBlockIndex("PS_CFILE_DATA");
+
+        else
+            mPsCfileBlockIdx = -1;
+    }
+    else
+#endif // RIO_IS_WIN
     if (mVertexShader.setUp(compile_source, mFlag.isOn(8)) != 0)
     {
         ret = 1;
@@ -431,8 +485,10 @@ u32 ShaderProgram::forceValidate_() const
             RIO_ASSERT(p_frag_src != nullptr);
 
             mShader.load(p_vert_src->c_str(), p_frag_src->c_str());
-#endif // RIO_IS_WIN
 
+            mVsCfileBlockIdx = -1;
+            mPsCfileBlockIdx = -1;
+#elif RIO_IS_CAFE
             if (mDisplayList.getBuffer() != nullptr)
             {
                 void* p_dl;
@@ -446,7 +502,9 @@ u32 ShaderProgram::forceValidate_() const
                 }
                 DisplayList::resume(p_dl, size);
             }
+#endif
         }
+#if RIO_IS_CAFE
         else
         {
             if (mDisplayList.getBuffer() != nullptr)
@@ -464,6 +522,7 @@ u32 ShaderProgram::forceValidate_() const
         }
 
         mFlag.setDirect(1);
+#endif // RIO_IS_CAFE
     }
 
     if (mFlag.isOn(1))
@@ -519,6 +578,27 @@ void ShaderProgram::setShaderGX2_() const
         GX2SetGeometryShader(mGeometryShader.getBinary());
 #elif RIO_IS_WIN
     mShader.bind();
+
+    if (isUseBinaryProgram())
+    {
+        mShader.setUniform(rio::BaseVec4f{ 1.0f, -1.0f, 0.0f, 0.0f }, mShader.getVertexUniformLocation("VS_PUSH.posMulAdd"), u32(-1));
+        mShader.setUniform(rio::BaseVec4f{ 0.0f,  1.0f, 1.0f, 1.0f }, mShader.getVertexUniformLocation("VS_PUSH.zSpaceMul"), u32(-1));
+        mShader.setUniform(1.0f,                                      mShader.getVertexUniformLocation("VS_PUSH.pointSize"), u32(-1));
+
+
+        mShader.setUniform(7u,   u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.alphaFunc"));
+        mShader.setUniform(0u,   u32(-1), mShader.getFragmentUniformLocation("PS_PUSH.needsPremultiply"));
+
+        if (mVsCfileBlockIdx != -1)
+        {
+            detail::ShaderHolder::instance()->mVsCfile.bind(mVsCfileBlockIdx);
+        }
+
+        if (mPsCfileBlockIdx != -1)
+        {
+            detail::ShaderHolder::instance()->mPsCfile.bind(mPsCfileBlockIdx);
+        }
+    }
 #endif
 }
 

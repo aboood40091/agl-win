@@ -28,7 +28,10 @@ void ShaderHolder::destroySingleton()
 ShaderHolder::ShaderHolder()
 #if RIO_IS_CAFE
     : mCreateDisplayLists(true)
-#endif // RIO_IS_CAFE
+#elif RIO_IS_WIN
+    : mVsCfile(rio::UniformBlock::STAGE_VERTEX_SHADER)
+    , mPsCfile(rio::UniformBlock::STAGE_FRAGMENT_SHADER)
+#endif
 {
 }
 

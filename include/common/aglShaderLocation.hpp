@@ -1,22 +1,11 @@
 #pragma once
 
 #if RIO_IS_CAFE
-
 #include <cafe/gx2/gx2Shaders.h>
-#define USE_GX2 1
-#define USE_GL 0
-
 #elif RIO_IS_WIN
-
 #include <misc/gl/rio_GL.h>
-#define USE_GX2 0
-#define USE_GL 1
-
-#else
-
-#define USE_GX2 0
-#define USE_GL 0
-
+void GX2SetVertexUniformReg(u32 offset, u32 count, const void* values);
+void GX2SetPixelUniformReg(u32 offset, u32 count, const void* values);
 #endif
 
 namespace agl {
@@ -26,11 +15,18 @@ void UniformLocation::setUniform(f32 v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4f{ v, 0.0f, 0.0f, 0.0f });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -51,6 +47,7 @@ void UniformLocation::setUniform(f32 v) const
 
     RIO_GL_CALL(glUniform1f(location, v));
 
+    }
 #endif
 }
 
@@ -59,11 +56,18 @@ void UniformLocation::setUniform(s32 v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4i{ v, 0, 0, 0 });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -84,6 +88,7 @@ void UniformLocation::setUniform(s32 v) const
 
     RIO_GL_CALL(glUniform1i(location, v));
 
+    }
 #endif
 }
 
@@ -92,11 +97,18 @@ void UniformLocation::setUniform(u32 v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4u{ v, 0, 0, 0 });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -117,6 +129,7 @@ void UniformLocation::setUniform(u32 v) const
 
     RIO_GL_CALL(glUniform1ui(location, v));
 
+    }
 #endif
 }
 
@@ -125,11 +138,18 @@ void UniformLocation::setUniform(const rio::BaseVec2f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4f{ v.x, v.y, 0.0f, 0.0f });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -150,6 +170,7 @@ void UniformLocation::setUniform(const rio::BaseVec2f& v) const
 
     RIO_GL_CALL(glUniform2fv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -158,11 +179,18 @@ void UniformLocation::setUniform(const rio::BaseVec2i& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4i{ v.x, v.y, 0, 0 });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -183,6 +211,7 @@ void UniformLocation::setUniform(const rio::BaseVec2i& v) const
 
     RIO_GL_CALL(glUniform2iv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -191,11 +220,18 @@ void UniformLocation::setUniform(const rio::BaseVec2u& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4u{ v.x, v.y, 0, 0 });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -216,6 +252,7 @@ void UniformLocation::setUniform(const rio::BaseVec2u& v) const
 
     RIO_GL_CALL(glUniform2uiv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -224,11 +261,18 @@ void UniformLocation::setUniform(const rio::BaseVec3f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4f{ v.x, v.y, v.z, 0.0f });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -249,6 +293,7 @@ void UniformLocation::setUniform(const rio::BaseVec3f& v) const
 
     RIO_GL_CALL(glUniform3fv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -257,11 +302,18 @@ void UniformLocation::setUniform(const rio::BaseVec3i& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4i{ v.x, v.y, v.z, 0 });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -282,6 +334,7 @@ void UniformLocation::setUniform(const rio::BaseVec3i& v) const
 
     RIO_GL_CALL(glUniform3iv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -290,11 +343,18 @@ void UniformLocation::setUniform(const rio::BaseVec3u& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     setUniform(rio::BaseVec4u{ v.x, v.y, v.z, 0 });
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -315,6 +375,7 @@ void UniformLocation::setUniform(const rio::BaseVec3u& v) const
 
     RIO_GL_CALL(glUniform3uiv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -323,7 +384,11 @@ void UniformLocation::setUniform(const rio::BaseVec4f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS != -1)
         GX2SetVertexUniformReg(mVS, 4, &v.x);
@@ -331,7 +396,10 @@ void UniformLocation::setUniform(const rio::BaseVec4f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, 4, &v.x);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -352,6 +420,7 @@ void UniformLocation::setUniform(const rio::BaseVec4f& v) const
 
     RIO_GL_CALL(glUniform4fv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -360,7 +429,11 @@ void UniformLocation::setUniform(const rio::BaseVec4i& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS != -1)
         GX2SetVertexUniformReg(mVS, 4, &v.x);
@@ -368,7 +441,10 @@ void UniformLocation::setUniform(const rio::BaseVec4i& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, 4, &v.x);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -389,6 +465,7 @@ void UniformLocation::setUniform(const rio::BaseVec4i& v) const
 
     RIO_GL_CALL(glUniform4iv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -397,7 +474,11 @@ void UniformLocation::setUniform(const rio::BaseVec4u& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS != -1)
         GX2SetVertexUniformReg(mVS, 4, &v.x);
@@ -405,7 +486,10 @@ void UniformLocation::setUniform(const rio::BaseVec4u& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, 4, &v.x);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -426,6 +510,7 @@ void UniformLocation::setUniform(const rio::BaseVec4u& v) const
 
     RIO_GL_CALL(glUniform4uiv(location, 1, &v.x));
 
+    }
 #endif
 }
 
@@ -434,7 +519,11 @@ void UniformLocation::setUniform(const rio::BaseMtx22f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -452,7 +541,10 @@ void UniformLocation::setUniform(const rio::BaseMtx22f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -473,6 +565,7 @@ void UniformLocation::setUniform(const rio::BaseMtx22f& v) const
 
     RIO_GL_CALL(glUniformMatrix2fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -481,7 +574,11 @@ void UniformLocation::setUniform(const rio::BaseMtx23f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -500,7 +597,10 @@ void UniformLocation::setUniform(const rio::BaseMtx23f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -521,6 +621,7 @@ void UniformLocation::setUniform(const rio::BaseMtx23f& v) const
 
     RIO_GL_CALL(glUniformMatrix3x2fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -529,7 +630,11 @@ void UniformLocation::setUniform(const rio::BaseMtx24f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -549,7 +654,10 @@ void UniformLocation::setUniform(const rio::BaseMtx24f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -570,6 +678,7 @@ void UniformLocation::setUniform(const rio::BaseMtx24f& v) const
 
     RIO_GL_CALL(glUniformMatrix4x2fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -578,7 +687,11 @@ void UniformLocation::setUniform(const rio::BaseMtx32f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -596,7 +709,10 @@ void UniformLocation::setUniform(const rio::BaseMtx32f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -617,6 +733,7 @@ void UniformLocation::setUniform(const rio::BaseMtx32f& v) const
 
     RIO_GL_CALL(glUniformMatrix2x3fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -625,7 +742,11 @@ void UniformLocation::setUniform(const rio::BaseMtx33f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -644,7 +765,10 @@ void UniformLocation::setUniform(const rio::BaseMtx33f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -665,6 +789,7 @@ void UniformLocation::setUniform(const rio::BaseMtx33f& v) const
 
     RIO_GL_CALL(glUniformMatrix3fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -673,7 +798,11 @@ void UniformLocation::setUniform(const rio::BaseMtx34f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -693,7 +822,10 @@ void UniformLocation::setUniform(const rio::BaseMtx34f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -714,6 +846,7 @@ void UniformLocation::setUniform(const rio::BaseMtx34f& v) const
 
     RIO_GL_CALL(glUniformMatrix4x3fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -722,7 +855,11 @@ void UniformLocation::setUniform(const rio::BaseMtx42f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -740,7 +877,10 @@ void UniformLocation::setUniform(const rio::BaseMtx42f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -761,6 +901,7 @@ void UniformLocation::setUniform(const rio::BaseMtx42f& v) const
 
     RIO_GL_CALL(glUniformMatrix2x4fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -769,7 +910,11 @@ void UniformLocation::setUniform(const rio::BaseMtx43f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -788,7 +933,10 @@ void UniformLocation::setUniform(const rio::BaseMtx43f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -809,6 +957,7 @@ void UniformLocation::setUniform(const rio::BaseMtx43f& v) const
 
     RIO_GL_CALL(glUniformMatrix3x4fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -817,7 +966,11 @@ void UniformLocation::setUniform(const rio::BaseMtx44f& v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     if (mVS == -1 && mFS == -1)
         return;
@@ -837,7 +990,10 @@ void UniformLocation::setUniform(const rio::BaseMtx44f& v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, NUM_COL*4, mat_trans);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -858,6 +1014,7 @@ void UniformLocation::setUniform(const rio::BaseMtx44f& v) const
 
     RIO_GL_CALL(glUniformMatrix4fv(location, 1, GL_TRUE, v.a));
 
+    }
 #endif
 }
 
@@ -902,7 +1059,11 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4f* v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     RIO_ASSERT(count);
     RIO_ASSERT(v);
@@ -913,7 +1074,10 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4f* v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, count*4, &v[0].x);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -937,6 +1101,7 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4f* v) const
 
     RIO_GL_CALL(glUniform4fv(location, count, &v[0].x));
 
+    }
 #endif
 }
 
@@ -945,7 +1110,11 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4i* v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     RIO_ASSERT(count);
     RIO_ASSERT(v);
@@ -956,7 +1125,10 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4i* v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, count*4, &v[0].x);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -980,6 +1152,7 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4i* v) const
 
     RIO_GL_CALL(glUniform4iv(location, count, &v[0].x));
 
+    }
 #endif
 }
 
@@ -988,7 +1161,11 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4u* v) const
 {
     RIO_ASSERT(mGS == -1);
 
-#if USE_GX2
+#if RIO_IS_WIN
+    if (mBinary) {
+#endif // RIO_IS_WIN
+
+#if RIO_IS_CAFE || RIO_IS_WIN
 
     RIO_ASSERT(count);
     RIO_ASSERT(v);
@@ -999,7 +1176,10 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4u* v) const
     if (mFS != -1)
         GX2SetPixelUniformReg(mFS, count*4, &v[0].x);
 
-#elif USE_GL
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
+    } else {
 
     s32 location;
 
@@ -1023,6 +1203,7 @@ void UniformLocation::setUniformArray(u32 count, const rio::BaseVec4u* v) const
 
     RIO_GL_CALL(glUniform4uiv(location, count, &v[0].x));
 
+    }
 #endif
 }
 

@@ -66,43 +66,171 @@ GX2GetGeometryUniformVarOffset(const GX2GeometryShader* shader,
 
 }
 
-#endif // RIO_IS_CAFE
+#elif RIO_IS_WIN
+
+#include <detail/aglShaderHolder.h>
+
+void GX2SetVertexUniformReg(u32 offset, u32 count, const void* values)
+{
+    RIO_ASSERT(count % 4 == 0);
+
+    agl::detail::ShaderHolder::instance()->mVsCfile.setSubData(values, offset * 4, count * 4);
+}
+
+void GX2SetPixelUniformReg(u32 offset, u32 count, const void* values)
+{
+    RIO_ASSERT(count % 4 == 0);
+
+    agl::detail::ShaderHolder::instance()->mPsCfile.setSubData(values, offset * 4, count * 4);
+}
+
+#include <sstream>
+
+namespace {
+
+static inline s32
+GetVertexAttribLocation(const rio::Shader& shader, const GX2VertexShader* p_shader, const char* name)
+{
+    for (u32 i = 0; i < p_shader->numAttribs; i++)
+    {
+        if (std::strcmp(p_shader->attribVars[i].name, name) == 0)
+        {
+            std::ostringstream attribNameStrm;
+            attribNameStrm << name << "_0_0";
+            return shader.getVertexAttribLocation(attribNameStrm.str().c_str());
+        }
+    }
+
+    return -1;
+}
+
+static inline GX2UniformVar*
+GX2GetVertexUniformVar(const GX2VertexShader* shader, const char* name)
+{
+    RIO_ASSERT(shader);
+    RIO_ASSERT(name);
+
+    for (u32 i = 0; i < shader->numUniforms; i++)
+       if (std::strcmp(shader->uniformVars[i].name, name) == 0)
+           return &(shader->uniformVars[i]);
+
+    return nullptr;
+}
+
+static inline s32
+GX2GetVertexUniformVarOffset(const GX2VertexShader* shader, const char* name)
+{
+    RIO_ASSERT(shader);
+    RIO_ASSERT(name);
+
+    GX2UniformVar* uniform = GX2GetVertexUniformVar(shader, name);
+    if (!uniform)
+        return -1;
+
+    return s32(uniform->offset);
+}
+
+static inline GX2UniformVar*
+GX2GetPixelUniformVar(const GX2PixelShader* shader, const char* name)
+{
+    RIO_ASSERT(shader);
+    RIO_ASSERT(name);
+
+    for (u32 i = 0; i < shader->numUniforms; i++)
+       if (std::strcmp(shader->uniformVars[i].name, name) == 0)
+           return &(shader->uniformVars[i]);
+
+    return nullptr;
+}
+
+static inline s32
+GX2GetPixelUniformVarOffset(const GX2PixelShader* shader, const char* name)
+{
+    RIO_ASSERT(shader);
+    RIO_ASSERT(name);
+
+    GX2UniformVar* uniform = GX2GetPixelUniformVar(shader, name);
+    if (!uniform)
+        return -1;
+
+    return s32(uniform->offset);
+}
+
+static inline GX2UniformVar*
+GX2GetGeometryUniformVar(const GX2GeometryShader* shader, const char* name)
+{
+    RIO_ASSERT(shader);
+    RIO_ASSERT(name);
+
+    for (u32 i = 0; i < shader->numUniforms; i++)
+       if (std::strcmp(shader->uniformVars[i].name, name) == 0)
+           return &(shader->uniformVars[i]);
+
+    return nullptr;
+}
+
+static inline s32
+GX2GetGeometryUniformVarOffset(const GX2GeometryShader* shader, const char* name)
+{
+    RIO_ASSERT(shader);
+    RIO_ASSERT(name);
+
+    GX2UniformVar* uniform = GX2GetGeometryUniformVar(shader, name);
+    if (!uniform)
+        return -1;
+
+    return s32(uniform->offset);
+}
+
+}
+
+#endif
 
 namespace agl {
 
 void UniformLocation::search(const ShaderProgram& program)
 {
-#if RIO_IS_CAFE
-    if (program.getVertexShaderBinary())
-        mVS = GX2GetVertexUniformVarOffset(program.getVertexShaderBinary(), getName());
-    else
-        mVS = -1;
+#if RIO_IS_WIN
+    mBinary = program.isUseBinaryProgram();
+#endif // RIO_IS_WIN
 
-    if (program.getFragmentShaderBinary())
-        mFS = GX2GetPixelUniformVarOffset(program.getFragmentShaderBinary(), getName());
-    else
-        mFS = -1;
+    mVS = -1;
+    mFS = -1;
+    mGS = -1;
 
-    if (program.getGeometryShaderBinary())
-        mGS = GX2GetGeometryUniformVarOffset(program.getGeometryShaderBinary(), getName());
-    else
-        mGS = -1;
-#else
+#if RIO_IS_CAFE || RIO_IS_WIN
+
 #if RIO_IS_WIN
     const rio::Shader* p_shader_rio = program.getShaderRIO();
     RIO_ASSERT(p_shader_rio);
-    mVS = p_shader_rio->getVertexUniformLocation(getName());
-    mFS = p_shader_rio->getFragmentUniformLocation(getName());
-#else
-    mVS = -1;
-    mFS = -1;
+    if (mBinary) {
 #endif // RIO_IS_WIN
-    mGS = -1;
-#endif // RIO_IS_CAFE
+
+    if (program.getVertexShaderBinary())
+        mVS = GX2GetVertexUniformVarOffset(program.getVertexShaderBinary(), getName());
+
+    if (program.getFragmentShaderBinary())
+        mFS = GX2GetPixelUniformVarOffset(program.getFragmentShaderBinary(), getName());
+
+    if (program.getGeometryShaderBinary())
+        mGS = GX2GetGeometryUniformVarOffset(program.getGeometryShaderBinary(), getName());
+
+#if RIO_IS_WIN
+    } else {
+        mVS = p_shader_rio->getVertexUniformLocation(getName());
+        mFS = p_shader_rio->getFragmentUniformLocation(getName());
+    }
+#endif // RIO_IS_WIN
+
+#endif // RIO_IS_CAFE || RIO_IS_WIN
 }
 
 void UniformBlockLocation::search(const ShaderProgram& program)
 {
+#if RIO_IS_WIN
+    mBinary = program.isUseBinaryProgram();
+#endif // RIO_IS_WIN
+
     mVS = -1;
     mFS = -1;
     mGS = -1;
@@ -140,6 +268,10 @@ void UniformBlockLocation::search(const ShaderProgram& program)
 
 void SamplerLocation::search(const ShaderProgram& program)
 {
+#if RIO_IS_WIN
+    mBinary = program.isUseBinaryProgram();
+#endif // RIO_IS_WIN
+
     mVS = -1;
     mFS = -1;
     mGS = -1;
@@ -177,6 +309,10 @@ void SamplerLocation::search(const ShaderProgram& program)
 
 void AttributeLocation::search(const ShaderProgram& program)
 {
+#if RIO_IS_WIN
+    mBinary = program.isUseBinaryProgram();
+#endif // RIO_IS_WIN
+
 #if RIO_IS_CAFE
     // if (program.getVertexShaderBinary())
         mVS = GX2GetVertexAttribVarLocation(program.getVertexShaderBinary(), getName());
@@ -185,7 +321,10 @@ void AttributeLocation::search(const ShaderProgram& program)
 #elif RIO_IS_WIN
     const rio::Shader* p_shader_rio = program.getShaderRIO();
     RIO_ASSERT(p_shader_rio);
-    mVS = p_shader_rio->getVertexAttribLocation(getName());
+    if (mBinary)
+        mVS = GetVertexAttribLocation(*p_shader_rio, program.getVertexShaderBinary(), getName());
+    else
+        mVS = p_shader_rio->getVertexAttribLocation(getName());
 #else
     mVS = -1;
 #endif

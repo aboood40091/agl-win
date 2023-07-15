@@ -38,6 +38,8 @@ public:
         return mVariationID;
     }
 
+#if RIO_IS_CAFE
+
     DisplayList& getDisplayList()
     {
         return mDisplayList;
@@ -47,6 +49,8 @@ public:
     {
         return mDisplayList;
     }
+
+#endif // RIO_IS_CAFE
 
     const char* getName() const
     {
@@ -82,43 +86,69 @@ public:
     Shader* getShader(ShaderType type);
     const Shader* getShader(ShaderType type) const;
 
-#if RIO_IS_CAFE
+#if RIO_IS_CAFE || RIO_IS_WIN
     GX2VertexShader* getVertexShaderBinary()
     {
         update();
+#if RIO_IS_WIN
+        return isUseBinaryProgram() ? mVertexShader.getBinary() : nullptr;
+#else
         return mVertexShader.getBinary();
+#endif // RIO_IS_WIN
     }
 
     const GX2VertexShader* getVertexShaderBinary() const
     {
         update();
+#if RIO_IS_WIN
+        return isUseBinaryProgram() ? mVertexShader.getBinary() : nullptr;
+#else
         return mVertexShader.getBinary();
+#endif // RIO_IS_WIN
     }
 
     GX2PixelShader* getFragmentShaderBinary()
     {
         update();
+#if RIO_IS_WIN
+        return isUseBinaryProgram() ? mFragmentShader.getBinary() : nullptr;
+#else
         return mFragmentShader.getBinary();
+#endif // RIO_IS_WIN
     }
 
     const GX2PixelShader* getFragmentShaderBinary() const
     {
         update();
+#if RIO_IS_WIN
+        return isUseBinaryProgram() ? mFragmentShader.getBinary() : nullptr;
+#else
         return mFragmentShader.getBinary();
+#endif // RIO_IS_WIN
     }
 
     GX2GeometryShader* getGeometryShaderBinary()
     {
         update();
+#if RIO_IS_WIN
+        return isUseBinaryProgram() ? mGeometryShader.getBinary() : nullptr;
+#else
         return mGeometryShader.getBinary();
+#endif // RIO_IS_WIN
     }
 
     const GX2GeometryShader* getGeometryShaderBinary() const
     {
         update();
+#if RIO_IS_WIN
+        return isUseBinaryProgram() ? mGeometryShader.getBinary() : nullptr;
+#else
         return mGeometryShader.getBinary();
+#endif // RIO_IS_WIN
     }
-#elif RIO_IS_WIN
+#endif // RIO_IS_CAFE || RIO_IS_WIN
+
+#if RIO_IS_WIN
     rio::Shader* getShaderRIO()
     {
         updateCompile();
@@ -131,6 +161,22 @@ public:
         return mShader.isLoaded() ? &mShader : nullptr;
     }
 
+    void setUseBinaryProgram(bool enable)
+    {
+        mFlag.change(16, enable);
+
+        if (getVariation_())
+        {
+            for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
+                it->mFlag.change(16, enable);
+        }
+    }
+
+    bool isUseBinaryProgram() const
+    {
+        return mFlag.isOn(16);
+    }
+
     u32 updateCompile() const
     {
         if (mFlag.isOff(1))
@@ -138,7 +184,7 @@ public:
 
         return update();
     }
-#endif
+#endif // RIO_IS_WIN
 
     void createAttribute(s32 num);
     void setAttributeName(s32 index, const char* name);
@@ -280,7 +326,9 @@ private:
 private:
     mutable rio::BitFlag8 mFlag;
     u16 mVariationID;
+#if RIO_IS_CAFE
     mutable DisplayList mDisplayList;
+#endif // RIO_IS_CAFE
     mutable Buffer<AttributeLocation> mAttributeLocation;
     mutable Buffer<UniformLocation> mUniformLocation;
     mutable Buffer<UniformBlockLocation> mUniformBlockLocation;
@@ -293,6 +341,8 @@ private:
 #if RIO_IS_WIN
     // Custom
     mutable rio::Shader mShader;
+    mutable s32 mVsCfileBlockIdx;
+    mutable s32 mPsCfileBlockIdx;
 #endif // RIO_IS_WIN
 };
 //static_assert(sizeof(ShaderProgram) == 0x60, "agl::ShaderProgram size mismatch");
