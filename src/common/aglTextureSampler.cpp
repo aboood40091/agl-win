@@ -60,8 +60,13 @@ void TextureSampler::applyTextureData_(const TextureData& texture_data)
 
 bool TextureSampler::activate(const SamplerLocation& location, s32 slot) const
 {
-    RIO_ASSERT(location.getGeometryLocation() == -1);
-    return mSamplerInner.tryBind(location.getVertexLocation(), location.getFragmentLocation(), slot != -1 ? slot : 0);
+    return activate(location.getVertexLocation(), location.getFragmentLocation(), location.getGeometryLocation(), slot);
+}
+
+bool TextureSampler::activate(s32 vs, s32 fs, s32 gs, s32 slot) const
+{
+    RIO_ASSERT(gs == -1);
+    return mSamplerInner.tryBind(vs, fs, slot != -1 ? slot : 0);
 }
 
 }

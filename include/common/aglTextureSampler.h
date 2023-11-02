@@ -57,6 +57,7 @@ public:
     void setDepthCompareFunc(rio::Graphics::CompareFunc func);
 
     bool activate(const SamplerLocation& location, s32 slot) const;
+    bool activate(s32 vs, s32 fs, s32 gs, s32 slot) const;
 
 private:
     void applyTextureData_(const TextureData& texture_data);

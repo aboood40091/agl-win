@@ -83,6 +83,14 @@ public:
     void setUpBuffer(const void* buffer, u32 stride, u32 buffer_byte_size);
     void setUpStream(s32 index, VertexStreamFormat format, u32 offset);
 
+    void clearBuffer()
+    {
+        mpBuffer = nullptr;
+        mBufferByteSize = 0;
+        mStride = 0;
+        mVertexNum = 0;
+    }
+
 private:
     void cleanUp_();
 

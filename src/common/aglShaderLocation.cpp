@@ -32,28 +32,6 @@ GX2GetGeometrySamplerVar(const GX2GeometryShader* shader,
 }
 
 static inline s32
-GX2GetVertexUniformVarOffset(const GX2VertexShader* shader,
-                             const char* name)
-{
-    GX2UniformVar* uniform_var = GX2GetVertexUniformVar(shader, name);
-    if (!uniform_var)
-        return -1;
-
-    return (s32)uniform_var->offset;
-}
-
-static inline s32
-GX2GetPixelUniformVarOffset(const GX2PixelShader* shader,
-                            const char* name)
-{
-    GX2UniformVar* uniform_var = GX2GetPixelUniformVar(shader, name);
-    if (!uniform_var)
-        return -1;
-
-    return (s32)uniform_var->offset;
-}
-
-static inline s32
 GX2GetGeometryUniformVarOffset(const GX2GeometryShader* shader,
                                const char* name)
 {

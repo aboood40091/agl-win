@@ -28,6 +28,11 @@ RenderBuffer::RenderBuffer(const rio::Vector2i& size)
 
 RenderBuffer::~RenderBuffer()
 {
+    destroy();
+}
+
+void RenderBuffer::destroy()
+{
 #if RIO_IS_WIN
     if (mHandle != GL_NONE)
     {
@@ -35,6 +40,9 @@ RenderBuffer::~RenderBuffer()
         mHandle = GL_NONE;
     }
 #endif // RIO_IS_WIN
+
+    mColorTarget = nullptr;
+    mDepthTarget = nullptr;
 }
 
 void RenderBuffer::bind() const

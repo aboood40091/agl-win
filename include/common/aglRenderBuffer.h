@@ -14,6 +14,8 @@ public:
     RenderBuffer(const rio::Vector2i& size);
     ~RenderBuffer();
 
+    void destroy();
+
 public:
     RenderTargetColor* getRenderTargetColor() const
     {

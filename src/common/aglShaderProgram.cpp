@@ -268,12 +268,12 @@ u32 ShaderProgram::setUpAllVariation()
 
     if (getVariation_())
     {
-        ret = getVariation_()->mpOriginal->update();
+        ret = getVariation_()->mpOriginal->validate_();
         if (ret == 0)
         {
             for (Buffer<ShaderProgram>::iterator it = getVariation_()->mProgram.begin(), it_end = getVariation_()->mProgram.end(); it != it_end; ++it)
             {
-                ret = it->update();
+                ret = it->validate_();
                 if (ret != 0)
                     break;
             }
@@ -281,7 +281,7 @@ u32 ShaderProgram::setUpAllVariation()
     }
     else
     {
-        ret = update();
+        ret = validate_();
     }
 
     return ret;

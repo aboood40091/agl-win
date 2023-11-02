@@ -59,6 +59,13 @@ public:
 
     void bind() const;
 
+#if RIO_IS_CAFE
+    GX2ColorBuffer& getInnerBuffer() const
+    {
+        return mInnerBuffer;
+    }
+#endif // RIO_IS_CAFE
+
 private:
     void initRegs_() const;
 
@@ -81,6 +88,13 @@ public:
     void invalidateGPUCache() const;
 
     void bind() const;
+
+#if RIO_IS_CAFE
+    GX2DepthBuffer& getInnerBuffer() const
+    {
+        return mInnerBuffer;
+    }
+#endif // RIO_IS_CAFE
 
 private:
     void initRegs_() const;
