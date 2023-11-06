@@ -113,9 +113,7 @@ public:
     const rio::NativeTextureFormat& getNativeTextureFormat() const { return mSurface.nativeFormat; }
 #endif // RIO_IS_WIN
 
-#if RIO_IS_CAFE
     const rio::NativeSurface2D& getSurface() const { return mSurface; }
-#endif // RIO_IS_CAFE
 
     TextureCompSel getComponentR() const { return mCompR; }
     TextureCompSel getComponentG() const { return mCompG; }
