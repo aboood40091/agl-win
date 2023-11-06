@@ -231,10 +231,17 @@ public:
     const UniformBlockLocation& getUniformBlockLocation(s32 index) const { return mUniformBlockLocation[index]; }
     const SamplerLocation& getSamplerLocation(s32 index) const { return mSamplerLocation[index]; }
 
+#if RIO_IS_WIN
+    const AttributeLocation& getAttributeLocationValidate(s32 index) const { updateCompile(); return mAttributeLocation[index]; }
+    const UniformLocation& getUniformLocationValidate(s32 index) const { updateCompile(); return mUniformLocation[index]; }
+    const UniformBlockLocation& getUniformBlockLocationValidate(s32 index) const { updateCompile(); return mUniformBlockLocation[index]; }
+    const SamplerLocation& getSamplerLocationValidate(s32 index) const { updateCompile(); return mSamplerLocation[index]; }
+#else
     const AttributeLocation& getAttributeLocationValidate(s32 index) const { validate_(); return mAttributeLocation[index]; }
     const UniformLocation& getUniformLocationValidate(s32 index) const { validate_(); return mUniformLocation[index]; }
     const UniformBlockLocation& getUniformBlockLocationValidate(s32 index) const { validate_(); return mUniformBlockLocation[index]; }
     const SamplerLocation& getSamplerLocationValidate(s32 index) const { validate_(); return mSamplerLocation[index]; }
+#endif // RIO_IS_WIN
 
     void updateAttributeLocation() const;
     void updateUniformLocation() const;
