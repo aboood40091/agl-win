@@ -29,7 +29,10 @@ void VertexBuffer::cleanUp_()
     for (u32 i = 0; i < cVertexStreamMax; i++)
         mStream[i].mEnable = false;
 
-    clearBuffer();
+    mpBuffer = nullptr;
+    mBufferByteSize = 0;
+    mStride = 0;
+    mVertexNum = 0;
 
 #if RIO_IS_WIN
     if (mHandle != GL_NONE)
