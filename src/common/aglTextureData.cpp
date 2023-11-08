@@ -3,9 +3,11 @@
 #include <detail/aglTextureDataUtil.h>
 #include <misc/rio_MemUtil.h>
 
-#if RIO_IS_CAFE
+#if RIO_IS_WIN
+#include <gpu/win/rio_Texture2DUtilWin.h>
+#elif RIO_IS_CAFE
 #include <gx2/mem.h>
-#endif // RIO_IS_CAFE
+#endif
 
 namespace agl {
 
@@ -158,145 +160,20 @@ void TextureData::initializeFromSurface(const GX2Surface& surface)
     mHandle = std::make_shared<TextureHandle>();
     mHandle->bind();
 
-    RIO_GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
-    RIO_GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mSurface.mipLevels - 1));
+    rio::Texture2DUtil::setNumMipsCurrent(mSurface.mipLevels);
 
-    RIO_GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-
-    switch (mSurface.format)
-    {
-    case rio::TEXTURE_FORMAT_BC1_UNORM:
-    case rio::TEXTURE_FORMAT_BC2_UNORM:
-    case rio::TEXTURE_FORMAT_BC3_UNORM:
-    case rio::TEXTURE_FORMAT_BC4_UNORM:
-    case rio::TEXTURE_FORMAT_BC4_SNORM:
-    case rio::TEXTURE_FORMAT_BC5_UNORM:
-    case rio::TEXTURE_FORMAT_BC5_SNORM:
-        {
-            RIO_GL_CALL(glCompressedTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                mSurface.nativeFormat.internalformat,
-                mSurface.width,
-                mSurface.height,
-                0,
-                mSurface.imageSize,
-                mSurface.image
-            ));
-
-            if (mSurface.mipLevels > 1)
-            {
-                for (u32 i = 0; i < mSurface.mipLevels - 2; i++)
-                    RIO_GL_CALL(glCompressedTexImage2D(
-                        GL_TEXTURE_2D,
-                        i + 1,
-                        mSurface.nativeFormat.internalformat,
-                        std::max(mSurface.width  >> (i + 1), 1u),
-                        std::max(mSurface.height >> (i + 1), 1u),
-                        0,
-                        mSurface.mipLevelOffset[i + 1] - mSurface.mipLevelOffset[i],
-                        (u8*)mSurface.mipmaps + mSurface.mipLevelOffset[i]
-                    ));
-
-                RIO_GL_CALL(glCompressedTexImage2D(
-                    GL_TEXTURE_2D,
-                    (mSurface.mipLevels - 2) + 1,
-                    mSurface.nativeFormat.internalformat,
-                    std::max(mSurface.width  >> ((mSurface.mipLevels - 2) + 1), 1u),
-                    std::max(mSurface.height >> ((mSurface.mipLevels - 2) + 1), 1u),
-                    0,
-                    mSurface.mipmapSize - mSurface.mipLevelOffset[(mSurface.mipLevels - 2)],
-                    (u8*)mSurface.mipmaps + mSurface.mipLevelOffset[(mSurface.mipLevels - 2)]
-                ));
-            }
-        }
-        break;
-    case rio::TEXTURE_FORMAT_BC1_SRGB:
-    case rio::TEXTURE_FORMAT_BC2_SRGB:
-    case rio::TEXTURE_FORMAT_BC3_SRGB:
-        {
-            RIO_GL_CALL(glCompressedTexImage2DARB(
-                GL_TEXTURE_2D,
-                0,
-                mSurface.nativeFormat.internalformat,
-                mSurface.width,
-                mSurface.height,
-                0,
-                mSurface.imageSize,
-                mSurface.image
-            ));
-
-            if (mSurface.mipLevels > 1)
-            {
-                for (u32 i = 0; i < mSurface.mipLevels - 2; i++)
-                    RIO_GL_CALL(glCompressedTexImage2DARB(
-                        GL_TEXTURE_2D,
-                        i + 1,
-                        mSurface.nativeFormat.internalformat,
-                        std::max(mSurface.width  >> (i + 1), 1u),
-                        std::max(mSurface.height >> (i + 1), 1u),
-                        0,
-                        mSurface.mipLevelOffset[i + 1] - mSurface.mipLevelOffset[i],
-                        (u8*)mSurface.mipmaps + mSurface.mipLevelOffset[i]
-                    ));
-
-                RIO_GL_CALL(glCompressedTexImage2DARB(
-                    GL_TEXTURE_2D,
-                    (mSurface.mipLevels - 2) + 1,
-                    mSurface.nativeFormat.internalformat,
-                    std::max(mSurface.width  >> ((mSurface.mipLevels - 2) + 1), 1u),
-                    std::max(mSurface.height >> ((mSurface.mipLevels - 2) + 1), 1u),
-                    0,
-                    mSurface.mipmapSize - mSurface.mipLevelOffset[(mSurface.mipLevels - 2)],
-                    (u8*)mSurface.mipmaps + mSurface.mipLevelOffset[(mSurface.mipLevels - 2)]
-                ));
-            }
-        }
-        break;
-    default:
-        {
-            RIO_GL_CALL(glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                mSurface.nativeFormat.internalformat,
-                mSurface.width,
-                mSurface.height,
-                0,
-                mSurface.nativeFormat.format,
-                mSurface.nativeFormat.type,
-                mSurface.image
-            ));
-
-            if (mSurface.mipLevels > 1)
-            {
-                for (u32 i = 0; i < mSurface.mipLevels - 2; i++)
-                    RIO_GL_CALL(glTexImage2D(
-                        GL_TEXTURE_2D,
-                        i + 1,
-                        mSurface.nativeFormat.internalformat,
-                        std::max(mSurface.width  >> (i + 1), 1u),
-                        std::max(mSurface.height >> (i + 1), 1u),
-                        0,
-                        mSurface.nativeFormat.format,
-                        mSurface.nativeFormat.type,
-                        (u8*)mSurface.mipmaps + mSurface.mipLevelOffset[i]
-                    ));
-
-                RIO_GL_CALL(glTexImage2D(
-                    GL_TEXTURE_2D,
-                    (mSurface.mipLevels - 2) + 1,
-                    mSurface.nativeFormat.internalformat,
-                    std::max(mSurface.width  >> ((mSurface.mipLevels - 2) + 1), 1u),
-                    std::max(mSurface.height >> ((mSurface.mipLevels - 2) + 1), 1u),
-                    0,
-                    mSurface.nativeFormat.format,
-                    mSurface.nativeFormat.type,
-                    (u8*)mSurface.mipmaps + mSurface.mipLevelOffset[(mSurface.mipLevels - 2)]
-                ));
-            }
-        }
-        break;
-    }
+    rio::Texture2DUtil::uploadTextureCurrent(
+        mSurface.format,
+        mSurface.nativeFormat,
+        mSurface.width,
+        mSurface.height,
+        mSurface.mipLevels,
+        mSurface.imageSize,
+        mSurface.image,
+        mSurface.mipmapSize,
+        mSurface.mipmaps,
+        mSurface.mipLevelOffset
+    );
 
 #endif
 

@@ -2,6 +2,12 @@
 #include <math/rio_Math.h>
 #include <utility/aglDynamicTextureAllocator.h>
 
+#if RIO_IS_WIN
+#include <common/aglTextureFormatInfo.h>
+
+#include <gpu/win/rio_Texture2DUtilWin.h>
+#endif // RIO_IS_WIN
+
 namespace agl { namespace utl {
 
 TextureData* DynamicTextureAllocator::alloc(
@@ -28,115 +34,22 @@ TextureData* DynamicTextureAllocator::alloc(
     const auto& handle = std::make_shared<TextureHandle>();
     handle->bind();
 
-    RIO_GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
-    RIO_GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p_tex->getMipLevelNum() - 1));
-
-    RIO_GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+    rio::Texture2DUtil::setNumMipsCurrent(p_tex->getMipLevelNum());
 
     const rio::NativeTextureFormat& native_format = p_tex->getNativeTextureFormat();
 
-    switch (p_tex->getTextureFormat())
-    {
-    case cTextureFormat_BC1_uNorm:
-    case cTextureFormat_BC2_uNorm:
-    case cTextureFormat_BC3_uNorm:
-    case cTextureFormat_BC4_uNorm:
-    case cTextureFormat_BC4_sNorm:
-    case cTextureFormat_BC5_uNorm:
-    case cTextureFormat_BC5_sNorm:
-        {
-            RIO_GL_CALL(glCompressedTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                native_format.internalformat,
-                p_tex->getWidth(),
-                p_tex->getHeight(),
-                0,
-                p_tex->getImageByteSize(),
-                nullptr
-            ));
-
-            if (p_tex->getMipLevelNum() > 1)
-            {
-                for (u32 i = 0; i < p_tex->getMipLevelNum() - 2; i++)
-                    RIO_GL_CALL(glCompressedTexImage2D(
-                        GL_TEXTURE_2D,
-                        i + 1,
-                        native_format.internalformat,
-                        p_tex->getWidth(i + 1),
-                        p_tex->getHeight(i + 1),
-                        0,
-                        p_tex->getMipLevelByteSize(i + 1),
-                        nullptr
-                    ));
-
-                RIO_GL_CALL(glCompressedTexImage2D(
-                    GL_TEXTURE_2D,
-                    (p_tex->getMipLevelNum() - 2) + 1,
-                    native_format.internalformat,
-                    p_tex->getWidth((p_tex->getMipLevelNum() - 2) + 1),
-                    p_tex->getHeight((p_tex->getMipLevelNum() - 2) + 1),
-                    0,
-                    p_tex->getMipLevelByteSize((p_tex->getMipLevelNum() - 2) + 1),
-                    nullptr
-                ));
-            }
-        }
-        break;
-    case cTextureFormat_BC1_SRGB:
-    case cTextureFormat_BC2_SRGB:
-    case cTextureFormat_BC3_SRGB:
-        {
-            RIO_GL_CALL(glCompressedTexImage2DARB(
-                GL_TEXTURE_2D,
-                0,
-                native_format.internalformat,
-                p_tex->getWidth(),
-                p_tex->getHeight(),
-                0,
-                p_tex->getImageByteSize(),
-                nullptr
-            ));
-
-            if (p_tex->getMipLevelNum() > 1)
-            {
-                for (u32 i = 0; i < p_tex->getMipLevelNum() - 2; i++)
-                    RIO_GL_CALL(glCompressedTexImage2DARB(
-                        GL_TEXTURE_2D,
-                        i + 1,
-                        native_format.internalformat,
-                        p_tex->getWidth(i + 1),
-                        p_tex->getHeight(i + 1),
-                        0,
-                        p_tex->getMipLevelByteSize(i + 1),
-                        nullptr
-                    ));
-
-                RIO_GL_CALL(glCompressedTexImage2DARB(
-                    GL_TEXTURE_2D,
-                    (p_tex->getMipLevelNum() - 2) + 1,
-                    native_format.internalformat,
-                    p_tex->getWidth((p_tex->getMipLevelNum() - 2) + 1),
-                    p_tex->getHeight((p_tex->getMipLevelNum() - 2) + 1),
-                    0,
-                    p_tex->getMipLevelByteSize((p_tex->getMipLevelNum() - 2) + 1),
-                    nullptr
-                ));
-            }
-        }
-        break;
-    default:
-        {
-            RIO_GL_CALL(glTexStorage2D(
-                GL_TEXTURE_2D,
-                p_tex->getMipLevelNum(),
-                native_format.internalformat,
-                p_tex->getWidth(),
-                p_tex->getHeight()
-            ));
-        }
-        break;
-    }
+    rio::Texture2DUtil::uploadTextureCurrent(
+        rio::TextureFormat(TextureFormatInfo::convFormatAGLToGX2(p_tex->getTextureFormat())),
+        native_format,
+        p_tex->getWidth(),
+        p_tex->getHeight(),
+        p_tex->getMipLevelNum(),
+        p_tex->getImageByteSize(),
+        nullptr,
+        p_tex->getMipByteSize(),
+        nullptr,
+        p_tex->getSurface().mipLevelOffset
+    );
 
     p_tex->setHandle(handle);
 

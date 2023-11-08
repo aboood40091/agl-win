@@ -39,19 +39,12 @@ void TextureSampler::applyTextureData_(const TextureData& texture_data)
     RIO_ASSERT(handle);
     handle->bind();
 
-    static const GLint TEX_COMP_MAP_TO_GL[6] = {
-        GL_RED, GL_GREEN, GL_BLUE,
-        GL_ALPHA, GL_ZERO, GL_ONE
-    };
-
-    GLint compMap[4] = {
-        TEX_COMP_MAP_TO_GL[mTextureData.getComponentR()],
-        TEX_COMP_MAP_TO_GL[mTextureData.getComponentG()],
-        TEX_COMP_MAP_TO_GL[mTextureData.getComponentB()],
-        TEX_COMP_MAP_TO_GL[mTextureData.getComponentA()]
-    };
-
-    RIO_GL_CALL(glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, compMap));
+    rio::Texture2DUtil::setSwizzleCurrent(
+        mTextureData.getComponentR() << 24 |
+        mTextureData.getComponentG() << 16 |
+        mTextureData.getComponentB() <<  8 |
+        mTextureData.getComponentA() <<  0
+    );
 
     mSamplerInner.linkNativeTexture2D(handle->mHandle);
 
