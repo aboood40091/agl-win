@@ -10,6 +10,14 @@ TextureSampler::TextureSampler()
 {
 }
 
+TextureSampler::TextureSampler(const TextureData& texture_data)
+    : mTextureData()
+    , mSamplerInner()
+    , _e9(0)
+{
+    applyTextureData(texture_data);
+}
+
 TextureSampler::~TextureSampler()
 {
 }
