@@ -74,6 +74,8 @@ class TextureData
 {
 public:
     TextureData();
+    TextureData(const rio::Texture2D& texture) : TextureData(texture, false, false) {}
+    TextureData(const rio::Texture2D& texture, bool color_target, bool depth_target);
     virtual ~TextureData() { }
 
     bool operator==(const TextureData& rhs) const;

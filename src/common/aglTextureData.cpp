@@ -23,6 +23,22 @@ TextureData::TextureData()
     rio::MemUtil::set(&mSurface, 0, sizeof(rio::NativeSurface2D));
 }
 
+TextureData::TextureData(const rio::Texture2D& texture, bool color_target, bool depth_target)
+    : mFormat(detail::TextureDataUtil::convFormatGX2ToAGL(GX2SurfaceFormat(texture.getTextureFormat()), color_target, depth_target))
+    , mSurface(texture.getNativeTexture().surface)
+#if RIO_IS_WIN
+    , mHandle(std::make_shared<TextureHandle>(texture.getNativeTextureHandle()))
+#endif // RIO_IS_WIN
+{
+    mCompR = TextureCompSel(texture.getNativeTexture().compMap >> 24 & 0xFF);
+    mCompG = TextureCompSel(texture.getNativeTexture().compMap >> 16 & 0xFF);
+    mCompB = TextureCompSel(texture.getNativeTexture().compMap >>  8 & 0xFF);
+    mCompA = TextureCompSel(texture.getNativeTexture().compMap >>  0 & 0xFF);
+
+    initializeSize_(mSurface.width, mSurface.height);
+    setMipLevelNum(mSurface.mipLevels);
+}
+
 void TextureData::setMipLevelNum(u32 mip_level_num)
 {
     mSurface.mipLevels = std::clamp<s32>(mip_level_num, 1, mMaxMipLevel);
