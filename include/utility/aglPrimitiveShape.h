@@ -56,6 +56,15 @@ public:
 
     void initialize();
 
+    const IndexStream& getIdxStreamQuad(DrawType draw_type = cDrawType_Triangle) const
+    {
+        if (draw_type == cDrawType_Triangle)
+            return mIdxStreamQuad;
+
+        else // if (draw_type == cDrawType_Line)
+            return mIdxStreamLineQuad;
+    }
+
     const IndexStream& getIdxStreamQuadTriangle(DrawType draw_type = cDrawType_Triangle) const
     {
         if (draw_type == cDrawType_Triangle)
