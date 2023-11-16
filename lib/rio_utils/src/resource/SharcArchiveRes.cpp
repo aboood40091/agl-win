@@ -96,12 +96,15 @@ inline uintptr_t GetOffsetFromPtr(const void* a, const void* b)
 
 #define SHARC_ENDIAN_TO_HOST(val) (EndianToHost(mIsBigEndian, (val)))
 
-bool SharcArchiveRes::prepareArchive(const void* archive)
+bool SharcArchiveRes::prepareArchive(const void* archive, bool fatal_errors)
 {
     if (!archive)
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): archive must not be nullptr.\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): archive must not be nullptr.\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
@@ -110,15 +113,21 @@ bool SharcArchiveRes::prepareArchive(const void* archive)
     mArchiveBlockHeader = reinterpret_cast<const ArchiveBlockHeader*>(archive8);
     if (std::strncmp(mArchiveBlockHeader->signature, "SARC", 4) != 0)
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid ArchiveBlockHeader\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid ArchiveBlockHeader\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
     if (mArchiveBlockHeader->byte_order != 0xfeff && mArchiveBlockHeader->byte_order != 0xfffe)
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid Endian Type\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid Endian Type\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
@@ -130,37 +139,52 @@ bool SharcArchiveRes::prepareArchive(const void* archive)
 
     if (SHARC_ENDIAN_TO_HOST(mArchiveBlockHeader->version) != cArchiveVersion)
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): unmatching version ( expect: %x, actual: %x )\n", cArchiveVersion, SHARC_ENDIAN_TO_HOST(mArchiveBlockHeader->version));
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): unmatching version ( expect: %x, actual: %x )\n", cArchiveVersion, SHARC_ENDIAN_TO_HOST(mArchiveBlockHeader->version));
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
     if (SHARC_ENDIAN_TO_HOST(mArchiveBlockHeader->header_size) != sizeof(ArchiveBlockHeader))
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid ArchiveBlockHeader\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid ArchiveBlockHeader\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
     mFATBlockHeader = reinterpret_cast<const FATBlockHeader*>(archive8 + SHARC_ENDIAN_TO_HOST(mArchiveBlockHeader->header_size));
     if (std::strncmp(mFATBlockHeader->signature, "SFAT", 4) != 0)
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FATBlockHeader\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FATBlockHeader\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
     if (SHARC_ENDIAN_TO_HOST(mFATBlockHeader->header_size) != sizeof(FATBlockHeader))
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FATBlockHeader\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FATBlockHeader\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
     if (SHARC_ENDIAN_TO_HOST(mFATBlockHeader->file_num) > cArchiveEntryMax)
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FATBlockHeader\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FATBlockHeader\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
@@ -179,23 +203,32 @@ bool SharcArchiveRes::prepareArchive(const void* archive)
     );
     if (std::strncmp(fnt_header->signature, "SFNT", 4) != 0)
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FNTBlockHeader\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FNTBlockHeader\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
     if (SHARC_ENDIAN_TO_HOST(fnt_header->header_size) != sizeof(FNTBlockHeader))
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FNTBlockHeader\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid FNTBlockHeader\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 
     mFNTBlock = reinterpret_cast<const char*>(fnt_header) + SHARC_ENDIAN_TO_HOST(fnt_header->header_size);
     if (static_cast<s32>(SHARC_ENDIAN_TO_HOST(mArchiveBlockHeader->data_block_offset)) < static_cast<ssize_t>(GetOffsetFromPtr(mArchiveBlockHeader, mFNTBlock)))
     {
-        RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid data block offset\n");
-        RIO_ASSERT(false);
+        if (fatal_errors)
+        {
+            RIO_LOG("SharcArchiveRes::prepareArchive(): Invalid data block offset\n");
+            RIO_ASSERT(false);
+        }
         return false;
     }
 

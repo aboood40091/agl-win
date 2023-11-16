@@ -101,7 +101,7 @@ public:
         mDataBlock = nullptr;
     }
 
-    bool prepareArchive(const void* archive);
+    bool prepareArchive(const void* archive, bool fatal_errors = true);
 
     std::vector<Entry> readEntry(u32 first = 0, u32 num = u32(-1)) const;
 
