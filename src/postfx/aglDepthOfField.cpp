@@ -66,6 +66,12 @@ DepthOfField::~DepthOfField()
     for (s32 i = 0; i < mContext.size(); i++)
         freeBuffer(i);
 
+    for (VignettingShape& shape : mVignettingShape)
+    {
+        shape.mVertex.freeBuffer();
+        shape.mIndex.freeBuffer();
+    }
+
     mContext.freeBuffer();
 }
 
