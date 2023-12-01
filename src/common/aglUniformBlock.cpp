@@ -154,7 +154,7 @@ void UniformBlock::destroy()
 
     if (mFlag.isOn(cFlag_OwnHeader))
     {
-        delete mpHeader->mpMember; // Nintendo forgot to use delete[] again
+        delete[] mpHeader->mpMember;
         delete mpHeader;
         mpHeader = nullptr;
         mFlag.reset(cFlag_OwnHeader);
